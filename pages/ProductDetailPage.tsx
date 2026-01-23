@@ -5,10 +5,10 @@ import {
     MessageCircle, Phone, Check, Minus, Plus, Info, Star, Box, Maximize2, ShoppingCart, Zap
 } from 'lucide-react';
 import { getProductBySlug } from '../services/wpService';
-import { Product } from '../types';
-import { Button } from '../components/common/UI';
-import { MaterialCalculator, AIAssistant } from '../components/product/ProductComponents';
-import { useCart } from '../App';
+import { Product } from '../../types';
+import { Button } from '../../components/common/UI';
+import { MaterialCalculator, AIAssistant } from '../../components/product/ProductComponents';
+import { useCart } from '../../App';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight, Search, Tag, ChevronRight, Hash } from 'lucide-react';
-import { BLOG_POSTS } from '../constants';
+import { BLOG_POSTS } from '../src/constants';
 import { SEO } from '../components/common/SEO';
 
 export const BlogPage: React.FC = () => {

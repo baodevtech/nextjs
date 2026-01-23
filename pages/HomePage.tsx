@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Truck, ShieldCheck, ArrowRight, Star, PenTool, LayoutTemplate, ChevronRight, Quote, PlayCircle } from 'lucide-react';
 import { getProducts, getCategories } from '../services/wpService';
-import { Product, Category, BlogPost } from '../types';
+import { Product, Category, BlogPost } from '../../types';
 import { BLOG_POSTS } from '../constants';
-import { ProductCard } from '../components/product/ProductComponents';
-import { Button } from '../components/common/UI';
-import { useCart } from '../App';
+import { ProductCard } from '../../components/product/ProductComponents';
+import { Button } from '../../components/common/UI';
+import { useCart } from '../../App';
 
 // --- SUB-COMPONENTS FOR CLEANER CODE ---
 

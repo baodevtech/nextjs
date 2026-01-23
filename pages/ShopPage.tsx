@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/wpService';
-import { Product, Category } from '../types';
-import { ProductCard } from '../components/product/ProductComponents';
-import { useCart } from '../App';
+import { Product, Category } from '../../types';
+import { ProductCard } from '../../components/product/ProductComponents';
+import { useCart } from '../../App';
 import { 
     Search, ChevronDown, Check, LayoutGrid, List, Filter, 
     X, ShieldCheck, Truck, Palette, Info, HelpCircle, RefreshCcw, SlidersHorizontal
 } from 'lucide-react';
-import { Button } from '../components/common/UI';
+import { Button } from '../../components/common/UI';
 
 // --- COMPONENTS ---
 

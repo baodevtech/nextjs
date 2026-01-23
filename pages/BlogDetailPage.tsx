@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, Facebook, Twitter, Linkedin, Share2, ArrowRight, User, Tag, ChevronRight } from 'lucide-react';
-import { BLOG_POSTS } from '../constants';
-import { BlogPost } from '../types';
+import { BLOG_POSTS } from '../src/constants';
+import { BlogPost } from '../../types';
 import { SEO } from '../components/common/SEO';
 
 export const BlogDetailPage: React.FC = () => {
