@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, ShoppingBag, Search, Phone } from 'lucide-react';
+import { Menu, ShoppingBag, Search, Phone, X } from 'lucide-react';
 import { Button } from '../common/UI';
+import { SearchOverlay } from './SearchOverlay';
 
 interface HeaderProps {
   cartCount: number;
@@ -11,6 +12,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -84,12 +86,17 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <button className="p-2 text-slate-500 hover:bg-gray-100 rounded-full transition-colors hidden sm:block">
+              <button 
+                onClick={() => setSearchOpen(true)}
+                className="p-2 text-slate-500 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
+                title="Tìm kiếm"
+              >
                 <Search size={20} />
               </button>
               <button 
                 onClick={onToggleCart}
                 className="p-2 text-slate-500 hover:bg-gray-100 hover:text-brand-600 rounded-full transition-colors relative group"
+                title="Giỏ hàng"
               >
                 <ShoppingBag size={20} />
                 {cartCount > 0 && (
@@ -99,7 +106,9 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
                 )}
               </button>
               <div className="hidden md:block">
-                 <Button variant="primary" className="py-2 px-4 text-xs shadow-brand-500/30 shadow-lg">Báo Giá Ngay</Button>
+                 <Link to="/checkout">
+                    <Button variant="primary" className="py-2 px-4 text-xs shadow-brand-500/30 shadow-lg">Báo Giá Ngay</Button>
+                 </Link>
               </div>
             </div>
           </div>
@@ -107,18 +116,39 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t mt-2 p-4 bg-white shadow-lg animate-fade-in">
-             <nav className="flex flex-col space-y-4">
-                <Link to="/" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Trang Chủ</Link>
-                <Link to="/shop" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Sản Phẩm</Link>
-                <Link to="/projects" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Dự Án</Link>
-                <Link to="/blog" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Tin Tức & Sự Kiện</Link>
-                <Link to="/about" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Về Đại Nam</Link>
-                <Link to="/contact" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Liên Hệ</Link>
-             </nav>
+          <div className="fixed inset-0 z-50 lg:hidden">
+             <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+             <div className="absolute top-0 left-0 bottom-0 w-[80%] max-w-sm bg-white shadow-2xl p-6 animate-slide-in-left">
+                 <div className="flex justify-between items-center mb-8">
+                     <span className="text-xl font-bold text-slate-900">Menu</span>
+                     <button onClick={() => setMobileMenuOpen(false)}><X size={24} className="text-slate-400"/></button>
+                 </div>
+                 <nav className="flex flex-col space-y-4">
+                    <button 
+                        onClick={() => { setSearchOpen(true); setMobileMenuOpen(false); }}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-slate-500 font-medium mb-4"
+                    >
+                        <Search size={20} /> Tìm kiếm...
+                    </button>
+                    <Link to="/" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Trang Chủ</Link>
+                    <Link to="/shop" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Sản Phẩm</Link>
+                    <Link to="/projects" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Dự Án</Link>
+                    <Link to="/blog" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Tin Tức & Sự Kiện</Link>
+                    <Link to="/about" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Về Đại Nam</Link>
+                    <Link to="/contact" className="text-slate-800 font-bold text-lg py-2 border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Liên Hệ</Link>
+                 </nav>
+                 <div className="mt-8">
+                    <Link to="/checkout" onClick={() => setMobileMenuOpen(false)}>
+                        <Button fullWidth>Yêu Cầu Báo Giá</Button>
+                    </Link>
+                 </div>
+             </div>
           </div>
         )}
       </header>
+      
+      {/* Global Search Overlay */}
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

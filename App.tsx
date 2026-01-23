@@ -16,6 +16,8 @@ import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { ContactPage } from './pages/ContactPage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogDetailPage } from './pages/BlogDetailPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 // --- CONTEXT SETUP ---
 interface CartContextType {
@@ -147,7 +149,8 @@ const MainLayout: React.FC = () => {
           <Route path="/blog/:slug" element={<BlogDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="*" element={<div className="pt-32 text-center text-gray-500">Trang không tồn tại</div>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
 

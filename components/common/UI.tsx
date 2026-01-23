@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { CartItem } from '../../types';
 
 // --- BUTTON ---
@@ -11,12 +12,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button: React.FC<ButtonProps> = ({ 
   children, variant = 'primary', fullWidth = false, className = '', ...props 
 }) => {
-  const baseStyle = "inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyle = "inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
   
   const variants = {
     primary: "border border-transparent text-white bg-brand-600 hover:bg-brand-700 focus:ring-brand-500 shadow-sm hover:shadow",
     secondary: "border border-transparent text-brand-900 bg-brand-100 hover:bg-brand-200 focus:ring-brand-500",
-    outline: "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-slate-500",
+    outline: "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-slate-500 hover:border-slate-900",
     ghost: "text-brand-600 hover:bg-brand-50 hover:text-brand-700"
   };
 
@@ -71,7 +72,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cart, o
                   <div>
                     <div className="flex justify-between items-start">
                       <h3 className="text-sm font-semibold text-slate-800 line-clamp-2">{item.name}</h3>
-                      <p className="text-sm font-bold text-brand-600 ml-2">{item.price.formatted}</p>
+                      <p className="text-sm font-bold text-brand-600 ml-2">
+                          {item.price.amount > 0 ? item.price.formatted : 'Liên hệ'}
+                      </p>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">KT: {item.dimensions.width} x {item.dimensions.length} mm</p>
                   </div>
@@ -109,13 +112,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cart, o
         {cart.length > 0 && (
           <div className="p-5 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <div className="flex justify-between text-base font-bold text-slate-900 mb-2">
-              <p>Tổng cộng</p>
+              <p>Tạm tính</p>
               <p className="text-brand-600 text-lg">{total.toLocaleString('vi-VN')}₫</p>
             </div>
             <p className="text-xs text-gray-500 mb-4 text-center">Chưa bao gồm phí vận chuyển (nếu có)</p>
-            <Button fullWidth onClick={() => alert('Chức năng checkout đang được cập nhật!')}>
-              Yêu Cầu Báo Giá / Đặt Hàng
-            </Button>
+            <Link to="/checkout" onClick={onClose}>
+                <Button fullWidth className="shadow-lg shadow-brand-500/30">
+                  <span className="flex items-center gap-2">Xác Nhận & Báo Giá <ArrowRight size={16}/></span>
+                </Button>
+            </Link>
           </div>
         )}
       </div>
