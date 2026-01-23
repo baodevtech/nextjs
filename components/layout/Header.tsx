@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, ShoppingBag, Search, Phone } from 'lucide-react';
 import { Button } from '../common/UI';
 
@@ -11,12 +11,23 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Helper for active link class
+  const getLinkClass = (path: string) => {
+      const isActive = location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+      return `text-sm font-semibold transition-colors py-2 border-b-2 ${
+          isActive 
+          ? 'text-brand-600 border-brand-600' 
+          : 'text-slate-600 border-transparent hover:text-brand-600 hover:border-brand-600'
+      }`;
+  };
 
   return (
     <>
@@ -63,11 +74,12 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-8">
-              <Link to="/" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors py-2 border-b-2 border-transparent hover:border-brand-600">Trang Chủ</Link>
-              <Link to="/shop" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors py-2 border-b-2 border-transparent hover:border-brand-600">Sản Phẩm</Link>
-              <Link to="/about" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors py-2 border-b-2 border-transparent hover:border-brand-600">Về Chúng Tôi</Link>
-              <Link to="/projects" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors py-2 border-b-2 border-transparent hover:border-brand-600">Dự Án</Link>
-              <Link to="/contact" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors py-2 border-b-2 border-transparent hover:border-brand-600">Liên Hệ</Link>
+              <Link to="/" className={getLinkClass('/')}>Trang Chủ</Link>
+              <Link to="/shop" className={getLinkClass('/shop')}>Sản Phẩm</Link>
+              <Link to="/projects" className={getLinkClass('/projects')}>Dự Án</Link>
+              <Link to="/blog" className={getLinkClass('/blog')}>Tin Tức</Link>
+              <Link to="/about" className={getLinkClass('/about')}>Về Chúng Tôi</Link>
+              <Link to="/contact" className={getLinkClass('/contact')}>Liên Hệ</Link>
             </nav>
 
             {/* Actions */}
@@ -99,6 +111,8 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onToggleCart }) => {
              <nav className="flex flex-col space-y-4">
                 <Link to="/" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Trang Chủ</Link>
                 <Link to="/shop" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Sản Phẩm</Link>
+                <Link to="/projects" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Dự Án</Link>
+                <Link to="/blog" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Tin Tức & Sự Kiện</Link>
                 <Link to="/about" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Về Đại Nam</Link>
                 <Link to="/contact" className="text-slate-800 font-medium" onClick={() => setMobileMenuOpen(false)}>Liên Hệ</Link>
              </nav>

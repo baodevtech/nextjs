@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, Ruler, Layers, ShieldCheck, Tag } from 'lucide-react';
+import { 
+    ChevronRight, Ruler, Layers, ShieldCheck, Tag, Truck, 
+    MessageCircle, Phone, Check, Minus, Plus, Info, Star, Box, Maximize2, ShoppingCart, Zap
+} from 'lucide-react';
 import { getProductBySlug } from '../services/wpService';
 import { Product } from '../types';
 import { Button } from '../components/common/UI';
@@ -12,11 +15,13 @@ export const ProductDetailPage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
   const [activeImage, setActiveImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (slug) {
       getProductBySlug(slug).then(p => setProduct(p || null));
       setActiveImage(0);
+      setQuantity(1);
     }
   }, [slug]);
 
@@ -24,111 +29,280 @@ export const ProductDetailPage: React.FC = () => {
 
   const allImages = [product.image, ...product.galleryImages];
 
+  const handleQuantityChange = (delta: number) => {
+      setQuantity(prev => Math.max(1, prev + delta));
+  };
+
   return (
-    <div className="bg-white min-h-screen pb-20">
-       {/* Breadcrumb */}
-       <div className="bg-slate-50 border-b border-gray-200 py-4">
-          <div className="max-w-7xl mx-auto px-4 text-sm text-slate-500 flex items-center gap-2">
-             <Link to="/" className="hover:text-brand-600">Trang chủ</Link>
-             <ChevronRight size={14} />
-             <Link to="/shop" className="hover:text-brand-600">Sản phẩm</Link>
-             <ChevronRight size={14} />
+    <div className="bg-white min-h-screen font-sans animate-fade-in pb-20">
+       {/* Breadcrumb - Clean & Minimal */}
+       <div className="border-b border-gray-100 bg-white sticky top-0 z-30 lg:relative">
+          <div className="max-w-7xl mx-auto px-4 py-3 text-xs text-slate-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+             <Link to="/" className="hover:text-brand-600 transition-colors">Trang chủ</Link>
+             <ChevronRight size={12} className="text-slate-300" />
+             <Link to="/shop" className="hover:text-brand-600 transition-colors">Sản phẩm</Link>
+             <ChevronRight size={12} className="text-slate-300" />
              <span className="text-slate-900 font-medium truncate">{product.name}</span>
           </div>
        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Gallery */}
-          <div className="space-y-4">
-            <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative group">
-              <img 
-                src={allImages[activeImage]?.sourceUrl} 
-                alt={allImages[activeImage]?.altText} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          
+          {/* --- LEFT COLUMN: GALLERY & DESCRIPTION (7 Columns) --- */}
+          <div className="lg:col-span-7 flex flex-col gap-10">
+            {/* Gallery Section */}
+            <div className="space-y-4">
+                <div className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in">
+                    <img 
+                        src={allImages[activeImage]?.sourceUrl} 
+                        alt={allImages[activeImage]?.altText} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    />
+                    {product.price.amount > 0 && (
+                         <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                            -10% Giảm giá
+                         </div>
+                    )}
+                </div>
+                
+                {/* Thumbnails */}
+                <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                    {allImages.map((img, i) => (
+                        <button 
+                            key={i} 
+                            onClick={() => setActiveImage(i)}
+                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${activeImage === i ? 'border-brand-600 ring-2 ring-brand-100 opacity-100' : 'border-transparent opacity-60 hover:opacity-100 hover:border-gray-200'}`}
+                        >
+                            <img src={img.sourceUrl} alt={img.altText} className="w-full h-full object-cover" />
+                        </button>
+                    ))}
+                </div>
             </div>
-            <div className="grid grid-cols-5 gap-3">
-               {allImages.map((img, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => setActiveImage(i)}
-                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${activeImage === i ? 'border-brand-600 opacity-100 ring-2 ring-brand-100' : 'border-transparent opacity-70 hover:opacity-100'}`}
-                  >
-                    <img src={img.sourceUrl} alt={img.altText} className="w-full h-full object-cover" />
-                  </button>
-               ))}
+
+            {/* PRODUCT DESCRIPTION - NO TABS */}
+            <div className="space-y-8">
+                <div>
+                    <h2 className="font-serif font-bold text-2xl text-slate-900 mb-6 flex items-center gap-3">
+                         Mô Tả Chi Tiết
+                         <div className="h-px bg-gray-200 flex-1"></div>
+                    </h2>
+                    <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-slate-900 prose-img:rounded-xl">
+                            <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                            {!product.description && (
+                                <p className="text-slate-500 italic">
+                                    Đang cập nhật mô tả chi tiết cho sản phẩm này...
+                                </p>
+                            )}
+                    </div>
+                </div>
+
+                {/* DETAILED SPECS TABLE */}
+                <div className="bg-slate-50 rounded-2xl p-6 md:p-8 border border-gray-100">
+                     <h2 className="font-serif font-bold text-xl text-slate-900 mb-6">Thông Số Kỹ Thuật</h2>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Mã sản phẩm</span>
+                            <span className="font-bold text-slate-900">{product.sku}</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Thương hiệu</span>
+                            <span className="font-bold text-slate-900">{product.brand}</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Kích thước (D x R)</span>
+                            <span className="font-bold text-slate-900">{product.dimensions.length} x {product.dimensions.width} mm</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Độ dày</span>
+                            <span className="font-bold text-slate-900">{product.dimensions.thickness} mm</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Diện tích tấm</span>
+                            <span className="font-bold text-slate-900">{product.dimensions.area} m²</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Bảo hành</span>
+                            <span className="font-bold text-slate-900">15 Năm</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Bề mặt</span>
+                            <span className="font-bold text-slate-900">Phủ Nano / Vân nổi</span>
+                        </div>
+                        <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
+                            <span className="text-slate-500">Xuất xứ</span>
+                            <span className="font-bold text-slate-900">Việt Nam</span>
+                        </div>
+                     </div>
+                </div>
+
+                {/* AI ASSISTANT BLOCK */}
+                <div className="border-t border-gray-100 pt-8">
+                     <AIAssistant product={product} />
+                </div>
             </div>
           </div>
 
-          {/* Info */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-               <span className="px-2 py-1 bg-brand-50 text-brand-700 text-[10px] font-extrabold uppercase tracking-widest rounded border border-brand-100 flex items-center gap-1">
-                  <Tag size={10} /> {product.brand || 'Đại Nam Premium'}
-               </span>
-               {product.stockStatus === 'IN_STOCK' && (
-                  <span className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded border border-green-100">
-                     Sẵn kho
-                  </span>
-               )}
-            </div>
-            
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4 leading-tight">{product.name}</h1>
-            <p className="text-sm text-slate-500 mb-4 font-mono">Mã SP: {product.sku}</p>
+          {/* --- RIGHT COLUMN: INFO & BUY BOX (Sticky - 5 Columns) --- */}
+          <div className="lg:col-span-5 relative">
+             <div className="lg:sticky lg:top-24 space-y-6">
+                
+                {/* 1. PRODUCT TITLE & HEADER */}
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        {product.brand && (
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600 bg-brand-50 px-2 py-1 rounded">{product.brand}</span>
+                        )}
+                        <span className="text-[10px] font-mono font-medium text-slate-400">SKU: {product.sku}</span>
+                    </div>
+                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-3 leading-snug">
+                        {product.name}
+                    </h1>
+                    <div className="flex items-center gap-4 text-sm pb-4 border-b border-gray-100">
+                        <div className="flex text-amber-400 gap-0.5">
+                            {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                        </div>
+                        <span className="text-slate-400 text-xs">(24 đánh giá)</span>
+                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${product.stockStatus === 'IN_STOCK' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${product.stockStatus === 'IN_STOCK' ? 'bg-green-600' : 'bg-orange-600'}`}></div>
+                            {product.stockStatus === 'IN_STOCK' ? 'Còn hàng' : 'Liên hệ đặt trước'}
+                        </div>
+                    </div>
+                </div>
 
-            <div className="flex items-end gap-4 mb-6 pb-6 border-b border-gray-100">
-               <p className="text-3xl font-bold text-brand-700">{product.price.formatted}</p>
-               <span className="mb-1 text-sm text-slate-400 font-medium line-through">
-                  {(product.price.amount * 1.2).toLocaleString('vi-VN')}₫
-               </span>
-            </div>
+                {/* 2. PRICE DISPLAY */}
+                <div>
+                    <p className="text-xs text-slate-500 font-medium mb-1">Giá bán lẻ đề xuất:</p>
+                    <div className="flex items-baseline gap-3">
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                            {product.price.formatted}
+                        </span>
+                        <span className="text-sm text-slate-400 line-through">
+                            {(product.price.amount * 1.1).toLocaleString('vi-VN')}₫
+                        </span>
+                        {product.price.amount > 0 && (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-10%</span>
+                        )}
+                    </div>
+                </div>
 
-            {/* Specs */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-               <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                 <Ruler className="text-brand-500 mt-1" size={20} />
-                 <div>
-                   <p className="text-xs text-slate-500 uppercase font-bold">Kích thước</p>
-                   <p className="font-semibold text-slate-800">{product.dimensions.width} x {product.dimensions.length} mm</p>
-                 </div>
-               </div>
-               <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                 <Layers className="text-brand-500 mt-1" size={20} />
-                 <div>
-                   <p className="text-xs text-slate-500 uppercase font-bold">Độ dày</p>
-                   <p className="font-semibold text-slate-800">{product.dimensions.thickness} mm</p>
-                 </div>
-               </div>
-            </div>
+                {/* 3. TECHNICAL SPECS SUMMARY (Redesigned: Clean Grid) */}
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Zap size={12} className="text-amber-500"/> Thông số nổi bật
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                         <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                                <Maximize2 size={16}/>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-500">Kích thước</p>
+                                <p className="text-sm font-bold text-slate-900">{product.dimensions.width}x{product.dimensions.length} <span className="text-[10px] font-normal">mm</span></p>
+                            </div>
+                         </div>
+                         
+                         <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                                <Layers size={16}/>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-500">Độ dày</p>
+                                <p className="text-sm font-bold text-slate-900">{product.dimensions.thickness} <span className="text-[10px] font-normal">mm</span></p>
+                            </div>
+                         </div>
 
-            <div 
-              className="prose prose-sm prose-slate text-slate-600 mb-8" 
-              dangerouslySetInnerHTML={{ __html: product.description }} 
-            />
+                         <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded bg-slate-50 flex items-center justify-center text-slate-500 shrink-0">
+                                <Box size={16}/>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-500">Diện tích</p>
+                                <p className="text-sm font-bold text-slate-900">{product.dimensions.area} <span className="text-[10px] font-normal">m²/tấm</span></p>
+                            </div>
+                         </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-               <Button 
-                  onClick={() => addToCart(product)} 
-                  disabled={product.stockStatus === 'OUT_OF_STOCK'}
-                  className="flex-1 py-4 text-base shadow-brand-500/30 shadow-lg"
-               >
-                Thêm Vào Giỏ
-               </Button>
-               <Button variant="secondary" className="flex-1 py-4">
-                 Tư Vấn Zalo
-               </Button>
-            </div>
+                         <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                                <ShieldCheck size={16}/>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-500">Bảo hành</p>
+                                <p className="text-sm font-bold text-green-700">15 Năm</p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
 
-            <div className="flex items-center gap-6 text-xs font-medium text-slate-500 mb-8">
-                <span className="flex items-center gap-1"><ShieldCheck size={16} className="text-brand-500"/> Bảo hành 15 năm</span>
-                <span className="flex items-center gap-1"><Layers size={16} className="text-brand-500"/> Công nghệ Nano</span>
-            </div>
+                {/* 4. MATERIAL CALCULATOR (Integrated) */}
+                <div className="bg-brand-50/50 rounded-lg border border-brand-100 overflow-hidden">
+                    <MaterialCalculator product={product} onAdd={(qty) => {
+                        setQuantity(qty);
+                        addToCart(product, qty);
+                    }} />
+                </div>
 
-            {/* Tools */}
-            {product.dimensions.area > 0 && <MaterialCalculator product={product} onAdd={(qty) => addToCart(product, qty)} />}
-            <AIAssistant product={product} />
+                {/* 5. ACTION AREA (Sticky Bottom on Mobile, Standard on Desktop) */}
+                <div className="space-y-3 pt-2">
+                    {/* Row 1: Quantity + Add To Cart */}
+                    <div className="flex gap-3">
+                        <div className="flex items-center border border-gray-300 rounded-lg h-12 w-28 shrink-0 bg-white">
+                            <button onClick={() => handleQuantityChange(-1)} className="w-9 h-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-gray-50 rounded-l-lg transition-colors">
+                                <Minus size={16} />
+                            </button>
+                            <div className="w-full h-full flex items-center justify-center font-bold text-slate-900 border-x border-gray-100 text-sm">
+                                {quantity}
+                            </div>
+                            <button onClick={() => handleQuantityChange(1)} className="w-9 h-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-gray-50 rounded-r-lg transition-colors">
+                                <Plus size={16} />
+                            </button>
+                        </div>
+                        
+                        <Button 
+                            onClick={() => addToCart(product, quantity)}
+                            disabled={product.stockStatus === 'OUT_OF_STOCK'}
+                            className="flex-1 h-12 text-sm uppercase tracking-wide font-bold shadow-brand-500/30 shadow-lg hover:-translate-y-0.5 transition-all"
+                        >
+                            <ShoppingCart size={18} className="mr-2"/>
+                            {product.stockStatus === 'OUT_OF_STOCK' ? 'Hết Hàng' : 'Thêm Vào Giỏ'}
+                        </Button>
+                    </div>
+
+                    {/* Row 2: Contact Options */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <a 
+                            href="https://zalo.me/0912345678" 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="flex flex-col items-center justify-center h-12 rounded-lg border border-blue-200 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all group"
+                        >
+                           <div className="flex items-center gap-2">
+                                <MessageCircle size={18} className="group-hover:scale-110 transition-transform"/> 
+                                <span className="font-bold text-sm">Chat Zalo</span>
+                           </div>
+                        </a>
+                        <a 
+                            href="tel:0912345678"
+                            className="flex flex-col items-center justify-center h-12 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 transition-all group"
+                        >
+                           <div className="flex items-center gap-2">
+                                <Phone size={18} className="group-hover:rotate-12 transition-transform"/> 
+                                <span className="font-bold text-sm">0912.345.678</span>
+                           </div>
+                        </a>
+                    </div>
+                </div>
+
+                {/* Trust Footer */}
+                <div className="text-[10px] text-slate-400 text-center flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 border-t border-gray-50">
+                    <span className="flex items-center gap-1.5"><Check size={12} className="text-green-500"/> Đổi trả 7 ngày</span>
+                    <span className="flex items-center gap-1.5"><Truck size={12} className="text-brand-500"/> Ship toàn quốc</span>
+                    <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-500"/> Chính hãng 100%</span>
+                </div>
+
+             </div>
           </div>
+
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { ProductCard } from '../components/product/ProductComponents';
 import { useCart } from '../App';
 import { 
     Search, ChevronDown, Check, LayoutGrid, List, Filter, 
-    X, ShieldCheck, Truck, Palette, Info, HelpCircle 
+    X, ShieldCheck, Truck, Palette, Info, HelpCircle, RefreshCcw, SlidersHorizontal
 } from 'lucide-react';
 import { Button } from '../components/common/UI';
 
@@ -154,10 +154,10 @@ const FilterSection: React.FC<{
         <div className="border-b border-gray-100 py-5 last:border-0">
             <button 
                 onClick={() => setOpen(!open)}
-                className="flex items-center justify-between w-full text-sm font-bold text-slate-900 mb-4 hover:text-brand-600 transition-colors"
+                className="flex items-center justify-between w-full text-sm font-bold text-slate-800 mb-4 hover:text-brand-600 transition-colors group"
             >
                 {title}
-                <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                <ChevronDown size={16} className={`text-slate-400 group-hover:text-brand-600 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
             </button>
             {open && <div className="animate-fade-in">{children}</div>}
         </div>
@@ -169,7 +169,14 @@ const FilterSection: React.FC<{
 export const ShopPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [brandFilter, setBrandFilter] = useState('all');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [isPromotion, setIsPromotion] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const location = useLocation();
@@ -190,18 +197,59 @@ export const ShopPage: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const cat = params.get('cat');
     setFilter(cat || 'all');
+    setBrandFilter('all');
+    setInStockOnly(false);
+    setIsPromotion(false);
+    setSearchQuery('');
   }, [location]);
 
-  const filteredProducts = filter === 'all' 
-    ? products 
-    : products.filter(p => p.categories.includes(filter));
+  // Main Filtering Logic
+  const filteredProducts = products.filter(p => {
+    const matchCategory = filter === 'all' || p.categories.includes(filter);
+    const matchBrand = brandFilter === 'all' || p.brand === brandFilter;
+    const matchStock = !inStockOnly || p.stockStatus === 'IN_STOCK';
+    const matchPromo = !isPromotion || p.price.amount > 0;
+    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchCategory && matchBrand && matchStock && matchPromo && matchSearch;
+  });
 
   const currentCategory = categories.find(c => c.slug === filter);
+  
+  // Extract unique brands
+  const brands = Array.from(new Set(products.map(p => p.brand).filter(Boolean)));
 
-  // Helper to get count for sidebar
+  // Count Helpers
   const getCategoryCount = (slug: string) => {
-      if (slug === 'all') return products.length;
-      return products.filter(p => p.categories.includes(slug)).length;
+      return products.filter(p => {
+          const matchCategory = slug === 'all' || p.categories.includes(slug);
+          const matchBrand = brandFilter === 'all' || p.brand === brandFilter;
+          const matchStock = !inStockOnly || p.stockStatus === 'IN_STOCK';
+          const matchPromo = !isPromotion || p.price.amount > 0;
+          const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchCategory && matchBrand && matchStock && matchPromo && matchSearch;
+      }).length;
+  };
+
+  const getBrandCount = (brand: string) => {
+      return products.filter(p => {
+          const matchCategory = filter === 'all' || p.categories.includes(filter);
+          const matchBrand = brand === 'all' || p.brand === brand;
+          const matchStock = !inStockOnly || p.stockStatus === 'IN_STOCK';
+          const matchPromo = !isPromotion || p.price.amount > 0;
+          const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchCategory && matchBrand && matchStock && matchPromo && matchSearch;
+      }).length;
+  };
+
+  const hasActiveFilters = filter !== 'all' || brandFilter !== 'all' || inStockOnly || isPromotion || searchQuery;
+
+  const resetFilters = () => {
+    setFilter('all');
+    setBrandFilter('all');
+    setInStockOnly(false);
+    setIsPromotion(false);
+    setSearchQuery('');
   };
 
   return (
@@ -215,55 +263,165 @@ export const ShopPage: React.FC = () => {
             
           {/* SIDEBAR FILTERS (Desktop) */}
           <aside className={`
-            lg:w-64 flex-shrink-0 
-            ${showMobileFilters ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto' : 'hidden lg:block'}
+            lg:w-72 flex-shrink-0 
+            ${showMobileFilters ? 'fixed inset-0 z-50 bg-white/95 backdrop-blur-sm p-0 overflow-y-auto' : 'hidden lg:block'}
           `}>
-             <div className="flex items-center justify-between lg:hidden mb-6">
-                <span className="text-lg font-bold">Bộ Lọc</span>
-                <button onClick={() => setShowMobileFilters(false)}><X size={24}/></button>
+             {/* Mobile Header */}
+             <div className="flex items-center justify-between lg:hidden p-4 border-b">
+                <span className="text-lg font-bold flex items-center gap-2"><SlidersHorizontal size={20}/> Bộ Lọc</span>
+                <button onClick={() => setShowMobileFilters(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={24}/></button>
              </div>
 
-             <div className="sticky top-24 space-y-1 bg-white rounded-xl border border-gray-100 p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)]">
+             <div className="lg:sticky lg:top-24 bg-white lg:rounded-2xl lg:border border-gray-100 lg:shadow-xl lg:shadow-gray-200/40 p-5 space-y-2 h-full lg:h-auto lg:max-h-[85vh] overflow-y-auto no-scrollbar">
+                
+                {/* Header & Reset */}
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                        <Filter size={18} className="text-brand-600"/> Lọc Sản Phẩm
+                    </h3>
+                    {hasActiveFilters && (
+                        <button 
+                            onClick={resetFilters}
+                            className="text-xs font-semibold text-brand-600 hover:text-red-500 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                        >
+                            <RefreshCcw size={12}/> Đặt lại
+                        </button>
+                    )}
+                </div>
+
+                {/* Search Input */}
+                <div className="relative mb-6">
+                    <input 
+                        type="text" 
+                        placeholder="Tìm tên sản phẩm..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                    />
+                    <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+                </div>
+
                 {/* Categories */}
-                <FilterSection title="Danh Mục Sản Phẩm">
+                <FilterSection title="Danh Mục">
                     <div className="space-y-1">
-                        <label className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                             <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filter === 'all' ? 'bg-slate-900 border-slate-900' : 'border-gray-300'}`}>
-                                 {filter === 'all' && <Check size={10} className="text-white" />}
-                             </div>
-                             <input type="radio" name="cat" className="hidden" checked={filter === 'all'} onChange={() => setFilter('all')} />
-                             <span className={`text-sm flex-1 ${filter === 'all' ? 'font-bold text-slate-900' : 'text-slate-600'}`}>Tất cả</span>
-                             <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{products.length}</span>
-                        </label>
+                        {/* All Option */}
+                        <div 
+                            onClick={() => setFilter('all')}
+                            className={`
+                                group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border
+                                ${filter === 'all' 
+                                    ? 'bg-brand-50 border-brand-200 shadow-sm' 
+                                    : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100'}
+                            `}
+                        >
+                             <span className={`text-sm ${filter === 'all' ? 'font-bold text-brand-700' : 'font-medium text-slate-600'}`}>Tất cả</span>
+                             <span className={`text-xs px-2 py-0.5 rounded-full ${filter === 'all' ? 'bg-white text-brand-700 font-bold shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
+                                 {getCategoryCount('all')}
+                             </span>
+                        </div>
+                        
+                        {/* Category List */}
                         {categories.map(cat => {
                             const count = getCategoryCount(cat.slug);
+                            const isActive = filter === cat.slug;
                             return (
-                                <label key={cat.id} className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filter === cat.slug ? 'bg-slate-900 border-slate-900' : 'border-gray-300'}`}>
-                                        {filter === cat.slug && <Check size={10} className="text-white" />}
-                                    </div>
-                                    <input type="radio" name="cat" className="hidden" checked={filter === cat.slug} onChange={() => setFilter(cat.slug)} />
-                                    <span className={`text-sm flex-1 ${filter === cat.slug ? 'font-bold text-slate-900' : 'text-slate-600'}`}>{cat.name}</span>
-                                    <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{count}</span>
-                                </label>
+                                <div 
+                                    key={cat.id} 
+                                    onClick={() => setFilter(cat.slug)}
+                                    className={`
+                                        group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border
+                                        ${isActive 
+                                            ? 'bg-brand-50 border-brand-200 shadow-sm' 
+                                            : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100'}
+                                    `}
+                                >
+                                    <span className={`text-sm ${isActive ? 'font-bold text-brand-700' : 'font-medium text-slate-600'}`}>{cat.name}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-white text-brand-700 font-bold shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
+                                        {count}
+                                    </span>
+                                </div>
                             );
                         })}
                     </div>
                 </FilterSection>
 
-                {/* Price Range (Mock) */}
-                <FilterSection title="Khoảng Giá">
-                    <div className="space-y-4 px-2 pt-2">
-                        <div className="h-1 bg-gray-200 rounded-full relative">
-                            <div className="absolute left-0 w-1/2 h-full bg-slate-900 rounded-full"></div>
-                            <div className="absolute left-1/2 w-4 h-4 bg-white border-2 border-slate-900 rounded-full -top-1.5 shadow cursor-pointer hover:scale-110 transition-transform"></div>
+                {/* Brands Filter */}
+                <FilterSection title="Thương Hiệu">
+                    <div className="space-y-1">
+                        <div 
+                            onClick={() => setBrandFilter('all')}
+                            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${brandFilter === 'all' ? 'bg-brand-50/50' : 'hover:bg-gray-50'}`}
+                        >
+                             <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${brandFilter === 'all' ? 'border-brand-600 bg-brand-600' : 'border-gray-300'}`}>
+                                 {brandFilter === 'all' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                             </div>
+                             <span className={`text-sm flex-1 ${brandFilter === 'all' ? 'font-bold text-brand-700' : 'text-slate-600'}`}>Tất cả</span>
                         </div>
-                        <div className="flex justify-between text-xs text-slate-500 font-medium">
-                            <span>0đ</span>
-                            <span>500k+</span>
+                        {brands.map(brand => {
+                            const count = getBrandCount(brand);
+                            const isActive = brandFilter === brand;
+                            if (count === 0 && !isActive) return null;
+                            
+                            return (
+                                <div 
+                                    key={brand}
+                                    onClick={() => setBrandFilter(brand)}
+                                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-brand-50/50' : 'hover:bg-gray-50'}`}
+                                >
+                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${isActive ? 'border-brand-600 bg-brand-600' : 'border-gray-300 group-hover:border-brand-400'}`}>
+                                        {isActive && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                                    </div>
+                                    <span className={`text-sm flex-1 ${isActive ? 'font-bold text-brand-700' : 'text-slate-600'}`}>{brand}</span>
+                                    <span className="text-xs text-slate-400">{count}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </FilterSection>
+
+                {/* Status Filter - Modern Checkbox */}
+                <FilterSection title="Trạng Thái">
+                    <div className="space-y-2">
+                        <div 
+                            onClick={() => setInStockOnly(!inStockOnly)}
+                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${inStockOnly ? 'bg-brand-50 border-brand-200' : 'bg-white border-gray-200 hover:border-brand-200'}`}
+                        >
+                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${inStockOnly ? 'bg-brand-600 border-brand-600' : 'border-gray-300 bg-white'}`}>
+                                {inStockOnly && <Check size={12} className="text-white" />}
+                            </div>
+                            <span className={`text-sm ${inStockOnly ? 'font-bold text-brand-700' : 'text-slate-600'}`}>Chỉ hiện còn hàng</span>
+                        </div>
+
+                        <div 
+                            onClick={() => setIsPromotion(!isPromotion)}
+                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isPromotion ? 'bg-brand-50 border-brand-200' : 'bg-white border-gray-200 hover:border-brand-200'}`}
+                        >
+                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isPromotion ? 'bg-brand-600 border-brand-600' : 'border-gray-300 bg-white'}`}>
+                                {isPromotion && <Check size={12} className="text-white" />}
+                            </div>
+                            <span className={`text-sm ${isPromotion ? 'font-bold text-brand-700' : 'text-slate-600'}`}>Đang giảm giá</span>
                         </div>
                     </div>
                 </FilterSection>
+
+                {/* Price Range (Mock) */}
+                <FilterSection title="Khoảng Giá">
+                    <div className="px-1 pt-2 pb-4">
+                        <div className="h-1.5 bg-gray-100 rounded-full relative mb-4">
+                            <div className="absolute left-0 w-1/2 h-full bg-brand-500 rounded-full"></div>
+                            <div className="absolute left-1/2 w-5 h-5 bg-white border-4 border-brand-500 rounded-full -top-2 shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"></div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded text-slate-600">0đ</span>
+                            <span className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded text-slate-600">500k+</span>
+                        </div>
+                    </div>
+                </FilterSection>
+
+                 {/* Mobile Apply Button */}
+                 <div className="lg:hidden mt-auto pt-4 border-t sticky bottom-0 bg-white p-4">
+                     <Button fullWidth onClick={() => setShowMobileFilters(false)}>Xem {filteredProducts.length} Kết Quả</Button>
+                 </div>
              </div>
           </aside>
 
@@ -273,9 +431,9 @@ export const ShopPage: React.FC = () => {
              <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
                 <button 
                     onClick={() => setShowMobileFilters(true)}
-                    className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-gray-50"
+                    className="lg:hidden flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-bold hover:bg-brand-700 shadow-sm transition-all"
                 >
-                    <Filter size={16} /> Bộ Lọc
+                    <SlidersHorizontal size={16} /> Bộ Lọc
                 </button>
 
                 <div className="hidden md:flex items-center gap-2">
@@ -323,9 +481,9 @@ export const ShopPage: React.FC = () => {
                         <Search size={32} />
                      </div>
                      <h3 className="text-lg font-bold text-slate-900 mb-1">Không tìm thấy sản phẩm</h3>
-                     <p className="text-slate-500 text-sm mb-6">Thử thay đổi bộ lọc hoặc tìm kiếm từ khóa khác.</p>
-                     <button onClick={() => setFilter('all')} className="text-brand-600 font-bold text-sm hover:underline">
-                         Xóa bộ lọc
+                     <p className="text-slate-500 text-sm mb-6">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                     <button onClick={resetFilters} className="text-brand-600 font-bold text-sm hover:underline flex items-center justify-center gap-2 mx-auto">
+                         <RefreshCcw size={14} /> Xóa toàn bộ bộ lọc
                      </button>
                  </div>
              )}

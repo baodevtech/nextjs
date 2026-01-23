@@ -1,3 +1,4 @@
+
 // Mimicking WP GraphQL Structure
 export interface WpImage {
   sourceUrl: string;
@@ -46,4 +47,25 @@ export interface Category {
   headerImage?: string; // Large banner
   description?: string; // Short intro
   bottomContent?: string; // Long HTML content for SEO/Education
+}
+
+// --- BLOG TYPES ---
+export interface Author {
+  name: string;
+  avatar: string;
+  role: string;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string; // HTML
+  image: string;
+  category: string;
+  date: string;
+  readTime: string;
+  author: Author;
+  tags: string[];
 }

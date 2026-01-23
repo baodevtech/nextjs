@@ -1,4 +1,5 @@
-import { Product, Category } from './types';
+
+import { Product, Category, BlogPost } from './types';
 
 export const CATEGORIES: Category[] = [
   { 
@@ -141,4 +142,84 @@ export const PRODUCTS: Product[] = [
     categories: ['pvc-stone'],
     dimensions: { length: 2440, width: 1220, thickness: 3, area: 2.97 }
   },
+];
+
+export const BLOG_POSTS: BlogPost[] = [
+  {
+    id: 'post_1',
+    title: "5 Xu Hướng Ốp Tường Phòng Khách 'Lên Ngôi' Năm 2024",
+    slug: "xu-huong-op-tuong-2024",
+    excerpt: "Khám phá các phong cách thiết kế nội thất sử dụng tấm ốp than tre và lam sóng đang được các kiến trúc sư hàng đầu ưa chuộng.",
+    content: `
+      <p>Năm 2024 đánh dấu sự lên ngôi của các vật liệu thân thiện môi trường và có tính thẩm mỹ cao. Phòng khách không chỉ là nơi sinh hoạt chung mà còn là bộ mặt của gia chủ.</p>
+      <h3>1. Phong cách Minimalist với Lam Sóng Trắng</h3>
+      <p>Sự tối giản luôn có chỗ đứng vững chắc. Lam sóng trắng kết hợp với hệ thống đèn LED âm trần tạo nên không gian rộng mở, tinh tế.</p>
+      <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200" alt="Minimalist Interior" class="rounded-xl w-full my-6" />
+      <h3>2. Sang trọng với PVC Vân Đá Đối Xứng</h3>
+      <p>Xu hướng Bookmatch (vân đá đối xứng) trước đây chỉ dành cho đá tự nhiên đắt đỏ nay đã có thể thực hiện dễ dàng với tấm ốp PVC tráng gương.</p>
+      <h3>3. Vật liệu Than Tre - Bước tiến công nghệ</h3>
+      <p>Khả năng uốn cong của tấm ốp đa năng sợi than tre cho phép tạo ra các góc bo tròn mềm mại, xóa bỏ sự cứng nhắc của các góc tường truyền thống.</p>
+    `,
+    image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=1200&auto=format&fit=crop",
+    category: "Xu Hướng",
+    date: "15 Tháng 5, 2024",
+    readTime: "5 phút đọc",
+    author: {
+      name: "KTS. Minh Hoàng",
+      avatar: "https://ui-avatars.com/api/?name=Minh+Hoang&background=0284c7&color=fff",
+      role: "Lead Architect"
+    },
+    tags: ["Nội thất", "Phòng khách", "2024"]
+  },
+  {
+    id: 'post_2',
+    title: "Hướng Dẫn Thi Công Tấm Ốp Nano Phẳng Chuẩn Kỹ Thuật",
+    slug: "huong-dan-thi-cong-nano",
+    excerpt: "Quy trình 6 bước thi công tấm ốp tường Nano giúp đảm bảo độ bền trên 20 năm, không bị bong tróc hay ẩm mốc.",
+    content: "<p>Chi tiết hướng dẫn đang cập nhật...</p>",
+    image: "https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=1200&auto=format&fit=crop",
+    category: "Kỹ Thuật",
+    date: "10 Tháng 5, 2024",
+    readTime: "8 phút đọc",
+    author: {
+      name: "Trần Văn A",
+      avatar: "https://ui-avatars.com/api/?name=Tran+A&background=eab308&color=fff",
+      role: "Kỹ thuật viên"
+    },
+    tags: ["Thi công", "Tấm ốp Nano", "DIY"]
+  },
+  {
+    id: 'post_3',
+    title: "So Sánh Tấm Ốp Nhựa Và Gỗ Công Nghiệp: Nên Chọn Loại Nào?",
+    slug: "so-sanh-nhua-va-go",
+    excerpt: "Phân tích ưu nhược điểm về giá thành, độ bền, khả năng chống nước của hai loại vật liệu phổ biến nhất hiện nay.",
+    content: "<p>Nội dung chi tiết...</p>",
+    image: "https://images.unsplash.com/photo-1594222079361-9e6b3eb1cb64?q=80&w=1200&auto=format&fit=crop",
+    category: "Tư Vấn",
+    date: "02 Tháng 5, 2024",
+    readTime: "6 phút đọc",
+    author: {
+      name: "Nguyễn Thu Hà",
+      avatar: "https://ui-avatars.com/api/?name=Thu+Ha&background=f472b6&color=fff",
+      role: "Content Writer"
+    },
+    tags: ["So sánh", "Vật liệu", "Tư vấn"]
+  },
+   {
+    id: 'post_4',
+    title: "Đại Nam Wall Vinh Dự Nhận Giải Thưởng Sao Vàng Đất Việt",
+    slug: "dai-nam-nhan-giai-thuong",
+    excerpt: "Cột mốc quan trọng khẳng định vị thế thương hiệu Việt trên thị trường vật liệu xây dựng nội địa và quốc tế.",
+    content: "<p>Nội dung chi tiết...</p>",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200&auto=format&fit=crop",
+    category: "Tin Công Ty",
+    date: "28 Tháng 4, 2024",
+    readTime: "3 phút đọc",
+    author: {
+      name: "Ban Biên Tập",
+      avatar: "https://ui-avatars.com/api/?name=BBT&background=0f172a&color=fff",
+      role: "Admin"
+    },
+    tags: ["Sự kiện", "Giải thưởng"]
+  }
 ];

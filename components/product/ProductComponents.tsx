@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calculator, Sparkles, Ruler, Star, ShoppingCart, Eye, Heart, Layers, Hash, Tag } from 'lucide-react';
+import { ArrowRight, Calculator, Sparkles, Ruler, Star, ShoppingCart, Eye, Heart, Layers, Hash, Tag, RotateCcw, X, Info, Check, Percent } from 'lucide-react';
 import { Product } from '../../types';
 import { Button } from '../common/UI';
 import { askProductQuestion } from '../../services/geminiService';
@@ -116,44 +116,200 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
   );
 };
 
-// --- CALCULATOR ---
-export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: number) => void }> = ({ product, onAdd }) => {
-  const [width, setWidth] = useState<number>(0);
-  const [height, setHeight] = useState<number>(0);
-  const [result, setResult] = useState<{ boxes: number, waste: number } | null>(null);
+// --- CALCULATOR (Professional Upgrade) ---
+export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: number) => void, className?: string }> = ({ product, onAdd, className = '' }) => {
+  const [width, setWidth] = useState<string>('');
+  const [height, setHeight] = useState<string>('');
+  const [wastePercent, setWastePercent] = useState<number>(10); // Default 10%
+  const [result, setResult] = useState<{ 
+      wallArea: number,
+      wasteArea: number,
+      totalArea: number,
+      boxes: number,
+      panelArea: number 
+  } | null>(null);
 
   const calculate = () => {
-    if (width <= 0 || height <= 0 || product.dimensions.area === 0) return;
-    const wallArea = width * height;
-    const panelArea = product.dimensions.area;
-    const withWaste = (wallArea / panelArea) * 1.1; 
-    const finalCount = Math.ceil(withWaste);
-    setResult({ boxes: finalCount, waste: parseFloat(((finalCount * panelArea - wallArea)).toFixed(2)) });
+    const w = parseFloat(width);
+    const h = parseFloat(height);
+
+    if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0 || !product.dimensions.area) return;
+
+    const wallArea = w * h;
+    const wasteArea = wallArea * (wastePercent / 100);
+    const totalAreaNeeded = wallArea + wasteArea;
+    const panelsNeeded = Math.ceil(totalAreaNeeded / product.dimensions.area);
+    
+    setResult({ 
+        wallArea: parseFloat(wallArea.toFixed(2)),
+        wasteArea: parseFloat(wasteArea.toFixed(2)),
+        totalArea: parseFloat(totalAreaNeeded.toFixed(2)),
+        boxes: panelsNeeded,
+        panelArea: product.dimensions.area
+    });
   };
 
+  useEffect(() => {
+    if (width && height) calculate();
+  }, [width, height, wastePercent]);
+
+  const reset = () => {
+    setWidth('');
+    setHeight('');
+    setResult(null);
+  }
+
+  const wasteOptions = [
+      { value: 5, label: '5%', desc: 'Tường phẳng, ít cắt' },
+      { value: 10, label: '10%', desc: 'Tiêu chuẩn' },
+      { value: 15, label: '15%', desc: 'Nhiều cửa/cột' }
+  ];
+
   return (
-    <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 mt-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Calculator size={18} className="text-brand-600"/>
-        <h3 className="font-bold text-slate-900 text-sm">Tính Số Lượng Tấm</h3>
-      </div>
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <input type="number" onChange={(e) => setWidth(parseFloat(e.target.value))} className="border-gray-200 rounded-lg text-sm" placeholder="Rộng (m)" />
-        <input type="number" onChange={(e) => setHeight(parseFloat(e.target.value))} className="border-gray-200 rounded-lg text-sm" placeholder="Cao (m)" />
-      </div>
-      <Button onClick={calculate} variant="secondary" fullWidth className="py-2 text-xs">Tính Toán</Button>
-      {result && (
-        <div className="mt-3 bg-white p-3 rounded-lg border border-green-200 flex justify-between items-center animate-fade-in">
-           <span className="text-sm font-bold text-slate-700">Cần: {result.boxes} tấm</span>
-           <button onClick={() => onAdd(result.boxes)} className="text-xs font-bold text-brand-600 hover:underline">Thêm vào giỏ</button>
+    <div className={`bg-white border border-brand-200 rounded-xl overflow-hidden ${className}`}>
+        {/* Header */}
+        <div className="bg-brand-50 p-4 border-b border-brand-100 flex justify-between items-center">
+             <div className="flex items-center gap-2 text-brand-800">
+                <div className="p-1.5 bg-white rounded-md shadow-sm text-brand-600">
+                    <Calculator size={16} />
+                </div>
+                <div>
+                    <span className="text-sm font-bold block">Dự Toán Chi Phí</span>
+                </div>
+             </div>
+             {result && (
+                <button onClick={reset} className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1 transition-colors">
+                    <RotateCcw size={12}/> Làm lại
+                </button>
+             )}
         </div>
-      )}
+
+        <div className="p-5 space-y-5">
+            {/* 1. Inputs */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Chiều Rộng (m)</label>
+                    <div className="relative">
+                        <input 
+                            type="number" 
+                            value={width}
+                            onChange={(e) => setWidth(e.target.value)} 
+                            className="w-full h-10 pl-3 pr-8 bg-slate-50 border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                            placeholder="VD: 4.5"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">m</span>
+                    </div>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Chiều Cao (m)</label>
+                    <div className="relative">
+                        <input 
+                            type="number" 
+                            value={height}
+                            onChange={(e) => setHeight(e.target.value)} 
+                            className="w-full h-10 pl-3 pr-8 bg-slate-50 border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                            placeholder="VD: 3.0"
+                        />
+                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">m</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Waste Factor Selection */}
+            <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Độ Hao Hụt (Cắt/Ghép)</label>
+                    <div className="group relative">
+                        <Info size={12} className="text-slate-400 cursor-help"/>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-800 text-white text-[10px] p-2 rounded hidden group-hover:block z-10">
+                            Hao hụt xảy ra khi cắt tấm ốp tại các góc tường, ổ điện hoặc cửa sổ.
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    {wasteOptions.map((opt) => (
+                        <button
+                            key={opt.value}
+                            onClick={() => setWastePercent(opt.value)}
+                            className={`flex-1 py-2 px-1 rounded-lg border text-xs transition-all relative overflow-hidden ${
+                                wastePercent === opt.value 
+                                ? 'bg-brand-600 border-brand-600 text-white shadow-md' 
+                                : 'bg-white border-gray-200 text-slate-600 hover:border-brand-300 hover:bg-brand-50'
+                            }`}
+                        >
+                            <span className="font-bold block text-sm">{opt.label}</span>
+                            <span className={`text-[9px] block ${wastePercent === opt.value ? 'text-brand-100' : 'text-slate-400'}`}>{opt.desc}</span>
+                            {wastePercent === opt.value && (
+                                <div className="absolute top-1 right-1">
+                                    <Check size={10} strokeWidth={4} />
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 3. Detailed Breakdown (Receipt Style) */}
+            {result && (
+                <div className="bg-slate-50 rounded-xl border border-dashed border-gray-300 p-4 space-y-3 animate-fade-in relative">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-50 border border-gray-300 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">
+                        Chi tiết tính toán
+                    </div>
+                    
+                    {/* Math Lines */}
+                    <div className="space-y-2 text-xs text-slate-600 pb-3 border-b border-gray-200">
+                        <div className="flex justify-between">
+                            <span>Diện tích tường ({width}x{height}m):</span>
+                            <span className="font-medium">{result.wallArea} m²</span>
+                        </div>
+                        <div className="flex justify-between text-slate-500">
+                            <span>Cộng hao hụt ({wastePercent}%):</span>
+                            <span>+ {result.wasteArea} m²</span>
+                        </div>
+                         <div className="flex justify-between font-semibold text-slate-900">
+                            <span>Tổng diện tích vật tư:</span>
+                            <span>= {result.totalArea} m²</span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs text-slate-500">
+                         <span>Diện tích 1 tấm:</span>
+                         <span className="font-mono">{result.panelArea} m²</span>
+                    </div>
+
+                    {/* Final Result Highlight */}
+                    <div className="pt-1 flex items-center justify-between">
+                        <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Số lượng cần:</p>
+                            <p className="text-[10px] text-slate-400">({result.totalArea} / {result.panelArea}) làm tròn lên</p>
+                        </div>
+                        <div className="text-right">
+                             <span className="text-2xl font-bold text-brand-600 block leading-none">{result.boxes} <span className="text-sm font-medium text-slate-500">Tấm</span></span>
+                        </div>
+                    </div>
+
+                    {/* Add Action */}
+                    <button 
+                        onClick={() => onAdd(result.boxes)}
+                        className="w-full mt-2 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-brand-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <ShoppingCart size={14}/> Thêm {result.boxes} tấm vào giỏ
+                    </button>
+                </div>
+            )}
+            
+            {!result && (
+                <div className="text-center py-6 text-slate-400 text-xs italic bg-slate-50/50 rounded-lg border border-dashed border-gray-200">
+                    Nhập kích thước để xem chi tiết vật tư
+                </div>
+            )}
+        </div>
     </div>
   );
 };
 
 // --- AI ASSISTANT ---
-export const AIAssistant: React.FC<{ product: Product }> = ({ product }) => {
+export const AIAssistant: React.FC<{ product: Product, className?: string }> = ({ product, className = '' }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
@@ -168,14 +324,14 @@ export const AIAssistant: React.FC<{ product: Product }> = ({ product }) => {
   };
 
   return (
-    <div className="mt-8 pt-8 border-t border-gray-100">
+    <div className={className}>
         <div className="flex items-center gap-2 mb-4">
             <Sparkles size={18} className="text-indigo-500" />
-            <h3 className="font-bold text-slate-900 text-sm">Tư Vấn AI</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Trợ Lý AI Tư Vấn</h3>
         </div>
         <div className="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100">
              <div className="min-h-[60px] text-sm text-slate-600 mb-3">
-                {answer || "Hỏi tôi bất cứ điều gì về sản phẩm này..."}
+                {answer || "Tôi có thể giải đáp thắc mắc về thông số, cách thi công hoặc độ bền của sản phẩm này."}
              </div>
              <form onSubmit={handleAsk} className="relative">
                 <input

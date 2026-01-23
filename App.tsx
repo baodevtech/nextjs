@@ -10,6 +10,12 @@ import { CartDrawer } from './components/common/UI';
 import { HomePage } from './pages/HomePage';
 import { ShopPage } from './pages/ShopPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { AboutPage } from './pages/AboutPage';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { ProjectDetailPage } from './pages/ProjectDetailPage';
+import { ContactPage } from './pages/ContactPage';
+import { BlogPage } from './pages/BlogPage';
+import { BlogDetailPage } from './pages/BlogDetailPage';
 
 // --- CONTEXT SETUP ---
 interface CartContextType {
@@ -85,12 +91,18 @@ const ScrollToTop = () => {
 };
 
 const FloatingContact = () => (
-  <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+  <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
     <a href="tel:0912345678" className="w-12 h-12 bg-red-500 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform animate-bounce">
       <Phone size={20} />
     </a>
-    <a href="#" className="w-12 h-12 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform">
-      <span className="font-bold text-xs">Zalo</span>
+    <a 
+      href="https://zalo.me/0912345678" 
+      target="_blank" 
+      rel="noreferrer"
+      className="w-12 h-12 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform"
+      title="Chat Zalo"
+    >
+      <span className="font-bold text-[10px] uppercase">Zalo</span>
     </a>
   </div>
 );
@@ -129,6 +141,12 @@ const MainLayout: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/product/:slug" element={<ProductDetailPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<div className="pt-32 text-center text-gray-500">Trang không tồn tại</div>} />
         </Routes>
       </main>
