@@ -1,20 +1,18 @@
-'use client';
-
-import React, { useState, useEffect, useRef } from 'react';
+// src/app/page.tsx
+import React from 'react';
 import Link from 'next/link';
 import { 
     ArrowRight, Star, CheckCircle2, MoveRight, 
     Layers, Box, ShieldCheck, PlayCircle, Quote, ArrowUpRight, 
-    ChevronLeft, ChevronRight, PenTool, Calendar, User, Sparkles
+    Calendar, User
 } from 'lucide-react';
 import { getProducts, getCategories } from '@/services/wpService';
-import { Product, Category } from '@/types';
 import { BLOG_POSTS } from '@/constants';
-import { ProductCard } from '@/components/product/ProductComponents';
 import { Button } from '@/components/common/UI';
-import { useCart } from '@/context/CartContext';
+import { ProductShowcase } from '@/components/home/ProductShowcase'; // Import component vừa tạo
 
-// --- SUB-COMPONENT: BRAND MARQUEE ---
+// --- CÁC SUB-COMPONENT TĨNH (Giữ nguyên, không cần thay đổi gì) ---
+
 const BrandMarquee = () => (
     <div className="py-8 bg-white border-b border-gray-100 overflow-hidden">
         <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Được tin dùng bởi các đối tác hàng đầu</p>
@@ -31,7 +29,6 @@ const BrandMarquee = () => (
     </div>
 );
 
-// --- SUB-COMPONENT: REVIEWS (Dark Luxury Theme) ---
 const REVIEWS = [
     {
         id: 1,
@@ -115,7 +112,6 @@ const ReviewSection = () => (
     </section>
 );
 
-// --- SUB-COMPONENT: BLOG PREVIEW (Magazine Style) ---
 const BlogPreviewSection = () => (
     <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,7 +130,7 @@ const BlogPreviewSection = () => (
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                {BLOG_POSTS.slice(0, 3).map((post, idx) => (
+                {BLOG_POSTS.slice(0, 3).map((post) => (
                     <Link key={post.id} href={`/blog/${post.slug}`} className="group cursor-pointer flex flex-col h-full">
                         <div className="relative overflow-hidden rounded-2xl mb-6 aspect-[4/3] shadow-sm">
                             <img 
@@ -177,25 +173,13 @@ const BlogPreviewSection = () => (
     </section>
 );
 
-export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [activeTab, setActiveTab] = useState('all');
-  const { addToCart } = useCart();
+// --- MAIN PAGE COMPONENT (Server Component) ---
 
-  useEffect(() => {
-    const loadData = async () => {
-       const prods = await getProducts();
-       setProducts(prods);
-       const cats = await getCategories();
-       setCategories(cats);
-    };
-    loadData();
-  }, []);
-
-  const displayedProducts = activeTab === 'all' 
-    ? products 
-    : products.filter(p => p.categories.includes(activeTab));
+export default async function HomePage() {
+  // Lấy dữ liệu trực tiếp trên server (API calls)
+  // Không cần useEffect hay useState ở đây nữa
+  const products = await getProducts();
+  const categories = await getCategories();
 
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
@@ -303,60 +287,8 @@ export default function HomePage() {
           </div>
       </section>
 
-      {/* 4. PRODUCT SHOWCASE */}
-      <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-100 pb-6">
-                  <div>
-                      <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-2">Sản Phẩm Tiêu Biểu</h2>
-                      <p className="text-slate-500 font-sans font-light">Những mẫu bán chạy nhất được KTS khuyên dùng.</p>
-                  </div>
-                  
-                  <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar mt-6 md:mt-0 w-full md:w-auto">
-                      <button 
-                        onClick={() => setActiveTab('all')}
-                        className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${activeTab === 'all' ? 'bg-slate-900 text-white shadow-lg' : 'bg-gray-50 text-slate-500 hover:bg-gray-100'}`}
-                      >
-                          Tất cả
-                      </button>
-                      {categories.slice(0, 3).map(cat => (
-                           <button 
-                            key={cat.id}
-                            onClick={() => setActiveTab(cat.slug)}
-                            className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${activeTab === cat.slug ? 'bg-slate-900 text-white shadow-lg' : 'bg-gray-50 text-slate-500 hover:bg-gray-100'}`}
-                           >
-                            {cat.name}
-                           </button>
-                      ))}
-                  </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 animate-fade-in min-h-[400px]">
-                  {displayedProducts.length > 0 ? (
-                      displayedProducts.slice(0, 8).map(product => (
-                        <ProductCard 
-                            key={product.id} 
-                            product={product} 
-                            onQuickAdd={() => addToCart(product)}
-                        />
-                      ))
-                  ) : (
-                      <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
-                          <Sparkles size={48} className="mb-4 opacity-20"/>
-                          <p>Đang cập nhật bộ sưu tập mới.</p>
-                      </div>
-                  )}
-              </div>
-              
-              <div className="mt-16 text-center">
-                  <Link href="/shop">
-                       <Button variant="outline" className="px-12 py-4 h-auto text-xs font-bold uppercase tracking-widest border border-slate-200 hover:border-slate-900 hover:bg-white text-slate-900 rounded-sm transition-all">
-                           Vào Cửa Hàng
-                       </Button>
-                  </Link>
-              </div>
-          </div>
-      </section>
+      {/* 4. PRODUCT SHOWCASE (Đã tách ra Client Component) */}
+      <ProductShowcase initialProducts={products} categories={categories} />
 
       {/* 5. REVIEWS */}
       <ReviewSection />
