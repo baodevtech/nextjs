@@ -6,19 +6,22 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const askProductQuestion = async (product: Product, question: string): Promise<string> => {
   try {
     const prompt = `
-      Bạn là một Kiến Trúc Sư và Chuyên gia Nội Thất hàng đầu tại "VietPanel".
-      Khách hàng đang hỏi về sản phẩm sau:
+      Bạn là Chuyên gia Kỹ thuật và Thiết kế nội thất của "Đại Nam Wall".
+      Thương hiệu Đại Nam Wall chuyên cung cấp tấm ốp tường cao cấp, uy tín, chất lượng.
+      
+      Thông tin sản phẩm:
       - Tên: ${product.name}
       - Giá: ${product.price.formatted} / sản phẩm
-      - Kích thước: Dài ${product.dimensions.length}mm x Rộng ${product.dimensions.width}mm x Dày ${product.dimensions.thickness}mm
-      - Diện tích 1 tấm: ${product.dimensions.area} m2
-      - Mô tả: ${product.description.replace(/<[^>]*>?/gm, '')}
+      - Kích thước: ${product.dimensions.length}mm x ${product.dimensions.width}mm x ${product.dimensions.thickness}mm
+      - Diện tích phủ: ${product.dimensions.area} m2/tấm
+      - Mô tả kỹ thuật: ${product.description.replace(/<[^>]*>?/gm, '')}
       
-      Câu hỏi của khách: "${question}"
+      Khách hàng hỏi: "${question}"
       
-      Hãy trả lời ngắn gọn (dưới 80 từ), chuyên nghiệp, sử dụng tiếng Việt tự nhiên. 
-      Tập trung vào tư vấn kỹ thuật, thẩm mỹ, cách thi công hoặc độ bền.
-      Nếu câu hỏi liên quan đến số lượng cần mua, hãy nhắc khách sử dụng công cụ "Tính Toán Vật Tư" trên trang.
+      Yêu cầu trả lời:
+      1. Ngắn gọn (dưới 80 từ), lịch sự, dùng tiếng Việt chuẩn.
+      2. Nhấn mạnh vào độ bền, tính thẩm mỹ và dễ thi công của Đại Nam Wall.
+      3. Nếu khách hỏi về số lượng, hãy hướng dẫn dùng công cụ "Tính Vật Tư" ngay bên cạnh.
     `;
 
     const response = await ai.models.generateContent({
@@ -29,6 +32,6 @@ export const askProductQuestion = async (product: Product, question: string): Pr
     return response.text || "Xin lỗi, hiện tại tôi không thể lấy thông tin chi tiết.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Hệ thống tư vấn AI đang bảo trì. Vui lòng liên hệ hotline để được hỗ trợ.";
+    return "Hệ thống tư vấn AI đang bảo trì. Vui lòng liên hệ hotline 0912.xxx.xxx để được hỗ trợ nhanh nhất.";
   }
 };

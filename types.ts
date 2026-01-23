@@ -21,6 +21,7 @@ export interface Product {
   databaseId: number;
   slug: string;
   name: string;
+  brand: string; // Added Brand field
   description: string; // HTML string
   shortDescription: string;
   image: WpImage;
@@ -41,5 +42,8 @@ export interface Category {
   name: string;
   slug: string;
   count: number;
-  image?: string;
+  image: string; // Thumbnail
+  headerImage?: string; // Large banner
+  description?: string; // Short intro
+  bottomContent?: string; // Long HTML content for SEO/Education
 }

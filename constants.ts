@@ -1,122 +1,144 @@
 import { Product, Category } from './types';
 
 export const CATEGORIES: Category[] = [
-  { id: 'cat_1', name: 'Tấm Ốp Lam Sóng', slug: 'lam-song', count: 12, image: 'https://picsum.photos/seed/fluted/400/500' },
-  { id: 'cat_2', name: 'Tấm Ốp Nano', slug: 'nano', count: 18, image: 'https://picsum.photos/seed/nano/400/500' },
-  { id: 'cat_3', name: 'PVC Vân Đá', slug: 'pvc-stone', count: 8, image: 'https://picsum.photos/seed/stone/400/500' },
-  { id: 'cat_4', name: 'Phào Chỉ & Nẹp', slug: 'accessories', count: 25, image: 'https://picsum.photos/seed/molding/400/500' },
+  { 
+    id: 'cat_1', 
+    name: 'Panel Cách Nhiệt PU', 
+    slug: 'panel-pu', 
+    count: 12, 
+    image: 'https://picsum.photos/seed/panelpu/600/600', // Placeholder
+    headerImage: 'https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=2070&auto=format&fit=crop',
+    description: 'Tấm panel a cách nhiệt (Sandwich Panel) là vật liệu xây dựng 3 lớp gồm 2 mặt tôn và lớp lõi xốp (PU, EPS, XPS...). Dùng làm vách, trần, mái nhà, có khả năng cách nhiệt, cách âm, chống cháy hiệu quả.',
+    bottomContent: `
+      <div class="space-y-6 text-slate-700">
+        <h2 class="text-2xl font-bold text-slate-900">Các loại tấm panel phổ biến năm 2026</h2>
+        <p>Tấm ốp panel (hay còn gọi là sandwich panel) <span class="bg-yellow-200 px-1">là vật liệu xây dựng nhẹ gồm hai lớp mặt ngoài (thường là tôn mạ kẽm sơn tĩnh điện) và lớp lõi cách nhiệt ở giữa.</span></p>
+        
+        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1000&auto=format&fit=crop" class="w-full rounded-xl my-4" alt="Thi công panel" />
+
+        <h3 class="text-xl font-bold text-slate-900">1. Các loại tấm panel phổ biến năm 2026</h3>
+        <p>Dựa trên vật liệu lõi, thị trường hiện nay có các dòng chính:</p>
+        <ul class="list-disc pl-5 space-y-2">
+           <li><strong>Panel EPS:</strong> Lõi xốp kích thích, giá thành rẻ nhất, trọng lượng siêu nhẹ.</li>
+           <li><strong>Panel PU/PIR:</strong> Khả năng cách nhiệt và chống cháy vượt trội. Panel PIR là dòng cao cấp được ưu tiên.</li>
+           <li><strong>Panel Rockwool/Glasswool:</strong> Lõi bông khoáng hoặc bông thủy tinh, có khả năng chống cháy tuyệt đối.</li>
+        </ul>
+
+        <h3 class="text-xl font-bold text-slate-900">2. Ưu điểm nổi bật</h3>
+        <ul class="list-disc pl-5 space-y-2">
+           <li><strong>Thi công siêu tốc:</strong> Lắp đặt theo hình thức lắp ghép, giúp rút ngắn 50% thời gian.</li>
+           <li><strong>Tiết kiệm điện năng:</strong> Khả năng giữ nhiệt tốt giúp giảm chi phí điều hòa lên đến 30-40%.</li>
+        </ul>
+      </div>
+    `
+  },
+  { 
+    id: 'cat_2', 
+    name: 'Tấm Ốp Lam Sóng', 
+    slug: 'lam-song', 
+    count: 18, 
+    image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=600&auto=format&fit=crop',
+    headerImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop',
+    description: 'Vẻ đẹp kiến trúc hiện đại với những đường vân sóng tinh tế. Giải pháp hoàn hảo cho vách tivi, trần nhà và không gian điểm nhấn.',
+    bottomContent: `<p>Nội dung chi tiết cho Lam sóng...</p>`
+  },
+  { 
+    id: 'cat_3', 
+    name: 'PVC Vân Đá', 
+    slug: 'pvc-stone', 
+    count: 8, 
+    image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=600&auto=format&fit=crop',
+    headerImage: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=2070&auto=format&fit=crop',
+    description: 'Sang trọng như đá tự nhiên, nhẹ hơn và tiết kiệm chi phí. Sự lựa chọn số 1 cho sảnh khách sạn, thang máy và vách tivi.',
+    bottomContent: `<p>Nội dung chi tiết cho PVC Vân Đá...</p>`
+  },
+  { 
+    id: 'cat_4', 
+    name: 'Phụ Kiện Thi Công', 
+    slug: 'accessories', 
+    count: 25, 
+    image: 'https://images.unsplash.com/photo-1615529182904-14819c35db37?q=80&w=600&auto=format&fit=crop',
+    headerImage: 'https://images.unsplash.com/photo-1594222079361-9e6b3eb1cb64?q=80&w=2070&auto=format&fit=crop',
+    description: 'Hệ thống phào chỉ, nẹp inox, keo dán chuyên dụng giúp hoàn thiện công trình.',
+    bottomContent: `<p>Nội dung chi tiết cho phụ kiện...</p>`
+  },
 ];
 
 export const PRODUCTS: Product[] = [
   {
     id: 'prod_1',
     databaseId: 101,
-    slug: 'tam-op-lam-song-3-song-thap-van-go',
-    name: 'Lam Sóng 3 Sóng Thấp - Vân Gỗ Sồi',
-    description: '<p><strong>Tấm ốp lam sóng 3 sóng thấp</strong> mang lại vẻ đẹp hiện đại, sang trọng cho không gian nội thất. Sản phẩm được sản xuất từ nhựa nguyên sinh cốt trắng, an toàn cho sức khỏe.</p><ul><li>Chống ẩm mốc, mối mọt tuyệt đối</li><li>Dễ dàng thi công lắp đặt</li><li>Bề mặt phủ film Nano chống trầy xước</li></ul>',
-    shortDescription: 'Lam sóng 3 sóng thấp, vân gỗ tự nhiên, cốt nhựa nguyên sinh.',
+    slug: 'tam-panel-eps-sao-chep-1',
+    name: 'Tấm Panel EPS (Sao chép)',
+    brand: 'Đại Nam Premium',
+    description: '',
+    shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/woodpanel1/600/600',
-      altText: 'Lam sóng 3 sóng thấp vân gỗ',
+      sourceUrl: 'https://picsum.photos/seed/eps1/600/600',
+      altText: 'Panel EPS',
     },
-    galleryImages: [
-      { sourceUrl: 'https://picsum.photos/seed/woodpanel2/600/600', altText: 'Chi tiết vân gỗ' },
-      { sourceUrl: 'https://picsum.photos/seed/woodpanel3/600/600', altText: 'Phối cảnh phòng khách' },
-    ],
-    price: { amount: 145000, formatted: '145.000₫' }, // Giá theo thanh
+    galleryImages: [],
+    price: { amount: 0, formatted: 'Liên hệ' },
     stockStatus: 'IN_STOCK',
-    sku: 'LS-3S-001',
-    categories: ['lam-song'],
-    dimensions: { length: 3000, width: 200, thickness: 9, area: 0.6 } // 0.6 m2 per panel
+    sku: 'EPS-001',
+    categories: ['panel-pu'],
+    dimensions: { length: 2000, width: 1000, thickness: 50, area: 2 }
   },
   {
     id: 'prod_2',
     databaseId: 102,
-    slug: 'tam-op-nano-phang-van-da-may',
-    name: 'Tấm Ốp Nano Phẳng - Vân Đá Mây',
-    description: '<p>Tấm ốp Nano dạng phẳng với họa tiết vân đá mây nhẹ nhàng, tinh tế. Giải pháp thay thế hoàn hảo cho đá tự nhiên với chi phí thấp hơn và trọng lượng nhẹ hơn.</p>',
-    shortDescription: 'Tấm ốp phẳng Nano, họa tiết vân đá mây sang trọng.',
+    slug: 'tam-panel-eps-sao-chep-2',
+    name: 'Tấm Panel PU Cách Nhiệt',
+    brand: 'Đại Nam Premium',
+    description: '',
+    shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/nanostone/600/600',
-      altText: 'Tấm ốp Nano vân đá',
+      sourceUrl: 'https://picsum.photos/seed/eps2/600/600',
+      altText: 'Panel PU',
     },
     galleryImages: [],
-    price: { amount: 120000, formatted: '120.000₫' },
+    price: { amount: 0, formatted: 'Liên hệ' },
     stockStatus: 'IN_STOCK',
-    sku: 'NANO-002',
-    categories: ['nano'],
-    dimensions: { length: 3000, width: 400, thickness: 9, area: 1.2 }
+    sku: 'PU-002',
+    categories: ['panel-pu'],
+    dimensions: { length: 2400, width: 1150, thickness: 75, area: 2.76 }
   },
   {
     id: 'prod_3',
     databaseId: 103,
-    slug: 'pvc-van-da-cam-thach',
-    name: 'Tấm PVC Vân Đá Cẩm Thạch Trắng',
-    description: '<p>Tấm nhựa PVC vân đá cẩm thạch tráng gương. Độ bóng cao, bề mặt cứng cáp, chịu lực tốt. Phù hợp ốp vách tivi, sảnh khách sạn, quầy lễ tân.</p>',
-    shortDescription: 'PVC vân đá tráng gương, độ bóng cao.',
+    slug: 'tam-op-lam-song-3-song-thap',
+    name: 'Lam Sóng 3 Sóng Thấp - Vân Gỗ',
+    brand: 'Kosmos',
+    description: '',
+    shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/marble/600/600',
-      altText: 'PVC vân đá cẩm thạch',
+      sourceUrl: 'https://picsum.photos/seed/woodpanel1/600/600',
+      altText: 'Lam sóng',
     },
     galleryImages: [],
-    price: { amount: 350000, formatted: '350.000₫' }, // Giá theo tấm
+    price: { amount: 145000, formatted: '145.000₫' },
     stockStatus: 'IN_STOCK',
-    sku: 'PVC-003',
-    categories: ['pvc-stone'],
-    dimensions: { length: 2440, width: 1220, thickness: 3, area: 2.97 } // Kích thước tiêu chuẩn 1.22x2.44m
+    sku: 'LS-001',
+    categories: ['lam-song'],
+    dimensions: { length: 3000, width: 200, thickness: 9, area: 0.6 }
   },
-  {
+    {
     id: 'prod_4',
     databaseId: 104,
-    slug: 'lam-song-4-song-cao-go-oc-cho',
-    name: 'Lam Sóng 4 Sóng Cao - Gỗ Óc Chó',
-    description: '<p>Lam sóng 4 sóng cao tạo hiệu ứng 3D mạnh mẽ. Màu gỗ óc chó trầm ấm, đẳng cấp, phù hợp với phong cách nội thất Luxury.</p>',
-    shortDescription: 'Lam 4 sóng cao, màu gỗ óc chó trầm ấm.',
+    slug: 'pvc-van-da',
+    name: 'PVC Vân Đá Cẩm Thạch',
+    brand: 'EuroMoulding',
+    description: '',
+    shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/walnut/600/600',
-      altText: 'Lam sóng 4 sóng cao',
+      sourceUrl: 'https://picsum.photos/seed/marble/600/600',
+      altText: 'PVC Stone',
     },
     galleryImages: [],
-    price: { amount: 165000, formatted: '165.000₫' },
+    price: { amount: 320000, formatted: '320.000₫' },
     stockStatus: 'IN_STOCK',
-    sku: 'LS-4S-004',
-    categories: ['lam-song'],
-    dimensions: { length: 3000, width: 160, thickness: 25, area: 0.48 }
+    sku: 'PVC-001',
+    categories: ['pvc-stone'],
+    dimensions: { length: 2440, width: 1220, thickness: 3, area: 2.97 }
   },
-  {
-    id: 'prod_5',
-    databaseId: 105,
-    slug: 'nep-v-inox-vang-guong',
-    name: 'Nẹp V Inox 304 - Vàng Gương',
-    description: '<p>Nẹp V Inox 304 mạ PVD màu vàng gương cao cấp. Dùng để bo góc cột, góc tường, bảo vệ mép tấm ốp và tạo điểm nhấn trang trí.</p>',
-    shortDescription: 'Nẹp V Inox 304 mạ vàng gương cao cấp.',
-    image: {
-      sourceUrl: 'https://picsum.photos/seed/goldtrim/600/600',
-      altText: 'Nẹp V Inox vàng',
-    },
-    galleryImages: [],
-    price: { amount: 85000, formatted: '85.000₫' },
-    stockStatus: 'IN_STOCK',
-    sku: 'NEP-V-005',
-    categories: ['accessories'],
-    dimensions: { length: 2440, width: 20, thickness: 1, area: 0 } // Area 0 for accessories
-  },
-  {
-    id: 'prod_6',
-    databaseId: 106,
-    slug: 'tam-op-da-nang-soi-than-tre',
-    name: 'Tấm Ốp Đa Năng Sợi Than Tre - Vân Kim Loại',
-    description: '<p>Dòng sản phẩm cao cấp nhất hiện nay. Cốt sợi than tre an toàn tuyệt đối, có khả năng uốn cong, soi rãnh gấp góc. Bề mặt vân kim loại xước hiện đại.</p>',
-    shortDescription: 'Cốt than tre uốn cong, vân kim loại xước.',
-    image: {
-      sourceUrl: 'https://picsum.photos/seed/bamboo/600/600',
-      altText: 'Tấm ốp than tre',
-    },
-    galleryImages: [],
-    price: { amount: 450000, formatted: '450.000₫' },
-    stockStatus: 'OUT_OF_STOCK',
-    sku: 'TT-006',
-    categories: ['nano'],
-    dimensions: { length: 2800, width: 1220, thickness: 8, area: 3.41 }
-  }
 ];

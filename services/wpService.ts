@@ -9,7 +9,6 @@ import { Product, Category } from '../types';
  */
 
 const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://demo.vietpanel.com/graphql';
-
 // 1. Query lấy danh sách sản phẩm
 // const GET_PRODUCTS_QUERY = `
 //   query GetProducts {
