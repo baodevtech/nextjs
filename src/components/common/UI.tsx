@@ -118,7 +118,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cart, o
               <p className="text-brand-600 text-lg">{total.toLocaleString('vi-VN')}₫</p>
             </div>
             <p className="text-xs text-gray-500 mb-4 text-center">Chưa bao gồm phí vận chuyển (nếu có)</p>
-            <Link to="/checkout" onClick={onClose}>
+            <Link href="/checkout" onClick={onClose}>
                 <Button fullWidth className="shadow-lg shadow-brand-500/30">
                   <span className="flex items-center gap-2">Xác Nhận & Báo Giá <ArrowRight size={16}/></span>
                 </Button>
