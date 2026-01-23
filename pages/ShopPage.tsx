@@ -6,8 +6,9 @@ import { ProductCard } from '../components/product/ProductComponents';
 import { useCart } from '../App';
 import { 
     Search, ChevronDown, Check, LayoutGrid, List, Filter, 
-    SlidersHorizontal, X, ArrowUpRight 
+    X, ShieldCheck, Truck, Palette, Info, HelpCircle 
 } from 'lucide-react';
+import { Button } from '../components/common/UI';
 
 // --- COMPONENTS ---
 
@@ -29,13 +30,14 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
     // Default Header if no category selected
     if (!category) {
         return (
-             <div className="mb-10 bg-gradient-to-r from-brand-50 to-white rounded-2xl p-8 md:p-12 border border-brand-100 relative overflow-hidden">
-                <Breadcrumb />
-                <div className="relative z-10 max-w-2xl">
+             <div className="mb-10 bg-gradient-to-br from-brand-50 via-white to-brand-50 rounded-2xl p-8 md:p-12 border border-brand-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+                {/* Left Content */}
+                <div className="relative z-10 max-w-2xl flex-1">
+                    <Breadcrumb />
                     <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
                         Tất Cả Sản Phẩm
                     </h1>
-                    <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                    <p className="text-slate-500 text-sm leading-relaxed mb-6 max-w-lg">
                         Khám phá bộ sưu tập vật liệu ốp tường cao cấp, được tuyển chọn kỹ lưỡng để mang lại vẻ đẹp bền vững cho ngôi nhà của bạn.
                     </p>
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-gray-200 shadow-sm text-xs font-bold text-slate-600">
@@ -43,15 +45,47 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                         {productCount} Sản phẩm sẵn sàng
                     </div>
                 </div>
+
+                {/* Right Content - Stats Grid */}
+                <div className="relative z-10 hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
+                    <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex flex-col items-center text-center gap-2 hover:transform hover:scale-105 transition-transform duration-300">
+                        <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600">
+                            <ShieldCheck size={18} />
+                        </div>
+                        <div>
+                            <p className="font-bold text-xs text-slate-900">Bảo hành 15 năm</p>
+                            <p className="text-[10px] text-slate-500">Chính hãng</p>
+                        </div>
+                    </div>
+                    <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex flex-col items-center text-center gap-2 hover:transform hover:scale-105 transition-transform duration-300">
+                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                            <Truck size={18} />
+                        </div>
+                        <div>
+                            <p className="font-bold text-xs text-slate-900">Giao hàng 24h</p>
+                            <p className="text-[10px] text-slate-500">Toàn quốc</p>
+                        </div>
+                    </div>
+                    <div className="col-span-2 bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex items-center gap-4 hover:transform hover:scale-105 transition-transform duration-300">
+                         <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                            <Palette size={18} />
+                        </div>
+                        <div className="text-left">
+                            <p className="font-bold text-xs text-slate-900">Đa dạng mẫu mã</p>
+                            <p className="text-[10px] text-slate-500">500+ Texture Vân đá, Vân gỗ</p>
+                        </div>
+                    </div>
+                </div>
+                
                 {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-100/50 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-100/40 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none"></div>
             </div>
         );
     }
 
     // Category Header with Image Background
     return (
-        <div className="mb-10 rounded-2xl overflow-hidden relative min-h-[250px] flex flex-col justify-center">
+        <div className="mb-10 rounded-2xl overflow-hidden relative min-h-[280px] flex flex-col md:flex-row items-center">
             {/* Background Image */}
             <div className="absolute inset-0">
                 <img 
@@ -59,33 +93,51 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                     alt={category.name} 
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent"></div>
             </div>
 
-            <div className="relative z-10 p-8 md:p-12 max-w-3xl">
-                {/* Custom Breadcrumb for dark mode */}
-                <nav className="flex text-xs text-slate-300 mb-4">
-                    <Link to="/" className="hover:text-white transition-colors">Trang chủ</Link>
-                    <span className="mx-2 text-slate-500">/</span>
-                    <Link to="/shop" className="hover:text-white transition-colors">Cửa hàng</Link>
-                    <span className="mx-2 text-slate-500">/</span>
-                    <span className="text-white font-semibold">{category.name}</span>
-                </nav>
+            <div className="relative z-10 p-8 md:p-12 w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div className="max-w-2xl">
+                     {/* Custom Breadcrumb for dark mode */}
+                    <nav className="flex text-xs text-slate-300 mb-4">
+                        <Link to="/" className="hover:text-white transition-colors">Trang chủ</Link>
+                        <span className="mx-2 text-slate-500">/</span>
+                        <Link to="/shop" className="hover:text-white transition-colors">Cửa hàng</Link>
+                        <span className="mx-2 text-slate-500">/</span>
+                        <span className="text-white font-semibold">{category.name}</span>
+                    </nav>
 
-                <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4 drop-shadow-sm">
-                    {category.name}
-                </h1>
-                <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-xl mb-6 font-light">
-                    {category.description}
-                </p>
-                
-                <div className="flex items-center gap-4">
-                    <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white text-xs font-bold rounded-lg border border-white/10">
-                        {productCount} Sản phẩm
-                    </span>
-                    <span className="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg shadow-lg">
-                        Bộ sưu tập 2026
-                    </span>
+                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4 drop-shadow-sm">
+                        {category.name}
+                    </h1>
+                    <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-xl mb-6 font-light">
+                        {category.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-4">
+                         <Button variant="primary" className="py-2 px-4 text-xs bg-white text-slate-900 hover:bg-slate-100 border-none">
+                            Xem {productCount} Sản phẩm
+                         </Button>
+                    </div>
+                </div>
+
+                {/* Right Side Stats for Category */}
+                <div className="hidden md:flex flex-col gap-3 min-w-[200px]">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white">
+                        <p className="text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">Xu hướng 2026</p>
+                        <p className="text-sm font-medium">Được KTS khuyên dùng cho căn hộ hiện đại</p>
+                    </div>
+                     <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white flex items-center justify-between gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-2xl font-bold">{productCount}</span>
+                           <span className="text-[10px] text-slate-300 uppercase">Mã màu</span>
+                        </div>
+                        <div className="h-8 w-px bg-white/20"></div>
+                        <div className="flex flex-col">
+                           <span className="text-2xl font-bold">15</span>
+                           <span className="text-[10px] text-slate-300 uppercase">Năm BH</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,13 +151,13 @@ const FilterSection: React.FC<{
 }> = ({ title, isOpen = true, children }) => {
     const [open, setOpen] = useState(isOpen);
     return (
-        <div className="border-b border-gray-100 py-5">
+        <div className="border-b border-gray-100 py-5 last:border-0">
             <button 
                 onClick={() => setOpen(!open)}
-                className="flex items-center justify-between w-full text-sm font-bold text-slate-900 mb-4"
+                className="flex items-center justify-between w-full text-sm font-bold text-slate-900 mb-4 hover:text-brand-600 transition-colors"
             >
                 {title}
-                <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+                <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
             </button>
             {open && <div className="animate-fade-in">{children}</div>}
         </div>
@@ -146,6 +198,12 @@ export const ShopPage: React.FC = () => {
 
   const currentCategory = categories.find(c => c.slug === filter);
 
+  // Helper to get count for sidebar
+  const getCategoryCount = (slug: string) => {
+      if (slug === 'all') return products.length;
+      return products.filter(p => p.categories.includes(slug)).length;
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -165,53 +223,46 @@ export const ShopPage: React.FC = () => {
                 <button onClick={() => setShowMobileFilters(false)}><X size={24}/></button>
              </div>
 
-             <div className="sticky top-24 space-y-2">
+             <div className="sticky top-24 space-y-1 bg-white rounded-xl border border-gray-100 p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)]">
                 {/* Categories */}
-                <FilterSection title="Danh Mục">
-                    <div className="space-y-2">
-                        <label className="flex items-center gap-3 cursor-pointer group">
+                <FilterSection title="Danh Mục Sản Phẩm">
+                    <div className="space-y-1">
+                        <label className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition-colors">
                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filter === 'all' ? 'bg-slate-900 border-slate-900' : 'border-gray-300'}`}>
                                  {filter === 'all' && <Check size={10} className="text-white" />}
                              </div>
                              <input type="radio" name="cat" className="hidden" checked={filter === 'all'} onChange={() => setFilter('all')} />
-                             <span className={`text-sm ${filter === 'all' ? 'font-bold text-slate-900' : 'text-slate-600'}`}>Tất cả</span>
+                             <span className={`text-sm flex-1 ${filter === 'all' ? 'font-bold text-slate-900' : 'text-slate-600'}`}>Tất cả</span>
+                             <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{products.length}</span>
                         </label>
-                        {categories.map(cat => (
-                            <label key={cat.id} className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-1 rounded -ml-1">
-                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filter === cat.slug ? 'bg-slate-900 border-slate-900' : 'border-gray-300'}`}>
-                                    {filter === cat.slug && <Check size={10} className="text-white" />}
-                                </div>
-                                <input type="radio" name="cat" className="hidden" checked={filter === cat.slug} onChange={() => setFilter(cat.slug)} />
-                                <span className={`text-sm flex-1 ${filter === cat.slug ? 'font-bold text-slate-900' : 'text-slate-600'}`}>{cat.name}</span>
-                            </label>
-                        ))}
+                        {categories.map(cat => {
+                            const count = getCategoryCount(cat.slug);
+                            return (
+                                <label key={cat.id} className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filter === cat.slug ? 'bg-slate-900 border-slate-900' : 'border-gray-300'}`}>
+                                        {filter === cat.slug && <Check size={10} className="text-white" />}
+                                    </div>
+                                    <input type="radio" name="cat" className="hidden" checked={filter === cat.slug} onChange={() => setFilter(cat.slug)} />
+                                    <span className={`text-sm flex-1 ${filter === cat.slug ? 'font-bold text-slate-900' : 'text-slate-600'}`}>{cat.name}</span>
+                                    <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{count}</span>
+                                </label>
+                            );
+                        })}
                     </div>
                 </FilterSection>
 
                 {/* Price Range (Mock) */}
                 <FilterSection title="Khoảng Giá">
-                    <div className="space-y-4 px-1">
+                    <div className="space-y-4 px-2 pt-2">
                         <div className="h-1 bg-gray-200 rounded-full relative">
                             <div className="absolute left-0 w-1/2 h-full bg-slate-900 rounded-full"></div>
-                            <div className="absolute left-1/2 w-4 h-4 bg-white border-2 border-slate-900 rounded-full -top-1.5 shadow cursor-pointer"></div>
+                            <div className="absolute left-1/2 w-4 h-4 bg-white border-2 border-slate-900 rounded-full -top-1.5 shadow cursor-pointer hover:scale-110 transition-transform"></div>
                         </div>
                         <div className="flex justify-between text-xs text-slate-500 font-medium">
                             <span>0đ</span>
-                            <span>500.000đ+</span>
+                            <span>500k+</span>
                         </div>
                     </div>
-                </FilterSection>
-
-                {/* Status (Mock) */}
-                <FilterSection title="Trạng Thái">
-                     <label className="flex items-center gap-3 cursor-pointer mb-2">
-                        <input type="checkbox" className="rounded border-gray-300 text-slate-900 focus:ring-slate-900" defaultChecked />
-                        <span className="text-sm text-slate-600">Còn hàng</span>
-                     </label>
-                     <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" className="rounded border-gray-300 text-slate-900 focus:ring-slate-900" />
-                        <span className="text-sm text-slate-600">Khuyến mãi</span>
-                     </label>
                 </FilterSection>
              </div>
           </aside>
@@ -222,23 +273,23 @@ export const ShopPage: React.FC = () => {
              <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
                 <button 
                     onClick={() => setShowMobileFilters(true)}
-                    className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-slate-700"
+                    className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-gray-50"
                 >
                     <Filter size={16} /> Bộ Lọc
                 </button>
 
                 <div className="hidden md:flex items-center gap-2">
                     {['Bán chạy nhất', 'Giá thấp - cao', 'Giá cao - thấp', 'Mới nhất'].map((sort, i) => (
-                        <button key={i} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${i === 0 ? 'bg-slate-900 text-white' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`}>
+                        <button key={i} className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${i === 0 ? 'bg-slate-900 text-white shadow-md' : 'bg-white border border-gray-200 text-slate-600 hover:border-brand-500 hover:text-brand-600'}`}>
                             {sort}
                         </button>
                     ))}
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
-                    <span className="text-xs text-slate-500 mr-2">Hiển thị:</span>
-                    <button className="p-2 bg-gray-100 text-slate-900 rounded-md hover:bg-gray-200"><LayoutGrid size={18}/></button>
-                    <button className="p-2 text-slate-400 hover:text-slate-600"><List size={18}/></button>
+                    <span className="text-xs text-slate-500 mr-2 hidden sm:inline">Hiển thị:</span>
+                    <button className="p-2 bg-slate-100 text-slate-900 rounded-md hover:bg-slate-200 transition-colors"><LayoutGrid size={18}/></button>
+                    <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-50 rounded-md transition-colors"><List size={18}/></button>
                 </div>
              </div>
 
@@ -281,19 +332,50 @@ export const ShopPage: React.FC = () => {
           </div>
         </div>
 
-        {/* SEO / Bottom Content Section */}
+        {/* Improved Bottom Content Section */}
         {currentCategory?.bottomContent && (
-            <div className="mt-24 border-t border-gray-100 pt-16">
-                <div className="flex flex-col md:flex-row gap-12">
-                    <div className="md:w-1/4">
-                        <h3 className="text-lg font-bold text-slate-900 mb-2">Thông tin danh mục</h3>
-                        <p className="text-sm text-slate-500">Tìm hiểu thêm về đặc tính kỹ thuật và ứng dụng.</p>
+            <div className="mt-20">
+                <div className="relative bg-slate-50 rounded-3xl p-8 md:p-12 border border-slate-200 overflow-hidden">
+                    {/* Decorative Background Icon */}
+                    <div className="absolute top-0 right-0 opacity-[0.03] transform translate-x-1/4 -translate-y-1/4 pointer-events-none">
+                        <Info size={400} />
                     </div>
-                    <div className="md:w-3/4">
-                        <div 
-                            className="prose prose-slate max-w-none prose-headings:font-serif prose-a:text-brand-600 prose-img:rounded-xl"
-                            dangerouslySetInnerHTML={{ __html: currentCategory.bottomContent }} 
-                        />
+
+                    <div className="flex flex-col lg:flex-row gap-12 relative z-10">
+                        {/* Sidebar for Bottom Content */}
+                        <div className="lg:w-1/4 flex-shrink-0 space-y-6">
+                            <div>
+                                <div className="inline-flex items-center gap-2 text-brand-600 font-bold mb-3 bg-brand-50 px-3 py-1 rounded-full text-xs uppercase tracking-wider">
+                                    <Info size={14} />
+                                    Thông tin hữu ích
+                                </div>
+                                <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">
+                                    Tìm hiểu về {currentCategory.name}
+                                </h3>
+                                <p className="text-sm text-slate-500 leading-relaxed">
+                                    Kiến thức chuyên sâu giúp bạn lựa chọn vật liệu phù hợp nhất cho công trình.
+                                </p>
+                            </div>
+                            
+                            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+                                <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                                    <HelpCircle size={16} className="text-brand-500"/>
+                                    Cần tư vấn thêm?
+                                </h4>
+                                <p className="text-xs text-slate-500 mb-4">Đội ngũ kỹ thuật Đại Nam luôn sẵn sàng hỗ trợ 24/7.</p>
+                                <button className="w-full py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors">
+                                    Chat Zalo Ngay
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Main Content Area */}
+                        <div className="lg:w-3/4">
+                            <div 
+                                className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-slate-900 prose-p:text-slate-600 prose-a:text-brand-600 prose-a:font-bold hover:prose-a:text-brand-700 prose-img:rounded-2xl prose-img:shadow-md"
+                                dangerouslySetInnerHTML={{ __html: currentCategory.bottomContent }} 
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
