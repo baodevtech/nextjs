@@ -78,7 +78,7 @@ export default function ContactPage() {
                         Liên Hệ Đại Nam Wall
                     </span>
                     
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-8 animate-slide-up leading-tight" style={{ animationDelay: '0.1s' }}>
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl  font-bold text-white mb-8 animate-slide-up leading-tight" style={{ animationDelay: '0.1s' }}>
                         Chúng tôi luôn lắng nghe <br/>
                         <span className="italic font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 decoration-clone">
                             câu chuyện của bạn.
@@ -95,7 +95,7 @@ export default function ContactPage() {
                 <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden grid grid-cols-1 lg:grid-cols-12">
                     
                     <div className="lg:col-span-5 bg-slate-50 p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-gray-100">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-8 font-serif">Thông Tin Liên Hệ</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-8 ">Thông Tin Liên Hệ</h2>
                         
                         <div className="space-y-8">
                             <div className="flex items-start gap-4 group">
@@ -172,7 +172,7 @@ export default function ContactPage() {
                             </div>
                         ) : (
                             <>
-                                <h2 className="text-2xl font-bold text-slate-900 mb-2 font-serif">Gửi Tin Nhắn</h2>
+                                <h2 className="text-2xl font-bold text-slate-900 mb-2 ">Gửi Tin Nhắn</h2>
                                 <p className="text-slate-500 text-sm mb-8">Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.</p>
                                 
                                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -301,7 +301,7 @@ export default function ContactPage() {
                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mx-auto mb-4 border border-gray-100">
                              <MessageSquare size={24} />
                          </div>
-                         <h2 className="text-3xl font-bold text-slate-900 mb-4 font-serif">Câu Hỏi Thường Gặp</h2>
+                         <h2 className="text-3xl font-bold text-slate-900 mb-4 ">Câu Hỏi Thường Gặp</h2>
                          <p className="text-slate-500">Giải đáp nhanh các thắc mắc phổ biến về sản phẩm và dịch vụ.</p>
                     </div>
 

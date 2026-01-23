@@ -33,7 +33,7 @@ export default function BlogPage() {
             <p className="text-brand-600 font-bold tracking-widest uppercase text-xs mb-3 animate-slide-up">
                 Đại Nam Wall Blog
             </p>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6 animate-slide-up leading-tight">
+            <h1 className="text-4xl md:text-5xl  font-bold text-slate-900 mb-6 animate-slide-up leading-tight">
                 Kiến Thức & Cảm Hứng <br className="hidden md:block" /> Không Gian Sống
             </h1>
             <p className="text-slate-500 text-lg max-w-2xl mx-auto font-light leading-relaxed animate-slide-up delay-100">
@@ -65,7 +65,7 @@ export default function BlogPage() {
                                 </div>
 
                                 <Link href={`/blog/${post.slug}`} className="group-hover:text-brand-700 transition-colors">
-                                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-4 leading-tight">
+                                    <h2 className="text-2xl md:text-3xl  font-bold text-slate-900 mb-4 leading-tight">
                                         {post.title}
                                     </h2>
                                 </Link>
@@ -106,7 +106,7 @@ export default function BlogPage() {
             <aside className="lg:w-1/3 space-y-10">
                 
                 <div className="bg-slate-50 p-6 rounded-2xl border border-gray-100">
-                    <h3 className="font-serif font-bold text-slate-900 text-lg mb-4">Tìm kiếm</h3>
+                    <h3 className=" font-bold text-slate-900 text-lg mb-4">Tìm kiếm</h3>
                     <div className="relative">
                         <input 
                             type="text" 
@@ -120,7 +120,7 @@ export default function BlogPage() {
                 </div>
 
                 <div>
-                    <h3 className="font-serif font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Danh mục</h3>
+                    <h3 className=" font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Danh mục</h3>
                     <ul className="space-y-2">
                         {categories.map(cat => (
                             <li key={cat}>
@@ -141,7 +141,7 @@ export default function BlogPage() {
                 </div>
 
                 <div>
-                    <h3 className="font-serif font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Bài viết nổi bật</h3>
+                    <h3 className=" font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Bài viết nổi bật</h3>
                     <div className="space-y-6">
                         {BLOG_POSTS.slice(0, 3).map(post => (
                             <Link key={post.id} href={`/blog/${post.slug}`} className="flex gap-4 group">
@@ -161,7 +161,7 @@ export default function BlogPage() {
                 </div>
 
                 <div>
-                    <h3 className="font-serif font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Tags phổ biến</h3>
+                    <h3 className=" font-bold text-slate-900 text-lg mb-6 border-b border-gray-100 pb-2">Tags phổ biến</h3>
                     <div className="flex flex-wrap gap-2">
                         {allTags.map(tag => (
                             <button key={tag} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-slate-600 hover:border-brand-500 hover:text-brand-600 transition-colors shadow-sm">
@@ -173,7 +173,7 @@ export default function BlogPage() {
 
                 <div className="bg-slate-900 rounded-2xl p-8 text-center text-white relative overflow-hidden">
                      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-3xl -mr-16 -mt-16 opacity-30"></div>
-                     <h3 className="font-serif font-bold text-xl mb-2 relative z-10">Đăng ký bản tin</h3>
+                     <h3 className=" font-bold text-xl mb-2 relative z-10">Đăng ký bản tin</h3>
                      <p className="text-slate-400 text-sm mb-6 relative z-10">Nhận thông báo về các xu hướng thiết kế mới nhất.</p>
                      <input type="email" placeholder="Email của bạn" className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-slate-500 mb-3 focus:outline-none focus:border-brand-500" />
                      <button className="w-full py-2.5 bg-brand-600 font-bold rounded-lg hover:bg-brand-500 transition-colors">Đăng Ký</button>

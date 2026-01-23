@@ -10,7 +10,7 @@ export default function NotFound() {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-50 rounded-full blur-3xl -ml-32 -mb-32"></div>
 
       <div className="max-w-2xl w-full text-center relative z-10">
-        <h1 className="text-[12rem] md:text-[16rem] font-serif font-bold text-slate-50 leading-none select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10">
+        <h1 className="text-[12rem] md:text-[16rem]  font-bold text-slate-50 leading-none select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10">
             404
         </h1>
         
@@ -18,7 +18,7 @@ export default function NotFound() {
             <span className="inline-block px-3 py-1 rounded-full bg-red-50 text-red-500 font-bold uppercase tracking-widest text-xs mb-4">
                 Lỗi Không Tìm Thấy Trang
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">
+            <h2 className="text-4xl md:text-5xl  font-bold text-slate-900 mb-4">
                 Bức Tường Này <br/> Chưa Được Xây Dựng
             </h2>
             <p className="text-slate-500 text-lg font-light leading-relaxed max-w-lg mx-auto">

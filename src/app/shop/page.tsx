@@ -33,7 +33,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
              <div className="mb-10 bg-gradient-to-br from-brand-50 via-white to-brand-50 rounded-2xl p-8 md:p-12 border border-brand-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="relative z-10 max-w-2xl flex-1">
                     <Breadcrumb />
-                    <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
+                    <h1 className="text-3xl md:text-4xl  font-bold text-slate-900 mb-3">
                         Tất Cả Sản Phẩm
                     </h1>
                     <p className="text-slate-500 text-sm leading-relaxed mb-6 max-w-lg">
@@ -101,7 +101,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                         <span className="text-white font-semibold">{category.name}</span>
                     </nav>
 
-                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4 drop-shadow-sm">
+                    <h1 className="text-3xl md:text-5xl  font-bold text-white mb-4 drop-shadow-sm">
                         {category.name}
                     </h1>
                     <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-xl mb-6 font-light">
@@ -447,7 +447,7 @@ function ShopContent() {
                                     <Info size={14} />
                                     Thông tin hữu ích
                                 </div>
-                                <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">
+                                <h3 className="text-2xl  font-bold text-slate-900 mb-2">
                                     Tìm hiểu về {currentCategory.name}
                                 </h3>
                                 <p className="text-sm text-slate-500 leading-relaxed">
@@ -469,7 +469,7 @@ function ShopContent() {
 
                         <div className="lg:w-3/4">
                             <div 
-                                className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-slate-900 prose-p:text-slate-600 prose-a:text-brand-600 prose-a:font-bold hover:prose-a:text-brand-700 prose-img:rounded-2xl prose-img:shadow-md"
+                                className="prose prose-slate max-w-none prose-headings: prose-headings:text-slate-900 prose-p:text-slate-600 prose-a:text-brand-600 prose-a:font-bold hover:prose-a:text-brand-700 prose-img:rounded-2xl prose-img:shadow-md"
                                 dangerouslySetInnerHTML={{ __html: currentCategory.bottomContent }} 
                             />
                         </div>

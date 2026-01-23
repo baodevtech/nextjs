@@ -194,19 +194,19 @@ export default function ProjectsPage() {
                 <div className="max-w-7xl mx-auto px-4 relative z-10">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center divide-x divide-white/10">
                         <div className="space-y-2">
-                            <p className="text-5xl md:text-6xl font-bold text-white font-serif">10<span className="text-amber-400">+</span></p>
+                            <p className="text-5xl md:text-6xl font-bold text-white ">10<span className="text-amber-400">+</span></p>
                             <p className="text-xs font-bold uppercase tracking-widest text-brand-200">Năm Kinh Nghiệm</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl md:text-6xl font-bold text-white font-serif">5k<span className="text-amber-400">+</span></p>
+                            <p className="text-5xl md:text-6xl font-bold text-white ">5k<span className="text-amber-400">+</span></p>
                             <p className="text-xs font-bold uppercase tracking-widest text-brand-200">Dự Án Hoàn Thành</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl md:text-6xl font-bold text-white font-serif">99<span className="text-amber-400">%</span></p>
+                            <p className="text-5xl md:text-6xl font-bold text-white ">99<span className="text-amber-400">%</span></p>
                             <p className="text-xs font-bold uppercase tracking-widest text-brand-200">Hài Lòng</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl md:text-6xl font-bold text-white font-serif">15</p>
+                            <p className="text-5xl md:text-6xl font-bold text-white ">15</p>
                             <p className="text-xs font-bold uppercase tracking-widest text-brand-200">Năm Bảo Hành</p>
                         </div>
                     </div>
@@ -218,7 +218,7 @@ export default function ProjectsPage() {
                     <p className="text-amber-500 text-sm font-bold uppercase tracking-widest mb-6 animate-pulse">Ready to start?</p>
                     <h2 className="text-5xl md:text-7xl font-bold text-white mb-10 tracking-tight leading-none">
                         Let's build your <br/>
-                        <span className="italic font-serif text-slate-500">dream space.</span>
+                        <span className="italic  text-slate-500">dream space.</span>
                     </h2>
                     <div className="flex flex-col sm:flex-row justify-center gap-6">
                         <Link href="/contact">

@@ -18,12 +18,12 @@ const BrandMarquee = () => (
         <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Được tin dùng bởi các đối tác hàng đầu</p>
         <div className="relative flex overflow-x-hidden group">
             <div className="animate-marquee whitespace-nowrap flex gap-16 md:gap-32 px-4 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-                <span className="text-xl md:text-2xl font-serif font-bold">VINHOMES</span>
-                <span className="text-xl md:text-2xl font-serif font-bold">SUN GROUP</span>
-                <span className="text-xl md:text-2xl font-serif font-bold">MASTERISE</span>
-                <span className="text-xl md:text-2xl font-serif font-bold">NOVALAND</span>
-                <span className="text-xl md:text-2xl font-serif font-bold">JW MARRIOTT</span>
-                <span className="text-xl md:text-2xl font-serif font-bold">ECOPARK</span>
+                <span className="text-xl md:text-2xl  font-bold">VINHOMES</span>
+                <span className="text-xl md:text-2xl  font-bold">SUN GROUP</span>
+                <span className="text-xl md:text-2xl  font-bold">MASTERISE</span>
+                <span className="text-xl md:text-2xl  font-bold">NOVALAND</span>
+                <span className="text-xl md:text-2xl  font-bold">JW MARRIOTT</span>
+                <span className="text-xl md:text-2xl  font-bold">ECOPARK</span>
             </div>
         </div>
     </div>
@@ -71,7 +71,7 @@ const ReviewSection = () => (
                         <Star size={20} fill="currentColor" />
                         <span className="text-xs font-bold uppercase tracking-[0.2em] font-sans">Khách hàng nói gì</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-white leading-tight">
+                    <h2 className="text-4xl md:text-5xl  font-bold text-white leading-tight">
                         Niềm tin được khẳng định <br/> qua chất lượng công trình.
                     </h2>
                 </div>
@@ -94,11 +94,11 @@ const ReviewSection = () => (
                         </p>
 
                         <div className="flex items-center gap-4 border-t border-white/10 pt-6">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-600 to-slate-800 flex items-center justify-center text-white font-serif font-bold border border-white/20">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-600 to-slate-800 flex items-center justify-center text-white  font-bold border border-white/20">
                                 {review.avatar}
                             </div>
                             <div>
-                                <h4 className="font-serif font-bold text-white">{review.name}</h4>
+                                <h4 className=" font-bold text-white">{review.name}</h4>
                                 <p className="text-xs text-slate-400 font-sans uppercase tracking-wide">{review.role}</p>
                             </div>
                         </div>
@@ -120,7 +120,7 @@ const BlogPreviewSection = () => (
                     <span className="text-brand-600 font-bold tracking-[0.2em] uppercase text-xs mb-3 block font-sans">
                         News & Inspiration
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-serif font-bold text-slate-900">
+                    <h2 className="text-3xl md:text-5xl  font-bold text-slate-900">
                         Góc Cảm Hứng
                     </h2>
                 </div>
@@ -152,7 +152,7 @@ const BlogPreviewSection = () => (
                                 <span className="flex items-center gap-1"><User size={12}/> {post.author.name}</span>
                             </div>
                             
-                            <h3 className="text-xl font-serif font-bold text-slate-900 leading-snug mb-3 group-hover:text-brand-600 transition-colors line-clamp-2">
+                            <h3 className="text-xl  font-bold text-slate-900 leading-snug mb-3 group-hover:text-brand-600 transition-colors line-clamp-2">
                                 {post.title}
                             </h3>
                             
@@ -196,7 +196,7 @@ export default async function HomePage() {
              
              <div className="absolute top-8 left-8 z-10">
                  <div className="w-16 h-16 border border-white/20 rounded-full flex items-center justify-center animate-spin-slow hover:border-white transition-colors cursor-pointer">
-                    <span className="font-serif font-bold text-2xl text-white">N</span>
+                    <span className=" font-bold text-2xl text-white">N</span>
                  </div>
              </div>
          </div>
@@ -210,7 +210,7 @@ export default async function HomePage() {
                      <span className="text-slate-500 font-bold tracking-[0.2em] uppercase text-xs font-sans">Est. 2014</span>
                  </div>
 
-                 <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 leading-[1.05] mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                 <h1 className="text-5xl md:text-7xl  font-bold text-slate-900 leading-[1.05] mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                      Đánh Thức <br/>
                      <span className="italic text-brand-600 relative inline-block">
                         Vẻ Đẹp Tường.
@@ -243,7 +243,7 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-16">
                   <span className="text-brand-600 font-bold tracking-[0.2em] uppercase text-xs mb-3 block font-sans">Our Collections</span>
-                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">Danh Mục Sản Phẩm</h2>
+                  <h2 className="text-4xl md:text-5xl  font-bold text-slate-900">Danh Mục Sản Phẩm</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[350px]">
@@ -264,7 +264,7 @@ export default async function HomePage() {
                               <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity delay-100">
                                   {cat.count} Design Code
                               </p>
-                              <h3 className={`font-serif font-bold text-white mb-4 leading-tight ${index === 0 ? 'text-4xl md:text-5xl' : 'text-2xl'}`}>
+                              <h3 className={` font-bold text-white mb-4 leading-tight ${index === 0 ? 'text-4xl md:text-5xl' : 'text-2xl'}`}>
                                   {cat.name}
                               </h3>
                               <div className="flex items-center gap-3 text-white text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity delay-200">
@@ -280,7 +280,7 @@ export default async function HomePage() {
                           <div className="w-20 h-20 rounded-full border border-white/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-white group-hover:text-slate-900 transition-all text-white">
                               <ArrowUpRight size={32} strokeWidth={1} />
                           </div>
-                          <p className="text-white font-serif font-bold text-2xl">Xem Tất Cả</p>
+                          <p className="text-white  font-bold text-2xl">Xem Tất Cả</p>
                       </div>
                   </Link>
               </div>
@@ -301,28 +301,28 @@ export default async function HomePage() {
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-brand-600 mb-4 mx-auto md:mx-0 shadow-sm border border-gray-100 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300">
                           <CheckCircle2 size={32}/>
                       </div>
-                      <h3 className="text-xl font-serif font-bold text-slate-900">Chất lượng Nhật Bản</h3>
+                      <h3 className="text-xl  font-bold text-slate-900">Chất lượng Nhật Bản</h3>
                       <p className="text-slate-500 text-sm leading-relaxed font-sans">Cốt nhựa nguyên sinh, an toàn tuyệt đối cho sức khỏe.</p>
                   </div>
                   <div className="space-y-4 group">
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-500 mb-4 mx-auto md:mx-0 shadow-sm border border-gray-100 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
                           <Box size={32}/>
                       </div>
-                      <h3 className="text-xl font-serif font-bold text-slate-900">Thi công siêu tốc</h3>
+                      <h3 className="text-xl  font-bold text-slate-900">Thi công siêu tốc</h3>
                       <p className="text-slate-500 text-sm leading-relaxed font-sans">Hệ thống hèm khóa thông minh giúp rút ngắn 50% thời gian.</p>
                   </div>
                   <div className="space-y-4 group">
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-purple-600 mb-4 mx-auto md:mx-0 shadow-sm border border-gray-100 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
                           <Layers size={32}/>
                       </div>
-                      <h3 className="text-xl font-serif font-bold text-slate-900">Mẫu mã đa dạng</h3>
+                      <h3 className="text-xl  font-bold text-slate-900">Mẫu mã đa dạng</h3>
                       <p className="text-slate-500 text-sm leading-relaxed font-sans">Hơn 500+ mã màu vân gỗ, vân đá, vân vải cập nhật theo xu hướng.</p>
                   </div>
                   <div className="space-y-4 group">
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-green-600 mb-4 mx-auto md:mx-0 shadow-sm border border-gray-100 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
                           <ShieldCheck size={32}/>
                       </div>
-                      <h3 className="text-xl font-serif font-bold text-slate-900">Bảo hành 15 năm</h3>
+                      <h3 className="text-xl  font-bold text-slate-900">Bảo hành 15 năm</h3>
                       <p className="text-slate-500 text-sm leading-relaxed font-sans">Cam kết độ bền màu và kết cấu. Bảo hành điện tử chính hãng.</p>
                   </div>
               </div>
@@ -339,7 +339,7 @@ export default async function HomePage() {
                <span className="text-amber-500 font-bold tracking-[0.3em] uppercase text-xs mb-6 block animate-pulse">
                    Ready to transform?
                </span>
-               <h2 className="text-4xl md:text-6xl font-serif font-bold text-white mb-8 tracking-tight leading-tight">
+               <h2 className="text-4xl md:text-6xl  font-bold text-white mb-8 tracking-tight leading-tight">
                    Nâng Tầm Không Gian Sống <br/> Của Bạn Ngay Hôm Nay.
                </h2>
                <div className="flex flex-col sm:flex-row justify-center gap-6">

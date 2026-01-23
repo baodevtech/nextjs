@@ -79,11 +79,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
             <div className="space-y-8">
                 <div>
-                    <h2 className="font-serif font-bold text-2xl text-slate-900 mb-6 flex items-center gap-3">
+                    <h2 className=" font-bold text-2xl text-slate-900 mb-6 flex items-center gap-3">
                          Mô Tả Chi Tiết
                          <div className="h-px bg-gray-200 flex-1"></div>
                     </h2>
-                    <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-slate-900 prose-img:rounded-xl">
+                    <div className="prose prose-slate max-w-none prose-headings: prose-headings:text-slate-900 prose-img:rounded-xl">
                             <div dangerouslySetInnerHTML={{ __html: product.description }} />
                             {!product.description && (
                                 <p className="text-slate-500 italic">
@@ -94,7 +94,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 </div>
 
                 <div className="bg-slate-50 rounded-2xl p-6 md:p-8 border border-gray-100">
-                     <h2 className="font-serif font-bold text-xl text-slate-900 mb-6">Thông Số Kỹ Thuật</h2>
+                     <h2 className=" font-bold text-xl text-slate-900 mb-6">Thông Số Kỹ Thuật</h2>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
                         <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
                             <span className="text-slate-500">Mã sản phẩm</span>
@@ -147,7 +147,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                         )}
                         <span className="text-[10px] font-mono font-medium text-slate-400">SKU: {product.sku}</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-3 leading-snug">
+                    <h1 className="text-2xl md:text-3xl  font-bold text-slate-900 mb-3 leading-snug">
                         {product.name}
                     </h1>
                     <div className="flex items-center gap-4 text-sm pb-4 border-b border-gray-100">

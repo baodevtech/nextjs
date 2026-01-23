@@ -9,7 +9,7 @@ export const Footer: React.FC = () => (
     <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 bg-brand-600 rounded flex items-center justify-center text-white font-serif font-bold italic">N</div>
+            <div className="w-8 h-8 bg-brand-600 rounded flex items-center justify-center text-white  font-bold italic">N</div>
             <span className="text-xl font-bold text-white tracking-tight">ĐẠI NAM WALL</span>
         </div>
         <p className="text-sm leading-relaxed text-slate-400">

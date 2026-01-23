@@ -67,7 +67,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Tìm kiếm sản phẩm, mã màu, hoặc bài viết..." 
-                className="w-full pl-12 pr-12 py-4 text-2xl font-serif font-bold bg-transparent border-none focus:ring-0 placeholder:text-slate-300 text-slate-900 outline-none"
+                className="w-full pl-12 pr-12 py-4 text-2xl  font-bold bg-transparent border-none focus:ring-0 placeholder:text-slate-300 text-slate-900 outline-none"
              />
              <button 
                 onClick={onClose}

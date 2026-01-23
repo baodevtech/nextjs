@@ -226,7 +226,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         <span className="text-amber-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-4 block animate-slide-up">
                             {project.subtitle}
                         </span>
-                        <h1 className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold text-white mb-10 tracking-tight leading-none animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        <h1 className="text-5xl md:text-7xl lg:text-9xl  font-bold text-white mb-10 tracking-tight leading-none animate-slide-up" style={{ animationDelay: '0.1s' }}>
                             {project.title}
                         </h1>
                         <div className="flex flex-wrap gap-x-12 gap-y-6 border-t border-white/10 pt-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -259,7 +259,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         
                         <div className="lg:col-span-4 space-y-12">
                             <div>
-                                <h2 className="text-4xl font-serif font-bold text-white mb-8 leading-tight">
+                                <h2 className="text-4xl  font-bold text-white mb-8 leading-tight">
                                     Câu chuyện <br/>
                                     <span className="text-amber-500 italic">Thiết kế.</span>
                                 </h2>
@@ -310,7 +310,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
                             <div className="pt-8 px-4 md:px-12">
                                 <Quote className="text-amber-500 mb-6 opacity-80" size={40}/>
-                                <p className="text-2xl italic text-slate-200 font-serif leading-relaxed opacity-90">
+                                <p className="text-2xl italic text-slate-200  leading-relaxed opacity-90">
                                     "Đại Nam Wall đã làm việc cực kỳ chuyên nghiệp. Chất lượng hoàn thiện và sự tỉ mỉ trong từng đường nét vượt xa mong đợi của tôi."
                                 </p>
                                 <div className="flex items-center gap-4 mt-8">
@@ -327,7 +327,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                  <div className="max-w-[1920px] mx-auto px-4">
                     <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto">
                         <div className="flex items-end gap-4">
-                            <h2 className="text-3xl font-serif font-bold text-white">Project Gallery</h2>
+                            <h2 className="text-3xl  font-bold text-white">Project Gallery</h2>
                             <span className="text-sm font-mono text-amber-500 mb-1">{project.gallery.length} Images</span>
                         </div>
                         <div className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -377,7 +377,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         <p className="text-amber-500 font-bold uppercase tracking-widest text-xs mb-6 flex items-center gap-3">
                             <span className="w-8 h-px bg-amber-500"></span> Next Project
                         </p>
-                        <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 group-hover:text-amber-50 transition-colors font-serif">
+                        <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 group-hover:text-amber-50 transition-colors ">
                             TIẾP THEO
                         </h2>
                         <div className="inline-flex items-center gap-4 text-white font-bold text-sm uppercase tracking-widest group-hover:gap-8 transition-all duration-300">

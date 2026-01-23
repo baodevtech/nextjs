@@ -66,7 +66,7 @@ export default function BlogDetailPage({ params }: { params: { slug: string } })
                     <span className="text-brand-600">{post.category}</span>
                  </nav>
 
-                 <h1 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 mb-6 leading-tight max-w-4xl">
+                 <h1 className="text-3xl md:text-5xl  font-bold text-slate-900 mb-6 leading-tight max-w-4xl">
                     {post.title}
                  </h1>
                  
@@ -98,7 +98,7 @@ export default function BlogDetailPage({ params }: { params: { slug: string } })
 
                     <article 
                         className="prose prose-lg prose-slate max-w-none 
-                        prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-10 prose-headings:mb-4
+                        prose-headings: prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-10 prose-headings:mb-4
                         prose-p:text-slate-600 prose-p:leading-8 prose-p:mb-6
                         prose-a:text-brand-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
                         prose-img:rounded-xl prose-img:shadow-md prose-img:border prose-img:border-gray-100 prose-img:my-8
@@ -127,7 +127,7 @@ export default function BlogDetailPage({ params }: { params: { slug: string } })
                     </div>
 
                     <div className="mt-16">
-                        <h3 className="text-2xl font-serif font-bold text-slate-900 mb-8 border-l-4 border-brand-500 pl-4">Bài viết liên quan</h3>
+                        <h3 className="text-2xl  font-bold text-slate-900 mb-8 border-l-4 border-brand-500 pl-4">Bài viết liên quan</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {relatedPosts.map(p => (
                                 <Link key={p.id} href={`/blog/${p.slug}`} className="group flex gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-brand-200 transition-all">
@@ -155,7 +155,7 @@ export default function BlogDetailPage({ params }: { params: { slug: string } })
                     </div>
 
                     <div className="sticky top-28 bg-slate-50 p-6 rounded-2xl border border-gray-200">
-                        <h4 className="font-serif font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <h4 className=" font-bold text-slate-900 mb-4 flex items-center gap-2">
                             Mục lục
                         </h4>
                         <nav className="space-y-1">
