@@ -13,6 +13,8 @@ import { ProductCard } from '@/components/product/ProductComponents';
 import { Button } from '@/components/common/UI';
 import { useCart } from '@/context/CartContext';
 import { LuxuryHotspotV2 } from './LuxuryHotspotV2';
+import { CategoryShowcase } from './CategoryShowcase';
+
 
 // --- HERO DATA ---
 const HERO_SLIDES = [
@@ -198,7 +200,7 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
                              {slide.description}
                          </p>
                          <div className="flex items-center gap-6">
-                            <Link href="/shop">
+                           <Link href="/shop">
                                 <Button className="h-14 px-10 !bg-amber-500 !text-slate-900 font-bold uppercase tracking-widest hover:!bg-white hover:!text-amber-500 transition-all duration-300 border-none">
                                     Khám Phá Ngay
                                 </Button>
@@ -258,43 +260,8 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
          </div>
       </section>
 
-      {/* 2. CATEGORY STRIP */}
-      <section className="py-20 bg-white border-b border-slate-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-end mb-10">
-                  <h2 className="text-2xl font-bold text-slate-900 font-serif">Danh Mục Sản Phẩm</h2>
-                  {/* ... pagination dots ... */}
-              </div>
-
-              <div className="flex gap-6 overflow-x-auto pb-8 snap-x no-scrollbar">
-                  {categories.map((cat, idx) => (
-                      <Link 
-                        key={cat.id} 
-                        href={`/shop?cat=${cat.slug}`}
-                        className="group flex-shrink-0 w-72 snap-start relative rounded-2xl overflow-hidden aspect-[3/4] cursor-pointer"
-                      >
-                          {/* Category Image */}
-                          <Image 
-                            src={cat.image} 
-                            alt={cat.name} 
-                            fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, 300px"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
-                          
-                          <div className="absolute bottom-0 left-0 w-full p-6 text-white translate-y-2 group-hover:translate-y-0 transition-transform">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1 block">Collection 0{idx+1}</span>
-                              <h3 className="text-2xl font-serif font-bold mb-2">{cat.name}</h3>
-                              <div className="flex items-center gap-2 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity delay-100">
-                                  Xem {cat.count} mẫu <ArrowRight size={14} />
-                              </div>
-                          </div>
-                      </Link>
-                  ))}
-              </div>
-          </div>
-      </section>
+      {/* 2. CATEGORY RAIL (Gọn gàng - Hiển thị được hàng chục mục) */}
+      <CategoryShowcase categories={categories} />
 
       {/* 3. TRENDING PRODUCTS */}
       <section className="py-24 bg-slate-50">
