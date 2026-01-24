@@ -56,18 +56,8 @@ export const Header: React.FC = () => {
               </button>
               
               <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 relative flex items-center justify-center">
-                   <div className="absolute inset-0 bg-brand-600 rounded-lg transform rotate-3 group-hover:rotate-6 transition-transform"></div>
-                   <span className="relative text-white font-black text-2xl  italic">N</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xl md:text-2xl font-bold text-brand-900 tracking-tight leading-none">
-                    ĐẠI NAM <span className="text-brand-500">WALL</span>
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold hidden sm:block">
-                    Vững bền cùng năm tháng
-                  </span>
-                </div>
+                <img src="https://tamnhuagiada.com/wp-content/uploads/2024/11/logo-1374-hinh.png" alt="Logo Đại Nam Wall" className="w-32 h-22 md:w-30 md:h-20"/>
+              
               </Link>
             </div>
 
