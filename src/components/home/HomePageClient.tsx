@@ -1,12 +1,15 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // IMPORT QUAN TRỌNG
 import { 
-    ArrowRight, MoveRight, Layers, Box, PlayCircle, 
-    ChevronLeft, ChevronRight, Gem, Spline, Maximize2, MousePointer2
+    ArrowRight, Star, Check, MoveRight, 
+    Layers, Box, ShieldCheck, PlayCircle, Zap, ArrowUpRight, 
+    Maximize2, MousePointer2, Plus, ChevronLeft, ChevronRight, Minus, ShoppingBag,
+    Gem, Spline, Circle, Sparkles, Flame, Trophy, TrendingUp, Droplets, Leaf
 } from 'lucide-react';
+import { getProducts, getCategories } from '@/services/wpService';
 import { Product, Category } from '@/types';
 import { BLOG_POSTS } from '@/constants';
 import { ProductCard } from '@/components/product/ProductComponents';
@@ -58,47 +61,66 @@ const HERO_SLIDES = [
   }
 ];
 
-// --- COMPONENTS CON ---
-const ShopTheLookPin: React.FC<{ x: string, y: string, label: string }> = ({ x, y, label }) => (
+// --- COMPONENTS ---
+const ShopTheLookPin: React.FC<{ x: string, y: string, label: string, onClick?: () => void, isActive?: boolean }> = ({ x, y, label, onClick, isActive }) => (
     <div 
         className="absolute w-8 h-8 -ml-4 -mt-4 flex items-center justify-center cursor-pointer group/pin z-20"
         style={{ left: x, top: y }}
+        onClick={onClick}
     >
-        <div className="absolute inset-0 bg-white/40 rounded-full animate-ping"></div>
-        <div className="relative w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(0,0,0,0.2)] border-2 border-white ring-1 ring-black/10"></div>
-        <div className="absolute left-1/2 bottom-full mb-3 -translate-x-1/2 opacity-0 group-hover/pin:opacity-100 transition-all transform translate-y-2 group-hover/pin:translate-y-0 duration-300 pointer-events-none">
-            <div className="bg-white text-slate-900 text-[10px] font-bold uppercase tracking-widest py-2 px-3 rounded shadow-xl whitespace-nowrap">
+        <div className={`absolute inset-0 rounded-full animate-ping ${isActive ? 'bg-brand-500/40' : 'bg-white/40'}`}></div>
+        <div className={`relative w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.2)] border-2 ring-1 transition-all duration-300 ${isActive ? 'bg-brand-500 border-white ring-brand-200 scale-125' : 'bg-white border-white ring-black/10'}`}></div>
+        
+        <div className={`absolute left-1/2 bottom-full mb-3 -translate-x-1/2 transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none group-hover/pin:opacity-100 group-hover/pin:translate-y-0'}`}>
+            <div className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold uppercase tracking-widest py-2 px-3 rounded-lg shadow-xl whitespace-nowrap border border-white/50">
                 {label}
             </div>
-            <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white mx-auto"></div>
+            <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white/90 mx-auto"></div>
         </div>
     </div>
 );
 
-// --- MAIN CLIENT COMPONENT ---
-interface HomePageClientProps {
-    initialProducts: Product[];
-    initialCategories: Category[];
-}
 
-export default function HomePageClient({ initialProducts, initialCategories }: HomePageClientProps) {
-  // Sử dụng props truyền vào làm initial state hoặc dùng trực tiếp
-  const [products] = useState<Product[]>(initialProducts);
-  const [categories] = useState<Category[]>(initialCategories);
-  
+export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hotspotsVisible, setHotspotsVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<'bestseller' | 'new' | 'premium'>('bestseller');
+  const [activeShopLook, setActiveShopLook] = useState(0);
   const { addToCart } = useCart();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const parallaxRef = useRef<HTMLDivElement>(null);
 
-  // Không cần useEffect fetch data nữa vì đã có data từ props
+  useEffect(() => {
+    const loadData = async () => {
+       const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
+       setProducts(prods);
+       setCategories(cats);
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+        if (parallaxRef.current) {
+            const scrolled = window.scrollY;
+            if (scrolled < window.innerHeight * 1.5) {
+                parallaxRef.current.style.transform = `translateY(${scrolled * 0.4}px)`;
+            }
+        }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     setHotspotsVisible(false);
     const hotspotTimer = setTimeout(() => {
         setHotspotsVisible(true);
-    }, 2000);
+    }, 1500); 
 
     resetTimer();
 
@@ -139,47 +161,46 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
   const bestSellers = products.slice(0, 6);
   const nextSlideIndex = (currentSlide + 1) % HERO_SLIDES.length;
 
+  const displayedProducts = React.useMemo(() => {
+      let filtered = [];
+      if (activeTab === 'new') filtered = [...products].reverse();
+      else if (activeTab === 'premium') filtered = products.filter(p => p.price.amount > 200000);
+      else filtered = products; 
+      
+      return filtered;
+  }, [products, activeTab]);
+
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
       {/* 1. CINEMATIC LUXURY HERO */}
       <section className="relative h-screen w-full overflow-hidden bg-slate-900 group/hero">
-         {HERO_SLIDES.map((slide, idx) => (
-            <div 
-                key={slide.id}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            >
-                {/* THAY THẾ IMG BẰNG NEXT/IMAGE
-                   - fill: Để ảnh tràn full container
-                   - priority: Slide đầu tiên (idx === 0) load ngay lập tức để LCP tốt
-                   - quality: 90 để ảnh sắc nét trên màn hình lớn
-                */}
-                <div className={`absolute inset-0 transform transition-transform duration-[10000ms] ease-linear ${currentSlide === idx ? 'scale-110' : 'scale-100'}`}>
-                    <Image
-                        src={slide.image}
-                        alt={slide.title}
-                        fill
-                        className="object-cover"
-                        priority={idx === 0}
-                        quality={90}
-                        sizes="100vw"
-                    />
-                </div>
-                
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
-                
-                {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
-                    <LuxuryHotspotV2 
+         <div ref={parallaxRef} className="absolute -top-[10%] left-0 w-full h-[120%] pointer-events-none z-0">
+             {HERO_SLIDES.map((slide, idx) => (
+                <div 
+                    key={slide.id}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                >
+                    <div className={`absolute inset-0 transform transition-transform duration-[10000ms] ease-linear ${currentSlide === idx ? 'scale-110' : 'scale-100'}`}>
+                        <img 
+                            src={slide.image} 
+                            alt={slide.title} 
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+                    {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
+                         <LuxuryHotspotV2 
                         key={hIdx} 
                         data={hotspot} 
                         isVisible={hotspotsVisible} 
                         delayIndex={hIdx}
                     />
-                ))}
-            </div>
-         ))}
+                    ))}
+                </div>
+             ))}
+         </div>
 
-         {/* Content Layer */}
          <div className="absolute inset-0 z-20 flex items-center px-6 sm:px-12 lg:px-20 pointer-events-none">
              <div className="max-w-4xl w-full pointer-events-auto">
                  {HERO_SLIDES.map((slide, idx) => (
@@ -200,11 +221,11 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
                              {slide.description}
                          </p>
                          <div className="flex items-center gap-6">
-                           <Link href="/shop">
-                                <Button className="h-14 px-10 !bg-amber-500 !text-slate-900 font-bold uppercase tracking-widest hover:!bg-white hover:!text-amber-500 transition-all duration-300 border-none">
-                                    Khám Phá Ngay
-                                </Button>
-                            </Link>
+                             <Link href={slide.ctaLink}>
+                                 <Button className="h-14 px-10 text-sm font-bold uppercase tracking-widest bg-white text-slate-900 hover:bg-amber-400 hover:text-slate-900 border-none transition-all duration-300">
+                                     Khám Phá Ngay
+                                 </Button>
+                             </Link>
                              <Link href="/projects" className="group flex items-center gap-3 text-white font-bold text-sm uppercase tracking-widest hover:text-amber-400 transition-colors">
                                  <span className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center group-hover:border-amber-400 group-hover:scale-110 transition-all">
                                      <PlayCircle size={20} className="ml-1" />
@@ -217,7 +238,6 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
              </div>
          </div>
 
-         {/* Navigation & Preview */}
          <div className="absolute bottom-0 left-0 right-0 z-30 px-6 sm:px-12 lg:px-20 py-10 flex items-end justify-between">
              <div className="flex items-center gap-8">
                  <div className="text-white font-mono text-sm">
@@ -235,184 +255,290 @@ export default function HomePageClient({ initialProducts, initialCategories }: H
                      ))}
                  </div>
              </div>
-
              <div className="hidden md:flex items-center gap-6">
-                 <button onClick={prevSlide} className="w-14 h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all">
+                 <button 
+                    onClick={prevSlide}
+                    className="w-14 h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all"
+                 >
                      <ChevronLeft size={24}/>
                  </button>
-                 <div onClick={nextSlide} className="group relative w-48 h-32 rounded-xl overflow-hidden cursor-pointer border border-white/20 hover:border-amber-400 transition-colors">
-                     {/* Preview Image next/image */}
-                     <Image 
+                 <div 
+                    onClick={nextSlide}
+                    className="group relative w-48 h-32 rounded-xl overflow-hidden cursor-pointer border border-white/20 hover:border-amber-400 transition-colors"
+                 >
+                     <img 
                         src={HERO_SLIDES[nextSlideIndex].image} 
-                        alt="Next Slide"
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        sizes="(max-width: 768px) 100vw, 200px"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                        alt="Next"
                      />
                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors"></div>
-                     <div className="absolute inset-0 flex flex-col justify-center items-center text-white z-10">
+                     <div className="absolute inset-0 flex flex-col justify-center items-center text-white">
                          <span className="text-[10px] uppercase tracking-widest font-bold mb-1">Tiếp theo</span>
                          <span className="font-serif font-bold text-lg text-center px-2">{HERO_SLIDES[nextSlideIndex].title.split('\n')[0]}</span>
                      </div>
-                     <div key={currentSlide} className="absolute bottom-0 left-0 h-1 bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left z-20"></div>
+                     <div key={currentSlide} className="absolute bottom-0 left-0 h-1 bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left"></div>
                  </div>
              </div>
          </div>
       </section>
 
-      {/* 2. CATEGORY RAIL (Gọn gàng - Hiển thị được hàng chục mục) */}
-      <CategoryShowcase categories={categories} />
+      {/* 2. COMPACT CATEGORY STRIP */}
+        <CategoryShowcase categories={categories} />
+                     
 
-      {/* 3. TRENDING PRODUCTS */}
-      <section className="py-24 bg-slate-50">
+      {/* 3. SIGNATURE COLLECTION (Apple-Style Grid) */}
+      <section className="py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* ... Header Text ... */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-                  {bestSellers.map(product => (
-                      <ProductCard key={product.id} product={product} onQuickAdd={() => addToCart(product)} />
+              <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                  <div className="max-w-2xl">
+                      <h2 className="text-5xl md:text-6xl font-semibold tracking-tight text-slate-900 mb-6">
+                          Sự Tinh Tế. <span className="text-slate-400">Trong Từng Chi Tiết.</span>
+                      </h2>
+                      <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl">
+                          Tuyển tập những mẫu tấm ốp Nano và Lam sóng mới nhất, được chế tác tỉ mỉ để tái định nghĩa không gian sống của bạn.
+                      </p>
+                  </div>
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-full">
+                      {[
+                          { id: 'bestseller', label: 'Bán Chạy' },
+                          { id: 'new', label: 'Mới Nhất' },
+                          { id: 'premium', label: 'Cao Cấp' }
+                      ].map(tab => (
+                          <button 
+                              key={tab.id}
+                              onClick={() => setActiveTab(tab.id as any)}
+                              className={`
+                                  px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300
+                                  ${activeTab === tab.id 
+                                    ? 'bg-white text-slate-900 shadow-sm' 
+                                    : 'text-slate-500 hover:text-slate-900'}
+                              `}
+                          >
+                              {tab.label}
+                          </button>
+                      ))}
+                  </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                  {displayedProducts.map((product) => (
+                      <div key={product.id} className="animate-fade-in">
+                          <ProductCard product={product} onQuickAdd={() => addToCart(product)} />
+                      </div>
                   ))}
               </div>
-              {/* ... Button ... */}
+              <div className="mt-20 text-center">
+                  <Link href="/shop" className="inline-flex items-center gap-2 text-brand-600 font-semibold text-lg hover:underline decoration-2 underline-offset-4 group">
+                      Xem toàn bộ bộ sưu tập <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+              </div>
           </div>
       </section>
 
-      {/* 4. SHOP THE LOOK */}
-      <section className="py-24 bg-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                  <div className="lg:col-span-5 order-2 lg:order-1">
-                      {/* ... Text Content ... */}
-                      <div className="space-y-4">
-                          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all cursor-pointer group bg-white">
-                              <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0 relative">
-                                  <Image src="https://picsum.photos/seed/woodpanel1/100/100" fill className="object-cover" alt="Product" sizes="64px" />
-                              </div>
-                              {/* ... Product Info ... */}
-                          </div>
+      {/* 4. SHOP THE LOOK - IMMERSIVE SPLIT */}
+      <section className="py-24 bg-slate-50 overflow-hidden">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="mb-12">
+                  <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-2">Cảm Hứng Không Gian</h2>
+                  <p className="text-slate-500 text-lg">Khám phá các phong cách nội thất xu hướng 2024</p>
+              </div>
 
-                          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all cursor-pointer group bg-white">
-                              <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0 relative">
-                                  <Image src="https://picsum.photos/seed/whitepanel/100/100" fill className="object-cover" alt="Product" sizes="64px" />
-                              </div>
-                              {/* ... Product Info ... */}
-                          </div>
-                      </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[700px] lg:h-[600px]">
+                  {/* Interactive Image - 8 Cols */}
+                  <div className="lg:col-span-8 relative rounded-3xl overflow-hidden shadow-2xl group select-none">
+                      <img 
+                        src="https://images.unsplash.com/photo-1595515106967-14348984f548?q=80&w=2000&auto=format&fit=crop" 
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                        alt="Living Room" 
+                      />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500"></div>
+                      
+                      <ShopTheLookPin 
+                        x="30%" y="40%" label="Vách Tivi Nano" 
+                        isActive={activeShopLook === 0} 
+                        onClick={() => setActiveShopLook(0)} 
+                      />
+                      <ShopTheLookPin 
+                        x="60%" y="25%" label="Trần Lam Sóng" 
+                        isActive={activeShopLook === 1} 
+                        onClick={() => setActiveShopLook(1)} 
+                      />
+                      <ShopTheLookPin 
+                        x="80%" y="60%" label="Phào Chỉ PS" 
+                        isActive={activeShopLook === 2} 
+                        onClick={() => setActiveShopLook(2)} 
+                      />
                   </div>
 
-                  <div className="lg:col-span-7 relative order-1 lg:order-2">
-                      <div className="rounded-3xl overflow-hidden shadow-2xl relative aspect-[4/3] group">
-                          {/* Main Shop The Look Image */}
-                          <Image 
-                            src="https://images.unsplash.com/photo-1595515106967-14348984f548?q=80&w=2000&auto=format&fit=crop" 
-                            alt="Shop the look"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                          />
-                          
-                          <ShopTheLookPin x="30%" y="40%" label="Vách Tivi Nano" />
-                          <ShopTheLookPin x="60%" y="25%" label="Trần Lam Sóng" />
-                          <ShopTheLookPin x="80%" y="60%" label="Phào Chỉ PS" />
+                  {/* Manifest List - 4 Cols */}
+                  <div className="lg:col-span-4 flex flex-col h-full bg-white rounded-3xl p-8 border border-slate-100 shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-40 h-40 bg-brand-50 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-6 relative z-10">Danh Sách Vật Tư</h3>
+                      
+                      <div className="flex-1 space-y-4 relative z-10 overflow-y-auto no-scrollbar">
+                          {[
+                              { id: 0, name: 'Tấm Ốp Nano Vân Gỗ', sku: 'N-012', price: '145.000₫/m2', img: 'https://images.unsplash.com/photo-1611270629569-8b357cb88da9?q=80&w=200&auto=format&fit=crop' },
+                              { id: 1, name: 'Lam Sóng Trắng Sứ', sku: 'L-305', price: '180.000₫/m2', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=200&auto=format&fit=crop' },
+                              { id: 2, name: 'Phào Chỉ PS Hàn Quốc', sku: 'P-99', price: '85.000₫/m', img: 'https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=200&auto=format&fit=crop' }
+                          ].map((item, idx) => (
+                              <div 
+                                key={idx}
+                                onClick={() => setActiveShopLook(idx)}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-300 ${activeShopLook === idx ? 'border-brand-500 bg-brand-50 shadow-md transform scale-[1.02]' : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'}`}
+                              >
+                                  <div className="w-14 h-14 rounded-xl bg-gray-200 overflow-hidden shrink-0">
+                                      <img src={item.img} className="w-full h-full object-cover" alt={item.name} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                      <h4 className={`font-bold text-sm truncate ${activeShopLook === idx ? 'text-brand-700' : 'text-slate-900'}`}>{item.name}</h4>
+                                      <p className="text-xs text-slate-500 mt-0.5">{item.sku}</p>
+                                      <p className="text-sm font-semibold text-slate-900 mt-1">{item.price}</p>
+                                  </div>
+                                  {activeShopLook === idx && <div className="w-2 h-2 rounded-full bg-brand-500"></div>}
+                              </div>
+                          ))}
+                      </div>
+
+                      <div className="mt-6 pt-6 border-t border-slate-100 relative z-10">
+                          <div className="flex justify-between items-center mb-4">
+                              <span className="text-sm text-slate-500 font-medium">Tổng ước tính</span>
+                              <span className="text-xl font-bold text-slate-900">~8.500.000₫</span>
+                          </div>
+                          <Button fullWidth className="h-12 shadow-lg shadow-brand-500/20">
+                              <span className="flex items-center gap-2">Nhận Báo Giá Trọn Gói <ArrowRight size={16}/></span>
+                          </Button>
                       </div>
                   </div>
               </div>
           </div>
       </section>
 
-      {/* 5. QUALITY / WHY CHOOSE US */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-         {/* Background Texture giữ nguyên vì là pattern nhỏ */}
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-          {/* ... Content ... */}
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
-                  <div className="md:col-span-1">
-                      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Chất Lượng <br/> Vượt Trội.</h2>
-                      <p className="text-slate-400 leading-relaxed mb-8">
-                          Sản phẩm Đại Nam Wall được sản xuất trên dây chuyền công nghệ Đức, đảm bảo độ bền màu 20 năm và an toàn tuyệt đối cho sức khỏe.
-                      </p>
-                      <Link href="/about" className="inline-flex items-center gap-2 text-brand-400 font-bold hover:text-white transition-colors">
-                          Xem Hồ Sơ Năng Lực <MoveRight size={16} />
-                      </Link>
-                  </div>
-
-                  <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
-                      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                          <Layers className="text-brand-400 mb-4" size={32} />
-                          <h4 className="font-bold text-lg mb-2">Cấu Trúc 5 Lớp</h4>
-                          <p className="text-sm text-slate-400">Lớp phủ UV kép chống trầy xước, lớp film màu nhập khẩu và cốt nhựa nguyên sinh siêu bền.</p>
-                      </div>
-                      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                          <Box className="text-brand-400 mb-4" size={32} />
-                          <h4 className="font-bold text-lg mb-2">Chống Nước 100%</h4>
-                          <p className="text-sm text-slate-400">Giải pháp hoàn hảo cho tường ẩm mốc. Không cong vênh, không mối mọt trong mọi điều kiện.</p>
-                      </div>
-                      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                          <Maximize2 className="text-brand-400 mb-4" size={32} />
-                          <h4 className="font-bold text-lg mb-2">Khổ Tấm Linh Hoạt</h4>
-                          <p className="text-sm text-slate-400">Đa dạng kích thước từ 3m đến 6m, phù hợp mọi chiều cao trần, hạn chế mối nối.</p>
-                      </div>
-                      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                          <MousePointer2 className="text-brand-400 mb-4" size={32} />
-                          <h4 className="font-bold text-lg mb-2">Dễ Dàng Thi Công</h4>
-                          <p className="text-sm text-slate-400">Hệ thống hèm khóa thông minh giúp tiết kiệm 50% thời gian lắp đặt so với vật liệu truyền thống.</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </section>
-
-      {/* 6. BLOG HIGHLIGHTS */}
+      {/* 5. QUALITY - BENTO GRID */}
       <section className="py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* ... Header ... */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {BLOG_POSTS.slice(0, 3).map(post => (
-                      <Link key={post.id} href={`/blog/${post.slug}`} className="group cursor-pointer">
-                          <div className="overflow-hidden rounded-xl aspect-video mb-4 relative">
-                              <Image 
-                                src={post.image} 
-                                alt={post.title} 
-                                fill 
-                                className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                                sizes="(max-width: 768px) 100vw, 33vw"
-                              />
-                              <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded text-xs font-bold uppercase tracking-wider text-slate-900 z-10">
-                                  {post.category}
+              <div className="text-center mb-16 max-w-3xl mx-auto">
+                  <h2 className="text-4xl font-semibold text-slate-900 tracking-tight mb-4">Tiêu Chuẩn Đại Nam Wall</h2>
+                  <p className="text-slate-500 text-lg">Chúng tôi không chỉ bán vật liệu, chúng tôi cung cấp sự an tâm tuyệt đối cho công trình của bạn.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[500px]">
+                  {/* Card 1: Main Feature (Large) */}
+                  <div className="md:col-span-2 md:row-span-2 bg-slate-50 rounded-3xl p-8 md:p-12 relative overflow-hidden group hover:shadow-xl transition-all duration-500">
+                      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-100 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-blue-200"></div>
+                      <div className="relative z-10 h-full flex flex-col justify-between">
+                          <div>
+                              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-brand-600">
+                                  <Layers size={24} />
                               </div>
+                              <h3 className="text-3xl font-bold text-slate-900 mb-4">Cấu Trúc 5 Lớp <br/> Siêu Bền</h3>
+                              <p className="text-slate-600 text-lg max-w-md leading-relaxed">
+                                  Công nghệ ép nhiệt Nano tiên tiến giúp liên kết 5 lớp vật liệu thành một khối thống nhất. Chống tách lớp, cong vênh trong mọi điều kiện thời tiết.
+                              </p>
                           </div>
-                          {/* ... Text ... */}
-                          <h3 className="text-lg font-bold text-slate-900 mb-2 leading-snug group-hover:text-brand-600 transition-colors">
-                              {post.title}
-                          </h3>
-                          <div className="text-sm text-slate-500 flex items-center gap-2">
-                              <span>{post.date}</span>
-                              <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                              <span>{post.readTime}</span>
+                          <div className="mt-8 flex gap-3">
+                              <span className="px-4 py-2 bg-white rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100">UV Protection</span>
+                              <span className="px-4 py-2 bg-white rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100">Scratch Resistant</span>
                           </div>
-                      </Link>
-                  ))}
+                      </div>
+                      <img src="https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=800&auto=format&fit=crop" className="absolute bottom-0 right-0 w-1/2 h-2/3 object-contain object-bottom translate-x-12 translate-y-12 group-hover:translate-x-8 group-hover:translate-y-8 transition-transform duration-700" alt="Layers" />
+                  </div>
+
+                  {/* Card 2: Water Resistance */}
+                  <div className="bg-slate-50 rounded-3xl p-8 relative overflow-hidden group hover:bg-blue-50 transition-colors duration-300">
+                      <Droplets className="text-blue-500 mb-4 w-10 h-10" />
+                      <h3 className="text-xl font-bold text-slate-900 mb-2">Chống Nước 100%</h3>
+                      <p className="text-slate-500 text-sm">Giải pháp hoàn hảo cho tường ẩm mốc. Không mối mọt.</p>
+                  </div>
+
+                  {/* Card 3: Eco Friendly */}
+                  <div className="bg-slate-50 rounded-3xl p-8 relative overflow-hidden group hover:bg-green-50 transition-colors duration-300">
+                      <Leaf className="text-green-500 mb-4 w-10 h-10" />
+                      <h3 className="text-xl font-bold text-slate-900 mb-2">An Toàn Sức Khỏe</h3>
+                      <p className="text-slate-500 text-sm">Nhựa nguyên sinh không chứa Formaldehyde. An toàn cho trẻ nhỏ.</p>
+                  </div>
               </div>
           </div>
       </section>
 
-      {/* 7. CTA BANNER */}
-      {/* ... Giữ nguyên phần Text CTA ... */}
-      <section className="py-20 bg-brand-50 border-t border-brand-100">
-          <div className="max-w-4xl mx-auto text-center px-4">
-              <h2 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 mb-6">
-                  Sẵn sàng thay đổi không gian sống?
-              </h2>
-              <p className="text-slate-600 text-lg mb-10 max-w-2xl mx-auto">
-                  Liên hệ ngay với Đại Nam Wall để nhận catalog mẫu miễn phí và tư vấn giải pháp thi công tối ưu nhất cho ngôi nhà của bạn.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <Link href="/contact">
-                      <Button className="h-14 px-10 shadow-xl shadow-brand-500/20 text-base">
-                          Nhận Báo Giá Ngay
-                      </Button>
+      {/* 6. BLOG - EDITORIAL STYLE */}
+      <section className="py-32 bg-white border-t border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-end mb-16">
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">The Journal.</h2>
+                  <Link href="/blog" className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-900 transition-all pb-1">
+                      Đọc tất cả bài viết <ArrowRight size={16} />
                   </Link>
-                  <a href="tel:0912345678" className="h-14 px-10 flex items-center justify-center font-bold text-slate-700 bg-white rounded-lg border border-slate-200 hover:border-slate-900 hover:text-slate-900 transition-colors">
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                  {/* Featured Article (Left - 2 Cols) */}
+                  <div className="lg:col-span-2 group cursor-pointer">
+                      <div className="aspect-[16/9] overflow-hidden rounded-3xl mb-6 relative">
+                          <img 
+                            src={BLOG_POSTS[0].image} 
+                            alt={BLOG_POSTS[0].title} 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                          />
+                          <div className="absolute top-6 left-6">
+                              <span className="bg-white/90 backdrop-blur text-slate-900 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider">
+                                  Featured Story
+                              </span>
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
+                          <span className="text-brand-600">{BLOG_POSTS[0].category}</span>
+                          <span>—</span>
+                          <span>{BLOG_POSTS[0].date}</span>
+                      </div>
+                      <h3 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4 leading-tight group-hover:text-brand-600 transition-colors">
+                          {BLOG_POSTS[0].title}
+                      </h3>
+                      <p className="text-slate-500 text-lg leading-relaxed max-w-2xl">
+                          {BLOG_POSTS[0].excerpt}
+                      </p>
+                  </div>
+
+                  {/* Side List (Right - 1 Col) */}
+                  <div className="flex flex-col gap-10">
+                      {BLOG_POSTS.slice(1, 3).map((post) => (
+                          <div key={post.id} className="group cursor-pointer">
+                              <div className="aspect-[3/2] overflow-hidden rounded-2xl mb-4">
+                                  <img 
+                                    src={post.image} 
+                                    alt={post.title} 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                  />
+                              </div>
+                              <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                                  <span className="text-brand-600">{post.category}</span>
+                                  <span>{post.readTime}</span>
+                              </div>
+                              <h4 className="text-xl font-bold text-slate-900 leading-snug group-hover:text-brand-600 transition-colors">
+                                  {post.title}
+                              </h4>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* 7. CTA BANNER - MINIMALIST DARK */}
+      <section className="py-32 bg-slate-950 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+          <div className="max-w-3xl mx-auto px-4 relative z-10">
+              <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tighter leading-none">
+                  Ready to <br/> Transform?
+              </h2>
+              <p className="text-slate-400 text-xl mb-12 font-light max-w-xl mx-auto leading-relaxed">
+                  Liên hệ ngay với chuyên gia của Đại Nam Wall để nhận tư vấn giải pháp tối ưu cho không gian của bạn.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-6">
+                  <Link href="/contact">
+                      <button className="h-16 px-10 rounded-full bg-white text-slate-950 text-base font-bold uppercase tracking-widest hover:bg-brand-400 hover:text-white transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(56,189,248,0.4)]">
+                          Nhận Báo Giá Ngay
+                      </button>
+                  </Link>
+                  <a href="tel:0912345678" className="h-16 px-10 flex items-center justify-center rounded-full border border-slate-700 text-white text-base font-bold uppercase tracking-widest hover:bg-slate-800 hover:border-slate-600 transition-colors">
                       Hotline: 0912.345.678
                   </a>
               </div>
