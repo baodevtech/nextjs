@@ -7,7 +7,7 @@ export const CATEGORIES: Category[] = [
     name: 'Panel Cách Nhiệt PU', 
     slug: 'panel-pu', 
     count: 12, 
-    image: 'https://picsum.photos/seed/panelpu/600/600', // Placeholder
+    image: 'https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=600&auto=format&fit=crop',
     headerImage: 'https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=2070&auto=format&fit=crop',
     description: 'Tấm panel a cách nhiệt (Sandwich Panel) là vật liệu xây dựng 3 lớp gồm 2 mặt tôn và lớp lõi xốp (PU, EPS, XPS...). Dùng làm vách, trần, mái nhà, có khả năng cách nhiệt, cách âm, chống cháy hiệu quả.',
     bottomContent: `
@@ -113,7 +113,7 @@ export const PRODUCTS: Product[] = [
     description: '',
     shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/woodpanel1/600/600',
+      sourceUrl: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=600&auto=format&fit=crop',
       altText: 'Lam sóng',
     },
     galleryImages: [],
@@ -123,7 +123,7 @@ export const PRODUCTS: Product[] = [
     categories: ['lam-song'],
     dimensions: { length: 3000, width: 200, thickness: 9, area: 0.6 }
   },
-    {
+  {
     id: 'prod_4',
     databaseId: 104,
     slug: 'pvc-van-da',
@@ -132,7 +132,7 @@ export const PRODUCTS: Product[] = [
     description: '',
     shortDescription: '',
     image: {
-      sourceUrl: 'https://picsum.photos/seed/marble/600/600',
+      sourceUrl: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=600&auto=format&fit=crop',
       altText: 'PVC Stone',
     },
     galleryImages: [],
@@ -142,6 +142,82 @@ export const PRODUCTS: Product[] = [
     categories: ['pvc-stone'],
     dimensions: { length: 2440, width: 1220, thickness: 3, area: 2.97 }
   },
+  {
+    id: 'prod_7',
+    databaseId: 107,
+    slug: 'phao-chi-ps-han-quoc',
+    name: 'Phào Chỉ PS Hàn Quốc - Dát Vàng',
+    brand: 'Younglim',
+    description: '<p>Phào chỉ nhựa PS cốt đặc, họa tiết hoa văn dát vàng cổ điển.</p>',
+    shortDescription: 'Cốt đặc, không mối mọt.',
+    image: {
+      sourceUrl: 'https://images.unsplash.com/photo-1594222079361-9e6b3eb1cb64?q=80&w=600&auto=format&fit=crop',
+      altText: 'Moulding',
+    },
+    galleryImages: [],
+    price: { amount: 85000, formatted: '85.000₫' },
+    stockStatus: 'IN_STOCK',
+    sku: 'PS-V02',
+    categories: ['accessories'],
+    dimensions: { length: 2400, width: 80, thickness: 20, area: 0 }
+  },
+  {
+    id: 'prod_8',
+    databaseId: 108,
+    slug: 'nep-inox-304-vang-guong',
+    name: 'Nẹp Inox 304 Chữ T - Vàng Gương',
+    brand: 'Đại Nam Accessories',
+    description: '<p>Nẹp trang trí Inox 304 mạ PVD cao cấp, dùng che khe nối tấm ốp.</p>',
+    shortDescription: 'Inox 304 bền màu vĩnh viễn.',
+    image: {
+      sourceUrl: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=600&auto=format&fit=crop',
+      altText: 'Stainless Steel Profile',
+    },
+    galleryImages: [],
+    price: { amount: 45000, formatted: '45.000₫' },
+    stockStatus: 'IN_STOCK',
+    sku: 'INOX-T10',
+    categories: ['accessories'],
+    dimensions: { length: 2440, width: 10, thickness: 1, area: 0 }
+  },
+  {
+    id: 'prod_9',
+    databaseId: 109,
+    slug: 'keo-dan-chuyen-dung-xbond',
+    name: 'Keo Dán Đa Năng X-Bond',
+    brand: 'Đại Nam Accessories',
+    description: '<p>Keo dán xây dựng đa năng, độ bám dính cực cao, dùng dán tấm ốp lên tường.</p>',
+    shortDescription: 'Siêu dính, chịu lực tốt.',
+    image: {
+      sourceUrl: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=600&auto=format&fit=crop',
+      altText: 'Construction Adhesive',
+    },
+    galleryImages: [],
+    price: { amount: 45000, formatted: '45.000₫' },
+    stockStatus: 'IN_STOCK',
+    sku: 'KEO-XB01',
+    categories: ['accessories'],
+    dimensions: { length: 0, width: 0, thickness: 0, area: 0 }
+  },
+  {
+    id: 'prod_10',
+    databaseId: 110,
+    slug: 'nep-v-inox-vang-xuoc',
+    name: 'Nẹp Góc V Inox - Vàng Xước',
+    brand: 'Đại Nam Accessories',
+    description: '<p>Nẹp V ốp góc tường, bảo vệ cạnh và tạo điểm nhấn sang trọng.</p>',
+    shortDescription: 'Inox 304, chống va đập.',
+    image: {
+      sourceUrl: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=600&auto=format&fit=crop',
+      altText: 'V Profile Stainless Steel',
+    },
+    galleryImages: [],
+    price: { amount: 65000, formatted: '65.000₫' },
+    stockStatus: 'IN_STOCK',
+    sku: 'INOX-V20',
+    categories: ['accessories'],
+    dimensions: { length: 2440, width: 20, thickness: 1, area: 0 }
+  }
 ];
 
 export const BLOG_POSTS: BlogPost[] = [
