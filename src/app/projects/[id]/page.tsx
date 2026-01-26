@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react'; // Thêm use từ react
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Layout, Quote, X, ChevronLeft, ChevronRight, ZoomIn, Grid } from 'lucide-react';
+import { 
+    ArrowLeft, ArrowRight, Layout, Quote, X, ChevronLeft, 
+    ChevronRight, ZoomIn, Grid 
+} from 'lucide-react';
 
 const PROJECT_DETAILS: Record<string, any> = {
   "1": {
@@ -70,8 +73,14 @@ const PROJECT_DETAILS: Record<string, any> = {
   }
 };
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+// Next.js 16/15 yêu cầu params phải được xử lý như một Promise
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
+    
+    // Unwrap params bằng hook use() của React 19 (đi kèm Next.js 15+)
+    const resolvedParams = use(params);
+    const projectId = resolvedParams.id;
+
     const [project, setProject] = useState<any>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -80,9 +89,10 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const data = PROJECT_DETAILS[params.id || ""] || PROJECT_DETAILS["default"];
+        // Sử dụng projectId đã được unwrap
+        const data = PROJECT_DETAILS[projectId || ""] || PROJECT_DETAILS["default"];
         setProject(data);
-    }, [params.id]);
+    }, [projectId]); // Cập nhật dependency là projectId
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -142,7 +152,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
     if (!project) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Loading...</div>;
 
-    const nextProjectId = (parseInt(params.id || "1") + 1).toString();
+    const nextProjectId = (parseInt(projectId || "1") + 1).toString();
 
     return (
         <div className="bg-slate-950 font-sans text-slate-200 animate-fade-in selection:bg-amber-500 selection:text-white">
@@ -226,7 +236,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         <span className="text-amber-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] mb-4 block animate-slide-up">
                             {project.subtitle}
                         </span>
-                        <h1 className="text-5xl md:text-7xl lg:text-9xl  font-bold text-white mb-10 tracking-tight leading-none animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        <h1 className="text-5xl md:text-7xl lg:text-9xl font-bold text-white mb-10 tracking-tight leading-none animate-slide-up" style={{ animationDelay: '0.1s' }}>
                             {project.title}
                         </h1>
                         <div className="flex flex-wrap gap-x-12 gap-y-6 border-t border-white/10 pt-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -259,7 +269,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         
                         <div className="lg:col-span-4 space-y-12">
                             <div>
-                                <h2 className="text-4xl  font-bold text-white mb-8 leading-tight">
+                                <h2 className="text-4xl font-bold text-white mb-8 leading-tight">
                                     Câu chuyện <br/>
                                     <span className="text-amber-500 italic">Thiết kế.</span>
                                 </h2>
@@ -310,7 +320,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
                             <div className="pt-8 px-4 md:px-12">
                                 <Quote className="text-amber-500 mb-6 opacity-80" size={40}/>
-                                <p className="text-2xl italic text-slate-200  leading-relaxed opacity-90">
+                                <p className="text-2xl italic text-slate-200 leading-relaxed opacity-90">
                                     "Đại Nam Wall đã làm việc cực kỳ chuyên nghiệp. Chất lượng hoàn thiện và sự tỉ mỉ trong từng đường nét vượt xa mong đợi của tôi."
                                 </p>
                                 <div className="flex items-center gap-4 mt-8">
@@ -327,7 +337,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                  <div className="max-w-[1920px] mx-auto px-4">
                     <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto">
                         <div className="flex items-end gap-4">
-                            <h2 className="text-3xl  font-bold text-white">Project Gallery</h2>
+                            <h2 className="text-3xl font-bold text-white">Project Gallery</h2>
                             <span className="text-sm font-mono text-amber-500 mb-1">{project.gallery.length} Images</span>
                         </div>
                         <div className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -388,4 +398,4 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </section>
         </div>
     );
-};
+}

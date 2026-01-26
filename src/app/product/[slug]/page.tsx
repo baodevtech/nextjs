@@ -12,19 +12,23 @@ import { Button } from '@/components/common/UI';
 import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+// Next.js 15 yêu cầu params phải là một Promise
+export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [product, setProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    if (params.slug) {
-      getProductBySlug(params.slug).then(p => setProduct(p || null));
-      setActiveImage(0);
-      setQuantity(1);
-    }
-  }, [params.slug]);
+    // Giải nén params từ Promise
+    params.then(resolvedParams => {
+      if (resolvedParams.slug) {
+        getProductBySlug(resolvedParams.slug).then(p => setProduct(p || null));
+        setActiveImage(0);
+        setQuantity(1);
+      }
+    });
+  }, [params]);
 
   if (!product) return <div className="pt-32 text-center text-gray-500 min-h-screen">Đang tải sản phẩm...</div>;
 
@@ -83,7 +87,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                          Mô Tả Chi Tiết
                          <div className="h-px bg-gray-200 flex-1"></div>
                     </h2>
-                    <div className="prose prose-slate max-w-none prose-headings: prose-headings:text-slate-900 prose-img:rounded-xl">
+                    <div className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-img:rounded-xl">
                             <div dangerouslySetInnerHTML={{ __html: product.description }} />
                             {!product.description && (
                                 <p className="text-slate-500 italic">
@@ -147,7 +151,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                         )}
                         <span className="text-[10px] font-mono font-medium text-slate-400">SKU: {product.sku}</span>
                     </div>
-                    <h1 className="text-2xl md:text-3xl  font-bold text-slate-900 mb-3 leading-snug">
+                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 leading-snug">
                         {product.name}
                     </h1>
                     <div className="flex items-center gap-4 text-sm pb-4 border-b border-gray-100">
@@ -292,4 +296,4 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       </div>
     </div>
   );
-};
+}
