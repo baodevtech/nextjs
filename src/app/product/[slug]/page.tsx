@@ -122,15 +122,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                         </div>
                         <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
                             <span className="text-slate-500">Bảo hành</span>
-                            <span className="font-bold text-slate-900">15 Năm</span>
+                            <span className="font-bold text-slate-900">{product.warranty} Tháng</span>
                         </div>
                         <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
                             <span className="text-slate-500">Bề mặt</span>
-                            <span className="font-bold text-slate-900">Phủ Nano / Vân nổi</span>
+                            <span className="font-bold text-slate-900">{product.surface}</span>
                         </div>
                         <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
                             <span className="text-slate-500">Xuất xứ</span>
-                            <span className="font-bold text-slate-900">Việt Nam</span>
+                            <span className="font-bold text-slate-900">{product.origin}</span>
                         </div>
                      </div>
                 </div>

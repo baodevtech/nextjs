@@ -1,7 +1,7 @@
 import { Product, Category } from '../types';
 import { PRODUCTS, CATEGORIES } from '../constants'; // Import Mock data làm fallback
 
-const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://demo.vietpanel.com/graphql';
+const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://portal.khopanel.com/graphql';
 
 /**
  * FETCH HELPER
@@ -69,7 +69,7 @@ const PRODUCT_FIELDS = `
     }
     # --- CẬP NHẬT: Taxonomy product_brand ---
     # Trong WPGraphQL, product_brand thường chuyển thành productBrands
-    PRODUCTBRAND {
+    productBrands {
       nodes {
         name
         slug
@@ -105,9 +105,9 @@ const mapProduct = (node: any): Product => {
     slug: node.slug,
     name: node.name,
     brand: brandName, // Dữ liệu từ Taxonomy product_brand
-    origin: node.productSpecifications?.origin || 'Việt Nam',
-    surface: node.productSpecifications?.surface || 'Tiêu chuẩn',
-    warranty: node.productSpecifications?.warranty || '15 Năm',
+    origin: node.productSpecifications?.origin || '',
+    surface: node.productSpecifications?.surface || '',
+    warranty: node.productSpecifications?.warranty || '',
     description: node.description || '',
     shortDescription: node.shortDescription || '',
     image: {
