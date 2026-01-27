@@ -75,7 +75,7 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
 
             <div className={`flex items-center gap-1.5 text-[10px] font-bold ${product.stockStatus === 'IN_STOCK' ? 'text-green-600' : 'text-orange-600'}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${product.stockStatus === 'IN_STOCK' ? 'bg-green-500 animate-pulse' : 'bg-orange-500'}`}></span>
-                {product.stockStatus === 'IN_STOCK' ? 'Sẵn kho HN' : 'Đặt trước'}
+                {product.stockStatus === 'IN_STOCK' ? 'Sẵn kho' : 'Đặt trước'}
             </div>
         </div>
 

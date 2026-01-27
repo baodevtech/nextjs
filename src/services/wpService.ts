@@ -1,70 +1,211 @@
-import { PRODUCTS, CATEGORIES } from '../constants';
 import { Product, Category } from '../types';
-
-/**
- * SERVICE GIẢ LẬP KẾT NỐI WORDPRESS GRAPHQL
- * 
- * Trong dự án thực tế, bạn sẽ thay thế phần mock data bằng `fetch` tới endpoint GraphQL của WP.
- * Ví dụ endpoint: https://your-wordpress-site.com/graphql
- */
+import { PRODUCTS, CATEGORIES } from '../constants'; // Import Mock data làm fallback
 
 const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://demo.vietpanel.com/graphql';
-// 1. Query lấy danh sách sản phẩm
-// const GET_PRODUCTS_QUERY = `
-//   query GetProducts {
-//     products(first: 20) {
-//       nodes {
-//         id
-//         databaseId
-//         slug
-//         name
-//         ... on SimpleProduct {
-//           price
-//           stockStatus
-//           sku
-//           regularPrice
-//         }
-//         featuredImage {
-//           node {
-//             sourceUrl
-//             altText
-//           }
-//         }
-//         productCategories {
-//           nodes {
-//             slug
-//             name
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
+
+/**
+ * FETCH HELPER
+ * Hàm dùng chung để gọi API có xử lý lỗi (try-catch)
+ */
+async function fetchAPI(query: string, { variables }: { variables?: any } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate: 60 } // Revalidate mỗi 60s
+    });
+
+    const json = await res.json();
+    if (json.errors) {
+      console.error("❌ WP GraphQL Error:", json.errors);
+      return null;
+    }
+    return json.data;
+  } catch (error) {
+    console.error("❌ Fetch API Error:", error);
+    return null;
+  }
+}
+
+// --- 1. PRODUCT QUERIES & TRANSFORMERS ---
+
+const PRODUCT_FIELDS = `
+  fragment ProductFields on Product {
+    id
+    databaseId
+    slug
+    name
+    sku
+    shortDescription
+    description
+    ... on SimpleProduct {
+      price(format: RAW)
+      regularPrice(format: RAW)
+      stockStatus
+    }
+    ... on VariableProduct {
+      price(format: RAW)
+      regularPrice(format: RAW)
+      stockStatus
+    }
+    image {
+      sourceUrl
+      altText
+    }
+    galleryImages {
+      nodes {
+        sourceUrl
+        altText
+      }
+    }
+    productCategories {
+      nodes {
+        slug
+        name
+      }
+    }
+    # --- CẬP NHẬT: Taxonomy product_brand ---
+    # Trong WPGraphQL, product_brand thường chuyển thành productBrands
+    PRODUCTBRAND {
+      nodes {
+        name
+        slug
+      }
+    }
+    # --- ACF Fields ---
+    productSpecifications {
+      length
+      width
+      thickness
+      area
+      origin
+      surface
+      warranty
+    }
+  }
+`;
+
+// Hàm chuyển đổi dữ liệu từ WP sang cấu trúc Frontend
+const mapProduct = (node: any): Product => {
+  if (!node) return {} as Product;
+  
+  const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
+  
+  // Xử lý Brand: Lấy item đầu tiên từ productBrands
+  const brandName = node.productBrands?.nodes && node.productBrands.nodes.length > 0 
+    ? node.productBrands.nodes[0].name 
+    : 'Đại Nam Wall'; // Fallback nếu không có brand
+
+  return {
+    id: node.id,
+    databaseId: node.databaseId,
+    slug: node.slug,
+    name: node.name,
+    brand: brandName, // Dữ liệu từ Taxonomy product_brand
+    origin: node.productSpecifications?.origin || 'Việt Nam',
+    surface: node.productSpecifications?.surface || 'Tiêu chuẩn',
+    warranty: node.productSpecifications?.warranty || '15 Năm',
+    description: node.description || '',
+    shortDescription: node.shortDescription || '',
+    image: {
+      sourceUrl: node.image?.sourceUrl || 'https://via.placeholder.com/600x600?text=No+Image',
+      altText: node.image?.altText || node.name,
+    },
+    galleryImages: node.galleryImages?.nodes?.map((img: any) => ({
+      sourceUrl: img.sourceUrl,
+      altText: img.altText || node.name
+    })) || [],
+    price: {
+      amount: rawPrice,
+      formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice)
+    },
+    stockStatus: node.stockStatus === 'IN_STOCK' ? 'IN_STOCK' : 'OUT_OF_STOCK',
+    sku: node.sku || '',
+    categories: node.productCategories?.nodes?.map((c: any) => c.slug) || [],
+    dimensions: {
+      length: Number(node.productSpecifications?.length) || 0,
+      width: Number(node.productSpecifications?.width) || 0,
+      thickness: Number(node.productSpecifications?.thickness) || 0,
+      area: Number(node.productSpecifications?.area) || 0,
+    }
+  };
+};
 
 export const getProducts = async (): Promise<Product[]> => {
-  // --- REAL IMPLEMENTATION ---
-  // const res = await fetch(API_URL, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ query: GET_PRODUCTS_QUERY }),
-  // });
-  // const json = await res.json();
-  // return json.data.products.nodes.map(transformWpNodeToProduct);
+  const data = await fetchAPI(`
+    ${PRODUCT_FIELDS}
+    query GetProducts {
+      products(first: 20, where: { orderby: { field: DATE, order: DESC } }) {
+        nodes {
+          ...ProductFields
+        }
+      }
+    }
+  `);
   
-  // --- MOCK IMPLEMENTATION ---
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(PRODUCTS), 500); // Simulate network delay
-  });
+  // Nếu API lỗi hoặc không có dữ liệu, dùng Mock Data để không sập trang
+  if (!data || !data.products) {
+      console.warn("⚠️ Không lấy được Products từ API (đang dùng Mock Data). Hãy kiểm tra lại tên trường trong GraphiQL.");
+      return PRODUCTS as unknown as Product[]; 
+  }
+  
+  return data.products.nodes.map(mapProduct);
 };
 
 export const getProductBySlug = async (slug: string): Promise<Product | undefined> => {
-   // --- MOCK ---
-   return new Promise((resolve) => {
-      const product = PRODUCTS.find(p => p.slug === slug);
-      setTimeout(() => resolve(product), 300);
-   });
+  const data = await fetchAPI(`
+    ${PRODUCT_FIELDS}
+    query GetProductBySlug($slug: ID!) {
+      product(id: $slug, idType: SLUG) {
+        ...ProductFields
+      }
+    }
+  `, { variables: { slug } });
+
+  if (!data?.product) return undefined;
+  return mapProduct(data.product);
+};
+
+// --- 2. CATEGORY QUERIES (Giữ nguyên, tạm ẩn ACF Image để an toàn) ---
+
+const mapCategory = (node: any): Category => {
+  return {
+    id: node.id,
+    name: node.name,
+    slug: node.slug,
+    count: node.count || 0,
+    image: node.image?.sourceUrl || 'https://via.placeholder.com/400x400?text=Category',
+    description: node.description,
+    // headerImage: node.categoryExtras?.headerImage?.sourceUrl, 
+    // bottomContent: node.categoryExtras?.bottomContent,
+  };
 };
 
 export const getCategories = async (): Promise<Category[]> => {
-  return new Promise((resolve) => resolve(CATEGORIES));
+  const data = await fetchAPI(`
+    query GetCategories {
+      productCategories(first: 20, where: { hideEmpty: true, parent: 0 }) {
+        nodes {
+          id
+          name
+          slug
+          count
+          description
+          image {
+            sourceUrl
+          }
+        }
+      }
+    }
+  `);
+
+  if (!data || !data.productCategories) {
+      console.warn("⚠️ Không lấy được Categories từ API (đang dùng Mock Data).");
+      return CATEGORIES;
+  }
+
+  return data.productCategories.nodes.map(mapCategory);
 };

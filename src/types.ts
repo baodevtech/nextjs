@@ -22,8 +22,11 @@ export interface Product {
   databaseId: number;
   slug: string;
   name: string;
-  brand: string; // Added Brand field
-  description: string; // HTML string
+  brand: string; // Vẫn giữ string, nhưng dữ liệu lấy từ Taxonomy
+  origin: string; // Mới: Xuất xứ
+  surface: string; // Mới: Bề mặt
+  warranty: string; // Mới: Bảo hành
+  description: string;
   shortDescription: string;
   image: WpImage;
   galleryImages: WpImage[];
@@ -31,7 +34,7 @@ export interface Product {
   stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK';
   sku: string;
   categories: string[];
-  dimensions: ProductDimensions; // Added specific dimensions
+  dimensions: ProductDimensions;
 }
 
 export interface CartItem extends Product {

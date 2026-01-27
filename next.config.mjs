@@ -6,6 +6,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'picsum.photos' },
       { protocol: 'https', hostname: 'ui-avatars.com' },
       { protocol: 'https', hostname: 'www.transparenttextures.com' },
+      { protocol: 'https', hostname: 'portal.khopanel.com' },
     ],
   },
 };
