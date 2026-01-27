@@ -171,6 +171,7 @@ export const getProductBySlug = async (slug: string): Promise<Product | undefine
 
 // --- 2. CATEGORY QUERIES (Giữ nguyên, tạm ẩn ACF Image để an toàn) ---
 
+// 1. Cập nhật hàm mapCategory
 const mapCategory = (node: any): Category => {
   return {
     id: node.id,
@@ -179,11 +180,16 @@ const mapCategory = (node: any): Category => {
     count: node.count || 0,
     image: node.image?.sourceUrl || 'https://via.placeholder.com/400x400?text=Category',
     description: node.description,
-    // headerImage: node.categoryExtras?.headerImage?.sourceUrl, 
-    // bottomContent: node.categoryExtras?.bottomContent,
+    // --- UNCOMMENT VÀ SỬA LẠI ĐOẠN NÀY ---
+    headerImage: node.categoryExtras?.headerImage?.sourceUrl || node.image?.sourceUrl, // Fallback về ảnh nhỏ nếu không có ảnh to
+    bottomContent: node.categoryExtras?.bottomContent || '',
+    trendHeader: node.categoryExtras?.trendHeader || '',
+    trendContent: node.categoryExtras?.trendContent || '',
+    warrantyMonths: node.categoryExtras?.warrantyMonths || 0,
   };
 };
 
+// 2. Cập nhật câu Query GetCategories
 export const getCategories = async (): Promise<Category[]> => {
   const data = await fetchAPI(`
     query GetCategories {
@@ -196,6 +202,18 @@ export const getCategories = async (): Promise<Category[]> => {
           description
           image {
             sourceUrl
+          }
+          # --- THÊM PHẦN NÀY (Yêu cầu cài WPGraphQL ACF) ---
+          categoryExtras {
+            headerImage {
+              node {
+                sourceUrl
+              }
+            }
+            bottomContent
+            trendHeader
+            trendContent
+            warrantyMonths
           }
         }
       }

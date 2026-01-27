@@ -46,10 +46,24 @@ export interface Category {
   name: string;
   slug: string;
   count: number;
-  image: string; // Thumbnail
-  headerImage?: string; // Large banner
-  description?: string; // Short intro
-  bottomContent?: string; // Long HTML content for SEO/Education
+  image: string;      // Ảnh nhỏ (Thumbnail)
+  description?: string;
+  
+  // --- CÁC TRƯỜNG MỚI TỪ ACF ---
+  headerImage?: string;   // Ảnh Banner lớn
+  bottomContent?: string; // Nội dung SEO dưới cùng
+  trendHeader?: string;   // Tiêu đề xu hướng (VD: XU HƯỚNG 2024)
+  trendContent?: string;  // Nội dung xu hướng
+  warrantyMonths?: number; // Số năm bảo hành
+}
+
+// --- THÊM MỚI INTERFACE CHO BANNER ---
+export interface BannerConfig {
+  title: string;
+  description: string;
+  trendContent: string;   // Nội dung xu hướng (VD: "Xu hướng 2026")
+  warrantyMonths: number; // Số tháng bảo hành (VD: 240)
+  backgroundImage: string;
 }
 
 // --- BLOG TYPES ---

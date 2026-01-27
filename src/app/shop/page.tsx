@@ -117,8 +117,8 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
 
                 <div className="hidden md:flex flex-col gap-3 min-w-[200px]">
                     <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white">
-                        <p className="text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">Xu hướng 2026</p>
-                        <p className="text-sm font-medium">Được KTS khuyên dùng cho căn hộ hiện đại</p>
+                        <p className="text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">{category.trendHeader}</p>
+                        <p className="text-sm font-medium">{category.trendContent}</p>
                     </div>
                      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white flex items-center justify-between gap-4">
                         <div className="flex flex-col">
@@ -127,7 +127,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                         </div>
                         <div className="h-8 w-px bg-white/20"></div>
                         <div className="flex flex-col">
-                           <span className="text-2xl font-bold">15</span>
+                           <span className="text-2xl font-bold">{category.warrantyMonths}</span>
                            <span className="text-[10px] text-slate-300 uppercase">Năm BH</span>
                         </div>
                     </div>
