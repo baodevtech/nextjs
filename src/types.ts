@@ -97,3 +97,27 @@ export interface BlogPost {
   tags: string[];
 }
 
+// --- HERO SECTION TYPES (NEW) ---
+export interface HotspotItem {
+  x: string; // Vd: "55%"
+  y: string; // Vd: "40%"
+  name: string;
+  price: string;
+  position: 'left' | 'right'; // Vị trí tooltip
+}
+
+export interface HeroSlide {
+  id: number | string;
+  subtitle: string;
+  title: string;
+  description: string;
+  image: string;
+  ctaLink: string;
+  ctaText?: string; // Nút bấm
+  hotspots: HotspotItem[];
+}
+
+export interface HomeSettings {
+  heroSlides: HeroSlide[];
+  // Có thể thêm các field khác của Home ở đây
+}

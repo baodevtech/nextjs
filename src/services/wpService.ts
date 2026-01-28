@@ -1,4 +1,4 @@
-import { Product, Category } from '../types';
+import { Product, Category, HomeSettings, HeroSlide } from '../types';
 import { PRODUCTS, CATEGORIES } from '../constants'; // Import Mock data làm fallback
 
 const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://portal.khopanel.com/graphql';
@@ -295,3 +295,64 @@ export const getCategories = async (): Promise<Category[]> => {
 };
 
 
+// Hàm map dữ liệu từ Raw GraphQL sang Interface
+const mapHeroSlides = (acfData: any): HeroSlide[] => {
+  if (!acfData?.heroSlides) return [];
+
+  return acfData.heroSlides.map((slide: any, index: number) => ({
+    id: index + 1,
+    subtitle: slide.subtitle || '',
+    title: slide.title || '',
+    description: slide.description || '',
+    image: slide.image?.sourceUrl || 'https://via.placeholder.com/1920x1080',
+    ctaLink: slide.ctaLink || '/shop',
+    ctaText: slide.ctaText || 'Khám Phá Ngay',
+    // Map Hotspots (Repeater lồng nhau)
+    hotspots: slide.hotspots ? slide.hotspots.map((h: any) => ({
+      x: h.x || '50%',
+      y: h.y || '50%',
+      name: h.name || '',
+      price: h.price || '',
+      position: h.position || 'left'
+    })) : []
+  }));
+};
+
+// Hàm lấy dữ liệu trang chủ
+export const getHomeData = async (): Promise<HomeSettings> => {
+  const data = await fetchAPI(`
+    query GetHomePageData {
+      # Lấy page theo URI "/" (Trang được set làm Front Page)
+      page(id: "/", idType: URI) {
+        homeSettings {
+          heroSlides {
+            subtitle
+            title
+            description
+            ctaLink
+            ctaText
+            image {
+              node {
+                sourceUrl
+              }
+            }
+            # Repeater Hotspots bên trong Slide
+            hotspots {
+              x
+              y
+              name
+              price
+              position
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  const settings = data?.page?.homeSettings;
+
+  return {
+    heroSlides: settings ? mapHeroSlides(settings) : []
+  };
+};

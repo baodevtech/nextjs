@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category } from '@/types';
+import { Product, Category, HomeSettings } from '@/types';
 import { CategoryShowcase } from './sections/CategoryShowcase';
 
 // Import các section con đã tách
@@ -16,20 +16,21 @@ import { CTABanner } from './sections/CTABanner';
 interface HomePageClientProps {
     initialProducts: Product[];
     initialCategories: Category[];
+    initialHomeData: HomeSettings;
 }
 
-export default function HomePageClient({ initialProducts, initialCategories }: HomePageClientProps) {
+export default function HomePageClient({ initialProducts, initialCategories, initialHomeData }: HomePageClientProps) {
   // Vì HomePageClient nhận props từ server component (page.tsx)
   // nên ta có thể dùng trực tiếp, hoặc lưu vào state nếu cần lọc/thay đổi ở client
   // Ở đây tôi dùng trực tiếp để đơn giản hoá, nhưng vẫn giữ state nếu bạn muốn fetch lại.
   const [products] = useState<Product[]>(initialProducts);
   const [categories] = useState<Category[]>(initialCategories);
-
+  const [homeSettings] = useState<HomeSettings>(initialHomeData);
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
       {/* 1. HERO SECTION */}
-      <HeroSection />
+      <HeroSection slides={homeSettings.heroSlides} />
 
       {/* 2. CATEGORY STRIP */}
       <CategoryShowcase categories={categories} />
