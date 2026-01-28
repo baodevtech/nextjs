@@ -9,7 +9,8 @@ export default async function HomePage() {
   // Data sẽ được lấy trên server trước khi trả HTML về trình duyệt -> Tốt cho SEO
   const [products, categories] = await Promise.all([
     getProducts(), 
-    getCategories()
+    getCategories(),
+    
   ]);
 
   // 2. Truyền dữ liệu xuống Client Component
