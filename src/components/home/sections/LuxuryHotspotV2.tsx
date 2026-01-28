@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ExternalLink } from 'lucide-react';
 
 interface HotspotProps {
     data: { 
@@ -10,40 +10,55 @@ interface HotspotProps {
         y: string; 
         name: string; 
         price: string; 
-        position?: string;
-        link?: string; // Thêm trường link
+        position?: string; // 'left' | 'right' từ ACF
+        link?: string;
     };
     isVisible: boolean;
     delayIndex: number;
 }
 
 export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delayIndex }) => {
-    // FIX: Thêm state nội bộ để kiểm soát quá trình mount
-    const [isSafeToAnimate, setIsSafeToAnimate] = useState(false);
+const [isSafeToAnimate, setIsSafeToAnimate] = useState(false);
+    
+    // --- FIX LOGIC: CHUẨN HÓA DỮ LIỆU ---
+    
+    // 1. Chuẩn hóa chuỗi: Xóa khoảng trắng thừa và chuyển về chữ thường
+    const positionRaw = data.position ? String(data.position).trim().toLowerCase() : '';
+    
+    // 2. Logic mặc định: Nếu > 50% thì hiện trái, ngược lại hiện phải
+    let showContentOnLeft = parseFloat(data.x) > 50;
 
-    // Xác định hướng mở của thẻ
-    const isRightSide = parseFloat(data.x) > 50;
+    // 3. Ưu tiên cấu hình từ CMS (đã chuẩn hóa)
+    if (positionRaw === 'left') {
+        showContentOnLeft = true;
+    } else if (positionRaw === 'right') {
+        showContentOnLeft = false;
+    }
 
-    // Tính toán delay animation
-    const baseDelay = delayIndex * 200 + 1000; // Xuất hiện sau khi slide load 1s
+    // --- LOG DEBUG (Đã cập nhật để xem giá trị thực tế) ---
+    console.log(
+        `%c Hotspot: ${data.name}`, 'color: yellow;',
+        `| Raw: '${data.position}'`,   // Xem giá trị gốc có khoảng trắng không
+        `| Parsed: '${positionRaw}'`,  // Giá trị đã xử lý
+        `| => Final: ${showContentOnLeft ? 'LEFT' : 'RIGHT'}`
+    );
+    // ------------------------------------
 
-    // Lấy link an toàn (fallback về # nếu không có)
+    const baseDelay = delayIndex * 200 + 1000;
     const productLink = data.link || '#';
 
-    // FIX: Effect này ngăn chặn hiện tượng "nháy" (flash) khi chuyển slide.
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsSafeToAnimate(true);
-        }, 50); // 50ms là đủ để React xả hết các update cũ
+        }, 50);
         return () => clearTimeout(timer);
     }, []);
 
-    // Logic hiển thị mới: Chỉ hiện khi cha cho phép VÀ component đã ổn định
     const show = isVisible && isSafeToAnimate;
 
     return (
         <div 
-            className={`absolute z-30 hidden md:block`}
+            className={`absolute z-30 hidden md:block pointer-events-auto cursor-pointer`}
             style={{ 
                 left: data.x, 
                 top: data.y,
@@ -51,7 +66,7 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
         >
             <div className="relative flex items-center justify-center">
                 
-                {/* 1. THE ANCHOR (Điểm neo - Tâm toạ độ) */}
+                {/* 1. THE ANCHOR */}
                 <div 
                     className="absolute z-20 transition-all duration-700 ease-out"
                     style={{
@@ -61,52 +76,51 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
                     }}
                 >
                     <div className="relative flex items-center justify-center">
-                        {/* Vòng sáng lan toả (Pulse Ring) */}
                         <div className="absolute w-8 h-8 rounded-full bg-white/20 animate-[ping_3s_ease-in-out_infinite]"></div>
-                        {/* Tâm điểm */}
                         <div className="w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,1)] border border-white/50"></div>
                     </div>
                 </div>
 
-                {/* 2. THE CONNECTING LINE (Đường dẫn) */}
+                {/* 2. THE CONNECTING LINE */}
                 <div 
                     className={`
                         absolute h-[1px] bg-white/50 transition-all duration-700 ease-out z-10
-                        ${isRightSide ? 'right-0 origin-right' : 'left-0 origin-left'}
+                        ${showContentOnLeft ? 'right-0 origin-right' : 'left-0 origin-left'}
                     `}
                     style={{
                         top: '0px',
-                        width: show ? '40px' : '0px', // Đường kẻ tự vẽ ra dài 40px
+                        width: show ? '50px' : '0px',
                         transitionDelay: show ? `${baseDelay + 200}ms` : '0ms'
                     }}
                 />
 
-                {/* 3. THE INFO LABEL (Thẻ thông tin - Luôn hiện) */}
+                {/* 3. THE INFO LABEL */}
                 <div 
                     className={`
-                        absolute top-1/2 -translate-y-1/2 
+                        absolute top-1/2 -translate-y-1/2 z-40
                         transition-all duration-700 ease-out
-                        ${isRightSide ? 'right-full mr-[40px]' : 'left-full ml-[40px]'}
+                        ${showContentOnLeft ? 'right-full mr-[50px]' : 'left-full ml-[50px]'}
                     `}
                     style={{
                         opacity: show ? 1 : 0,
                         transform: show 
                             ? 'translateX(0)' 
-                            : `translateX(${isRightSide ? '20px' : '-20px'})`,
+                            : `translateX(${showContentOnLeft ? '20px' : '-20px'})`,
                         transitionDelay: show ? `${baseDelay + 400}ms` : '0ms'
                     }}
                 >
-                    {/* DESIGN MỚI: Architectural Label */}
-                    <Link href={productLink} className="group flex items-stretch">
+                    <Link href={productLink} className="group flex items-stretch cursor-pointer">
                         
-                        {/* Thanh màu điểm nhấn (Accent Bar) */}
-                        <div className="w-1 bg-amber-400 rounded-l-sm"></div>
+                        {/* Thanh màu điểm nhấn */}
+                        <div className={`w-1 bg-amber-400 transition-all group-hover:w-1.5 ${showContentOnLeft ? 'order-2 rounded-r-sm' : 'order-1 rounded-l-sm'}`}></div>
                         
                         {/* Nội dung chính */}
-                        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 border-l-0 py-2.5 px-4 rounded-r-sm shadow-xl min-w-[180px] hover:bg-slate-900 transition-colors">
+                        <div className={`
+                            bg-slate-900/90 backdrop-blur-md border border-white/10 py-3 px-4 shadow-2xl min-w-[200px] hover:bg-slate-900 transition-colors
+                            ${showContentOnLeft ? 'order-1 rounded-l-sm border-r-0' : 'order-2 rounded-r-sm border-l-0'}
+                        `}>
                             
-                            {/* Tên sản phẩm */}
-                            <h3 className="font-serif text-white text-sm font-bold leading-tight mb-1 tracking-wide">
+                             <h3 className="font-serif text-white text-sm font-bold leading-tight mb-1 tracking-wide">
                                 {data.name}
                             </h3>
                             
