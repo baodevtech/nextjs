@@ -96,3 +96,4 @@ export interface BlogPost {
   author: Author;
   tags: string[];
 }
+

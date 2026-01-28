@@ -142,7 +142,7 @@ export const HeroSection = () => {
                          <p className="text-slate-200 text-lg font-light max-w-lg mb-10 leading-relaxed opacity-90 border-l border-white/20 pl-6">{slide.description}</p>
                          <div className="flex items-center gap-6">
                              <Link href={slide.ctaLink}>
-                                 <Button className="h-14 px-10 text-sm font-bold uppercase tracking-widest bg-white text-slate-900 hover:bg-amber-400 hover:text-slate-900 border-none transition-all duration-300">Khám Phá Ngay</Button>
+                                 <Button className="h-14 px-10 text-sm font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:bg-amber-400 hover:text-slate-900 border-none transition-all duration-300">Khám Phá Ngay</Button>
                              </Link>
                              <Link href="/projects" className="group flex items-center gap-3 text-white font-bold text-sm uppercase tracking-widest hover:text-amber-400 transition-colors">
                                  <span className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center group-hover:border-amber-400 group-hover:scale-110 transition-all"><PlayCircle size={20} className="ml-1" /></span>

@@ -232,8 +232,6 @@ export const getProductBySlug = async (slug: string): Promise<Product | undefine
   return mapProduct(data.product);
 };
 
-// --- 2. CATEGORY QUERIES (Giữ nguyên, tạm ẩn ACF Image để an toàn) ---
-
 // 1. Cập nhật hàm mapCategory
 const mapCategory = (node: any): Category => {
   return {
@@ -295,3 +293,5 @@ export const getCategories = async (): Promise<Category[]> => {
 
   return data.productCategories.nodes.map(mapCategory);
 };
+
+
