@@ -165,70 +165,59 @@ export interface ShopSettings {
 }
 
 // 2. Hàm lấy dữ liệu trang Shop (Giả sử trang Shop có slug là 'cua-hang' hoặc 'shop')
-export const getShopPageData = async (): Promise<ShopSettings | null> => {
+export const getShopSettings = async (): Promise<ShopSettings | null> => {
   const data = await fetchAPI(`
     query GetShopSettings {
-      page(id: "cua-hang", idType: SLUG) { # Thay "shop" bằng slug trang Cửa hàng của bạn
+      options {
         shopSettings {
           shopDescription
           benefitWarranty {
             heading
             subHeading
-            icon { sourceUrl }
+            icon { node { sourceUrl } }
           }
           benefitShipping {
             heading
             subHeading
-            icon { sourceUrl }
+            icon { node { sourceUrl } }
           }
           benefitVariety {
             heading
             subHeading
-            icon { sourceUrl }
+            icon { node { sourceUrl } }
           }
         }
       }
     }
   `);
 
-  const settings = data?.page?.shopSettings;
+  const settings = data?.options?.shopSettings;
   if (!settings) return null;
 
   return {
     description: settings.shopDescription || '',
     benefits: {
       warranty: {
-        heading: settings.benefitWarranty?.heading || 'Bảo hành 15 năm',
-        subHeading: settings.benefitWarranty?.subHeading || 'Chính hãng',
-        icon: settings.benefitWarranty?.icon?.sourceUrl || '',
+        heading: settings.benefitWarranty?.heading || '',
+        subHeading: settings.benefitWarranty?.subHeading || '',
+        icon: settings.benefitWarranty?.icon?.node?.sourceUrl || '',
       },
       shipping: {
-        heading: settings.benefitShipping?.heading || 'Giao hàng 24h',
-        subHeading: settings.benefitShipping?.subHeading || 'Toàn quốc',
-        icon: settings.benefitShipping?.icon?.sourceUrl || '',
+        heading: settings.benefitShipping?.heading || '',
+        subHeading: settings.benefitShipping?.subHeading || '',
+        icon: settings.benefitShipping?.icon?.node?.sourceUrl || '',
       },
       variety: {
-        heading: settings.benefitVariety?.heading || 'Đa dạng mẫu mã',
-        subHeading: settings.benefitVariety?.subHeading || '500+ Texture',
-        icon: settings.benefitVariety?.icon?.sourceUrl || '',
-      }
-    }
+        heading: settings.benefitVariety?.heading || '',
+        subHeading: settings.benefitVariety?.subHeading || '',
+        icon: settings.benefitVariety?.icon?.node?.sourceUrl || '',
+      },
+    },
   };
 };
 
-// 3. Hàm đếm tổng sản phẩm IN_STOCK (Sẵn sàng)
-export const getInStockTotal = async (): Promise<number> => {
-  const data = await fetchAPI(`
-    query GetInStockCount {
-      products(where: { stockStatus: IN_STOCK }) {
-        pageInfo {
-          total
-        }
-      }
-    }
-  `);
-  return data?.products?.pageInfo?.total || 0;
-};
+
+
 export const getProductBySlug = async (slug: string): Promise<Product | undefined> => {
   const data = await fetchAPI(`
     ${PRODUCT_FIELDS}
