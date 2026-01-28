@@ -154,7 +154,81 @@ export const getProducts = async (): Promise<Product[]> => {
   
   return data.products.nodes.map(mapProduct);
 };
+// 1. Interface cho Shop Settings
+export interface ShopSettings {
+  description: string;
+  benefits: {
+    warranty: { icon: string; heading: string; subHeading: string };
+    shipping: { icon: string; heading: string; subHeading: string };
+    variety:  { icon: string; heading: string; subHeading: string };
+  }
+}
 
+// 2. Hàm lấy dữ liệu trang Shop (Giả sử trang Shop có slug là 'cua-hang' hoặc 'shop')
+export const getShopPageData = async (): Promise<ShopSettings | null> => {
+  const data = await fetchAPI(`
+    query GetShopSettings {
+      page(id: "cua-hang", idType: SLUG) { # Thay "shop" bằng slug trang Cửa hàng của bạn
+        shopSettings {
+          shopDescription
+          benefitWarranty {
+            heading
+            subHeading
+            icon { sourceUrl }
+          }
+          benefitShipping {
+            heading
+            subHeading
+            icon { sourceUrl }
+          }
+          benefitVariety {
+            heading
+            subHeading
+            icon { sourceUrl }
+          }
+        }
+      }
+    }
+  `);
+
+  const settings = data?.page?.shopSettings;
+  if (!settings) return null;
+
+  return {
+    description: settings.shopDescription || '',
+    benefits: {
+      warranty: {
+        heading: settings.benefitWarranty?.heading || 'Bảo hành 15 năm',
+        subHeading: settings.benefitWarranty?.subHeading || 'Chính hãng',
+        icon: settings.benefitWarranty?.icon?.sourceUrl || '',
+      },
+      shipping: {
+        heading: settings.benefitShipping?.heading || 'Giao hàng 24h',
+        subHeading: settings.benefitShipping?.subHeading || 'Toàn quốc',
+        icon: settings.benefitShipping?.icon?.sourceUrl || '',
+      },
+      variety: {
+        heading: settings.benefitVariety?.heading || 'Đa dạng mẫu mã',
+        subHeading: settings.benefitVariety?.subHeading || '500+ Texture',
+        icon: settings.benefitVariety?.icon?.sourceUrl || '',
+      }
+    }
+  };
+};
+
+// 3. Hàm đếm tổng sản phẩm IN_STOCK (Sẵn sàng)
+export const getInStockTotal = async (): Promise<number> => {
+  const data = await fetchAPI(`
+    query GetInStockCount {
+      products(where: { stockStatus: IN_STOCK }) {
+        pageInfo {
+          total
+        }
+      }
+    }
+  `);
+  return data?.products?.pageInfo?.total || 0;
+};
 export const getProductBySlug = async (slug: string): Promise<Product | undefined> => {
   const data = await fetchAPI(`
     ${PRODUCT_FIELDS}
@@ -178,16 +252,21 @@ const mapCategory = (node: any): Category => {
     name: node.name,
     slug: node.slug,
     count: node.count || 0,
-    image: node.image?.sourceUrl || 'https://via.placeholder.com/400x400?text=Category',
+    image:
+      node.image?.sourceUrl ||
+      'https://via.placeholder.com/400x400?text=Category',
     description: node.description,
-    // --- UNCOMMENT VÀ SỬA LẠI ĐOẠN NÀY ---
-    headerImage: node.categoryExtras?.headerImage?.sourceUrl || node.image?.sourceUrl, // Fallback về ảnh nhỏ nếu không có ảnh to
+    headerImage:
+      node.categoryExtras?.headerImage?.node?.sourceUrl ||
+      node.image?.sourceUrl ||
+      '',
     bottomContent: node.categoryExtras?.bottomContent || '',
     trendHeader: node.categoryExtras?.trendHeader || '',
     trendContent: node.categoryExtras?.trendContent || '',
     warrantyMonths: node.categoryExtras?.warrantyMonths || 0,
   };
 };
+
 
 // 2. Cập nhật câu Query GetCategories
 export const getCategories = async (): Promise<Category[]> => {

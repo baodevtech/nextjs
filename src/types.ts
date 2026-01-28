@@ -16,7 +16,11 @@ export interface ProductDimensions {
   thickness: number; // mm
   area: number; // m2 per piece
 }
-
+export interface PolicyBlock {
+  icon: string;
+  heading: string;
+  content: string;
+}
 export interface Product {
   id: string;
   databaseId: number;
@@ -35,6 +39,12 @@ export interface Product {
   sku: string;
   categories: string[];
   dimensions: ProductDimensions;
+  banner?: {
+    shortDescription: string;
+    warranty: PolicyBlock;
+    shipping: PolicyBlock;
+    variety: PolicyBlock;
+  };
 }
 
 export interface CartItem extends Product {

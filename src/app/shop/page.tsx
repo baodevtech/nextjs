@@ -3,7 +3,13 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { getProducts, getCategories } from '@/services/wpService';
+import { 
+  getProducts, 
+  getCategories, 
+  getShopPageData, 
+  getInStockTotal,
+  type ShopSettings // Import Type từ service (hoặc từ types.ts tùy nơi bạn đặt)
+} from '@/services/wpService';
 import { Product, Category } from '@/types';
 import { ProductCard } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
@@ -13,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/common/UI';
 
+// --- COMPONENT BREADCRUMB ---
 const Breadcrumb: React.FC<{ categoryName?: string }> = ({ categoryName }) => (
     <nav className="flex text-xs text-slate-500 mb-4 z-10 relative">
         <Link href="/" className="hover:text-brand-600 transition-colors">Trang chủ</Link>
@@ -27,17 +34,47 @@ const Breadcrumb: React.FC<{ categoryName?: string }> = ({ categoryName }) => (
     </nav>
 );
 
-const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ category, productCount }) => {
+// --- COMPONENT HELPER: BENEFIT ICON ---
+// Hiển thị ảnh từ ACF nếu có, nếu không thì dùng Icon mặc định của Lucide
+const BenefitIcon = ({ src, FallbackIcon, colorClass, bgClass }: any) => {
+    if (src) {
+        return (
+            <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center overflow-hidden shrink-0`}>
+                 <img src={src} alt="icon" className="w-5 h-5 object-contain" />
+            </div>
+        );
+    }
+    return (
+        <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center ${colorClass} shrink-0`}>
+            <FallbackIcon size={18} />
+        </div>
+    );
+};
+
+// --- COMPONENT SHOP HEADER (BANNER) ---
+const ShopHeader: React.FC<{ 
+    category?: Category, 
+    productCount: number,
+    shopSettings?: ShopSettings | null 
+}> = ({ category, productCount, shopSettings }) => {
+
+    // TRƯỜNG HỢP 1: Trang Cửa hàng (Tất cả sản phẩm) -> Dùng Shop Settings từ ACF
     if (!category) {
+        // Fallback data nếu chưa nhập trong Admin
+        const desc = shopSettings?.description || "Khám phá bộ sưu tập vật liệu ốp tường cao cấp, được tuyển chọn kỹ lưỡng để mang lại vẻ đẹp bền vững cho ngôi nhà của bạn.";
+        const b1 = shopSettings?.benefits?.warranty;
+        const b2 = shopSettings?.benefits?.shipping;
+        const b3 = shopSettings?.benefits?.variety;
+
         return (
              <div className="mb-10 bg-gradient-to-br from-brand-50 via-white to-brand-50 rounded-2xl p-8 md:p-12 border border-brand-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="relative z-10 max-w-2xl flex-1">
                     <Breadcrumb />
-                    <h1 className="text-3xl md:text-4xl  font-bold text-slate-900 mb-3">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
                         Tất Cả Sản Phẩm
                     </h1>
                     <p className="text-slate-500 text-sm leading-relaxed mb-6 max-w-lg">
-                        Khám phá bộ sưu tập vật liệu ốp tường cao cấp, được tuyển chọn kỹ lưỡng để mang lại vẻ đẹp bền vững cho ngôi nhà của bạn.
+                        {desc}
                     </p>
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-gray-200 shadow-sm text-xs font-bold text-slate-600">
                         <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
@@ -46,31 +83,28 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                 </div>
 
                 <div className="relative z-10 hidden md:grid grid-cols-2 gap-3 min-w-[280px]">
+                    {/* Benefit 1 */}
                     <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex flex-col items-center text-center gap-2 hover:transform hover:scale-105 transition-transform duration-300">
-                        <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600">
-                            <ShieldCheck size={18} />
-                        </div>
+                        <BenefitIcon src={b1?.icon} FallbackIcon={ShieldCheck} bgClass="bg-brand-100" colorClass="text-brand-600" />
                         <div>
-                            <p className="font-bold text-xs text-slate-900">Bảo hành 15 năm</p>
-                            <p className="text-[10px] text-slate-500">Chính hãng</p>
+                            <p className="font-bold text-xs text-slate-900">{b1?.heading || 'Bảo hành 15 năm'}</p>
+                            <p className="text-[10px] text-slate-500">{b1?.subHeading || 'Chính hãng'}</p>
                         </div>
                     </div>
+                    {/* Benefit 2 */}
                     <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex flex-col items-center text-center gap-2 hover:transform hover:scale-105 transition-transform duration-300">
-                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-                            <Truck size={18} />
-                        </div>
+                        <BenefitIcon src={b2?.icon} FallbackIcon={Truck} bgClass="bg-orange-100" colorClass="text-orange-600" />
                         <div>
-                            <p className="font-bold text-xs text-slate-900">Giao hàng 24h</p>
-                            <p className="text-[10px] text-slate-500">Toàn quốc</p>
+                            <p className="font-bold text-xs text-slate-900">{b2?.heading || 'Giao hàng 24h'}</p>
+                            <p className="text-[10px] text-slate-500">{b2?.subHeading || 'Toàn quốc'}</p>
                         </div>
                     </div>
+                    {/* Benefit 3 */}
                     <div className="col-span-2 bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-brand-100 flex items-center gap-4 hover:transform hover:scale-105 transition-transform duration-300">
-                         <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-                            <Palette size={18} />
-                        </div>
+                         <BenefitIcon src={b3?.icon} FallbackIcon={Palette} bgClass="bg-purple-100" colorClass="text-purple-600" />
                         <div className="text-left">
-                            <p className="font-bold text-xs text-slate-900">Đa dạng mẫu mã</p>
-                            <p className="text-[10px] text-slate-500">500+ Texture Vân đá, Vân gỗ</p>
+                            <p className="font-bold text-xs text-slate-900">{b3?.heading || 'Đa dạng mẫu mã'}</p>
+                            <p className="text-[10px] text-slate-500">{b3?.subHeading || '500+ Texture'}</p>
                         </div>
                     </div>
                 </div>
@@ -80,6 +114,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
         );
     }
 
+    // TRƯỜNG HỢP 2: Trang Chi tiết Danh mục -> Dùng Header Banner của Danh mục
     return (
         <div className="mb-10 rounded-2xl overflow-hidden relative min-h-[280px] flex flex-col md:flex-row items-center">
             <div className="absolute inset-0">
@@ -101,7 +136,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                         <span className="text-white font-semibold">{category.name}</span>
                     </nav>
 
-                    <h1 className="text-3xl md:text-5xl  font-bold text-white mb-4 drop-shadow-sm">
+                    <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-sm">
                         {category.name}
                     </h1>
                     <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-xl mb-6 font-light">
@@ -117,8 +152,8 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
 
                 <div className="hidden md:flex flex-col gap-3 min-w-[200px]">
                     <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white">
-                        <p className="text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">{category.trendHeader}</p>
-                        <p className="text-sm font-medium">{category.trendContent}</p>
+                        <p className="text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">{category.trendHeader || 'Xu hướng'}</p>
+                        <p className="text-sm font-medium">{category.trendContent || 'Mới cập nhật'}</p>
                     </div>
                      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white flex items-center justify-between gap-4">
                         <div className="flex flex-col">
@@ -127,7 +162,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
                         </div>
                         <div className="h-8 w-px bg-white/20"></div>
                         <div className="flex flex-col">
-                           <span className="text-2xl font-bold">{category.warrantyMonths}</span>
+                           <span className="text-2xl font-bold">{category.warrantyMonths || 10}</span>
                            <span className="text-[10px] text-slate-300 uppercase">Năm BH</span>
                         </div>
                     </div>
@@ -137,6 +172,7 @@ const ShopHeader: React.FC<{ category?: Category, productCount: number }> = ({ c
     );
 };
 
+// --- COMPONENT FILTER ---
 const FilterSection: React.FC<{ 
     title: string, 
     isOpen?: boolean, 
@@ -157,9 +193,12 @@ const FilterSection: React.FC<{
     );
 };
 
+// --- MAIN CONTENT ---
 function ShopContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null); // State chứa cấu hình Banner Shop
+  const [inStockCount, setInStockCount] = useState(0); // State chứa tổng tồn kho thực tế
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
@@ -175,9 +214,17 @@ function ShopContent() {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
+      // Fetch tất cả dữ liệu cần thiết song song
+      const [prods, cats, settings, stock] = await Promise.all([
+          getProducts(), 
+          getCategories(),
+          getShopPageData(), // Lấy settings banner
+          getInStockTotal()  // Lấy số lượng tồn kho
+      ]);
       setProducts(prods);
       setCategories(cats);
+      setShopSettings(settings);
+      setInStockCount(stock);
       setLoading(false);
     };
     init();
@@ -229,7 +276,14 @@ function ShopContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <ShopHeader category={currentCategory} productCount={filteredProducts.length} />
+        
+        {/* SHOP HEADER ĐƯỢC NÂNG CẤP */}
+        <ShopHeader 
+            category={currentCategory} 
+            // Nếu có Category -> hiện số SP đã lọc. Nếu là Shop tổng -> hiện tổng tồn kho thực tế
+            productCount={currentCategory ? filteredProducts.length : inStockCount} 
+            shopSettings={shopSettings} // Truyền settings vào
+        />
 
         <div className="flex flex-col lg:flex-row gap-10">
           <aside className={`
@@ -447,7 +501,7 @@ function ShopContent() {
                                     <Info size={14} />
                                     Thông tin hữu ích
                                 </div>
-                                <h3 className="text-2xl  font-bold text-slate-900 mb-2">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-2">
                                     Tìm hiểu về {currentCategory.name}
                                 </h3>
                                 <p className="text-sm text-slate-500 leading-relaxed">
