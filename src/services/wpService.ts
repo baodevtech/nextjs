@@ -304,16 +304,18 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
     subtitle: slide.subtitle || '',
     title: slide.title || '',
     description: slide.description || '',
-    image: slide.image?.sourceUrl || 'https://via.placeholder.com/1920x1080',
+    image: slide.image?.node?.sourceUrl ?? '',  
     ctaLink: slide.ctaLink || '/shop',
     ctaText: slide.ctaText || 'Khám Phá Ngay',
+    productLink: slide.productLink || [],
     // Map Hotspots (Repeater lồng nhau)
     hotspots: slide.hotspots ? slide.hotspots.map((h: any) => ({
       x: h.x || '50%',
       y: h.y || '50%',
       name: h.name || '',
       price: h.price || '',
-      position: h.position || 'left'
+      position: h.position || 'left',
+      link: h.link || '',
     })) : []
   }));
 };
@@ -343,6 +345,7 @@ export const getHomeData = async (): Promise<HomeSettings> => {
               name
               price
               position
+              link
             }
           }
         }

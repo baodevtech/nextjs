@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 
 interface HotspotProps {
-    data: { x: string, y: string, name: string, price: string, position?: string };
+    data: { 
+        x: string; 
+        y: string; 
+        name: string; 
+        price: string; 
+        position?: string;
+        link?: string; // Thêm trường link
+    };
     isVisible: boolean;
     delayIndex: number;
 }
@@ -20,9 +27,10 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
     // Tính toán delay animation
     const baseDelay = delayIndex * 200 + 1000; // Xuất hiện sau khi slide load 1s
 
+    // Lấy link an toàn (fallback về # nếu không có)
+    const productLink = data.link || '#';
+
     // FIX: Effect này ngăn chặn hiện tượng "nháy" (flash) khi chuyển slide.
-    // Nó đảm bảo component luôn khởi đầu ở trạng thái ẩn trong 50ms đầu tiên,
-    // bất chấp prop 'isVisible' từ cha có đang là true hay không.
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsSafeToAnimate(true);
@@ -49,7 +57,6 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
                     style={{
                         opacity: show ? 1 : 0,
                         transform: show ? 'scale(1)' : 'scale(0)',
-                        // Chỉ áp dụng delay khi hiện ra, khi ẩn thì ẩn ngay lập tức
                         transitionDelay: show ? `${baseDelay}ms` : '0ms'
                     }}
                 >
@@ -62,7 +69,6 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
                 </div>
 
                 {/* 2. THE CONNECTING LINE (Đường dẫn) */}
-                {/* Luôn hiển thị đường kẻ nối từ tâm ra thẻ */}
                 <div 
                     className={`
                         absolute h-[1px] bg-white/50 transition-all duration-700 ease-out z-10
@@ -84,17 +90,14 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
                     `}
                     style={{
                         opacity: show ? 1 : 0,
-                        // Hiệu ứng trượt nhẹ vào vị trí
                         transform: show 
                             ? 'translateX(0)' 
                             : `translateX(${isRightSide ? '20px' : '-20px'})`,
                         transitionDelay: show ? `${baseDelay + 400}ms` : '0ms'
                     }}
                 >
-                    {/* DESIGN MỚI: Architectural Label 
-                       Gọn gàng, nền tối mờ, border mảnh
-                    */}
-                    <Link href="/shop" className="group flex items-stretch">
+                    {/* DESIGN MỚI: Architectural Label */}
+                    <Link href={productLink} className="group flex items-stretch">
                         
                         {/* Thanh màu điểm nhấn (Accent Bar) */}
                         <div className="w-1 bg-amber-400 rounded-l-sm"></div>

@@ -104,6 +104,7 @@ export interface HotspotItem {
   name: string;
   price: string;
   position: 'left' | 'right'; // Vị trí tooltip
+  link?: string;
 }
 
 export interface HeroSlide {
@@ -115,6 +116,7 @@ export interface HeroSlide {
   ctaLink: string;
   ctaText?: string; // Nút bấm
   hotspots: HotspotItem[];
+  productLink?: string;
 }
 
 export interface HomeSettings {
