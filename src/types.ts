@@ -105,6 +105,7 @@ export interface HotspotItem {
   price: string;
   position: 'left' | 'right'; // Vị trí tooltip
   link?: string;
+  nofollow?: boolean;
 }
 
 export interface HeroSlide {
@@ -118,8 +119,35 @@ export interface HeroSlide {
   hotspots: HotspotItem[];
   productLink?: string;
 }
-
+export interface SignatureTab {
+  id: string | number;
+  name: string;
+  products: Product[]; // Sử dụng lại interface Product đã có
+}
+export interface ShopLookItem {
+  id: string | number;
+  x: number;
+  y: number;
+  product: Product; // Sản phẩm gắn với điểm đó
+}
 export interface HomeSettings {
+  // --- HERO SECTION ---
   heroSlides: HeroSlide[];
-  // Có thể thêm các field khác của Home ở đây
+  // --- CATEGORY SECTION ---
+  categoryHeadingNormal?: string;
+  categoryHeadingHighlight?: string;
+  categorySubheading?: string;
+  catalogueText?: string;
+  enableCategoryNofollow?: boolean;
+  // --- SIGNATURE SECTION ---
+  signatureHeadingNormal?: string;
+  signatureHeadingHighlight?: string;
+  signatureDesc?: string;
+  signatureTabs: SignatureTab[]; // Mảng các Tab
+  // --- SHOP THE LOOK  ---
+  shopLookHeading?: string;
+  shopLookSubheading?: string;
+  shopLookImage?: string;
+  shopLookItems: ShopLookItem[];
+
 }

@@ -26,6 +26,25 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
   const [products] = useState<Product[]>(initialProducts);
   const [categories] = useState<Category[]>(initialCategories);
   const [homeSettings] = useState<HomeSettings>(initialHomeData);
+  const categorySettings = {
+    headingNormal: initialHomeData.categoryHeadingNormal,
+    headingHighlight: initialHomeData.categoryHeadingHighlight,
+    subheading: initialHomeData.categorySubheading,
+    catalogueText: initialHomeData.catalogueText,
+    enableNofollow: initialHomeData.enableCategoryNofollow
+  };
+  const signatureSettings = {
+    headingNormal: initialHomeData.signatureHeadingNormal,
+    headingHighlight: initialHomeData.signatureHeadingHighlight,
+    description: initialHomeData.signatureDesc,
+    tabs: initialHomeData.signatureTabs // Truyền mảng tabs xuống
+  };
+  const shopLookSettings = {
+    heading: initialHomeData.shopLookHeading,
+    subheading: initialHomeData.shopLookSubheading,
+    image: initialHomeData.shopLookImage,
+    items: initialHomeData.shopLookItems || []
+  };
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
@@ -33,13 +52,16 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
       <HeroSection slides={homeSettings.heroSlides} />
 
       {/* 2. CATEGORY STRIP */}
-      <CategoryShowcase categories={categories} />
+      <CategoryShowcase 
+         categories={categories} 
+         settings={categorySettings} 
+      />
 
       {/* 3. SIGNATURE COLLECTION */}
-      <SignatureProduct products={products} />
+      <SignatureProduct settings={signatureSettings} />
 
       {/* 4. SHOP THE LOOK */}
-      <ShopTheLook />
+      <ShopTheLook settings={shopLookSettings} />
 
       {/* 5. ACCESSORIES */}
       <AccessoriesSection products={products} />

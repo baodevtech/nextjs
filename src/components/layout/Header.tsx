@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
             <a href="tel:0912345678" className="hover:text-white transition-colors">
                 Hotline: 0912.345.678
             </a>
-            <span>Showroom: Long Biên, Hà Nội</span>
+            <span>Showroom: Quận 12, Hồ Chí Minh</span>
           </div>
         </div>
       </div>

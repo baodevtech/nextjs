@@ -12,6 +12,7 @@ interface HotspotProps {
         price: string; 
         position?: string; // 'left' | 'right' từ ACF
         link?: string;
+        nofollow?: boolean;
     };
     isVisible: boolean;
     delayIndex: number;
@@ -34,18 +35,11 @@ const [isSafeToAnimate, setIsSafeToAnimate] = useState(false);
     } else if (positionRaw === 'right') {
         showContentOnLeft = false;
     }
-
-    // --- LOG DEBUG (Đã cập nhật để xem giá trị thực tế) ---
-    console.log(
-        `%c Hotspot: ${data.name}`, 'color: yellow;',
-        `| Raw: '${data.position}'`,   // Xem giá trị gốc có khoảng trắng không
-        `| Parsed: '${positionRaw}'`,  // Giá trị đã xử lý
-        `| => Final: ${showContentOnLeft ? 'LEFT' : 'RIGHT'}`
-    );
     // ------------------------------------
 
     const baseDelay = delayIndex * 200 + 1000;
-    const productLink = data.link || '#';
+    const hasLink = Boolean(data.link && data.link.trim() !== '');
+    const relAttributes = data.nofollow ? "nofollow noopener noreferrer" : undefined;
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -109,7 +103,7 @@ const [isSafeToAnimate, setIsSafeToAnimate] = useState(false);
                         transitionDelay: show ? `${baseDelay + 400}ms` : '0ms'
                     }}
                 >
-                    <Link href={productLink} className="group flex items-stretch cursor-pointer">
+                    <Link  href={hasLink ? data.link : ''} className="group flex items-stretch cursor-pointer" rel={relAttributes}>
                         
                         {/* Thanh màu điểm nhấn */}
                         <div className={`w-1 bg-amber-400 transition-all group-hover:w-1.5 ${showContentOnLeft ? 'order-2 rounded-r-sm' : 'order-1 rounded-l-sm'}`}></div>

@@ -8,9 +8,22 @@ import { Category } from '@/types';
 
 interface CategoryShowcaseProps {
   categories: Category[];
+  settings?: {
+    headingNormal?: string;
+    headingHighlight?: string;
+    subheading?: string;
+    catalogueText?: string;
+    enableNofollow?: boolean;
+  };
 }
 
-export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }) => {
+export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps) => {
+  // Fallback data nếu settings chưa có (lúc đầu chưa fetch xong)
+  const catalogueText = settings?.catalogueText || "Catalogue 2024";
+  const headingNormal = settings?.headingNormal || "Danh Mục";
+  const headingHighlight = settings?.headingHighlight || "Sản Phẩm";
+  const subheading = settings?.subheading || "Khám phá các dòng vật liệu ốp tường đẳng cấp từ Đại Nam Wall.";
+  const relAttr = settings?.enableNofollow ? "nofollow" : undefined;
   return (
     <section className="py-16 bg-slate-50 relative overflow-hidden">
       {/* Background: Pattern lưới kỹ thuật mờ (Technical Grid Pattern) */}
@@ -24,17 +37,17 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }
         <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
           <div>
              <div className="inline-flex items-center gap-2 text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-3 shadow-sm">
-                 <Layers size={12} /> Catalogue 2024
+                 <Layers size={12} /> {catalogueText}
              </div>
           {/* Tiêu đề lớn */}
              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-3">
-                Danh Mục <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-700 via-brand-600 to-brand-800">Sản Phẩm</span>
+                {headingNormal} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-700 via-brand-600 to-brand-800">{headingHighlight}</span>
              </h2>
 
              {/* Dòng mô tả & Decor */}
              <div className="flex items-center gap-4">
                  <div className="h-[2px] w-12 bg-gradient-to-r from-amber-500 to-transparent rounded-full"></div>
-                 <p className="text-slate-500 text-sm font-medium">Khám phá thư viện vật liệu ốp tường đẳng cấp quốc tế.</p>
+                 <p className="text-slate-500 text-sm font-medium">{subheading}</p>
              </div>
           </div>
           <Link href="/shop" className="text-sm font-bold text-slate-500 hover:text-brand-600 transition-colors flex items-center gap-2 group bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm hover:shadow-md">
@@ -47,7 +60,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ categories }
           {categories.map((cat, idx) => (
             <Link 
               key={cat.id} 
-              href={`/shop?cat=${cat.slug}`}
+              href={`/shop?cat=${cat.slug}`} rel={relAttr}
               className="group relative h-[180px] rounded-xl overflow-hidden bg-slate-900 shadow-sm hover:shadow-2xl hover:shadow-brand-900/20 transition-all duration-500 border border-slate-200/0 hover:border-brand-500/50"
             >
               {/* 1. LAYER ẢNH NỀN */}

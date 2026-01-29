@@ -1,21 +1,33 @@
-import { Product, Category, HomeSettings, HeroSlide } from '../types';
-import { PRODUCTS, CATEGORIES } from '../constants'; // Import Mock data làm fallback
+import {
+  Product,
+  Category,
+  HomeSettings,
+  HeroSlide,
+  SignatureTab,
+  ShopLookItem,
+} from "../types";
+import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
-const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://portal.khopanel.com/graphql';
+const API_URL =
+  process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
+  "https://portal.khopanel.com/graphql";
 
 /**
  * FETCH HELPER
  * Hàm dùng chung để gọi API có xử lý lỗi (try-catch)
  */
-async function fetchAPI(query: string, { variables }: { variables?: any } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
-  
+async function fetchAPI(
+  query: string,
+  { variables }: { variables?: any } = {},
+) {
+  const headers = { "Content-Type": "application/json" };
+
   try {
     const res = await fetch(API_URL, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
-      next: { revalidate: 60 } // Revalidate mỗi 60s
+      next: { revalidate: 60 }, // Revalidate mỗi 60s
     });
 
     const json = await res.json();
@@ -91,13 +103,16 @@ const PRODUCT_FIELDS = `
 // Hàm chuyển đổi dữ liệu từ WP sang cấu trúc Frontend
 const mapProduct = (node: any): Product => {
   if (!node) return {} as Product;
-  
-  const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
-  
+
+  const rawPrice = node.price
+    ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
+    : 0;
+
   // Xử lý Brand: Lấy item đầu tiên từ productBrands
-  const brandName = node.productBrands?.nodes && node.productBrands.nodes.length > 0 
-    ? node.productBrands.nodes[0].name 
-    : 'Đại Nam Wall'; // Fallback nếu không có brand
+  const brandName =
+    node.productBrands?.nodes && node.productBrands.nodes.length > 0
+      ? node.productBrands.nodes[0].name
+      : "Đại Nam Wall"; // Fallback nếu không có brand
 
   return {
     id: node.id,
@@ -105,32 +120,38 @@ const mapProduct = (node: any): Product => {
     slug: node.slug,
     name: node.name,
     brand: brandName, // Dữ liệu từ Taxonomy product_brand
-    origin: node.productSpecifications?.origin || '',
-    surface: node.productSpecifications?.surface || '',
-    warranty: node.productSpecifications?.warranty || '',
-    description: node.description || '',
-    shortDescription: node.shortDescription || '',
+    origin: node.productSpecifications?.origin || "",
+    surface: node.productSpecifications?.surface || "",
+    warranty: node.productSpecifications?.warranty || "",
+    description: node.description || "",
+    shortDescription: node.shortDescription || "",
     image: {
-      sourceUrl: node.image?.sourceUrl || 'https://via.placeholder.com/600x600?text=No+Image',
+      sourceUrl:
+        node.image?.sourceUrl ||
+        "https://via.placeholder.com/600x600?text=No+Image",
       altText: node.image?.altText || node.name,
     },
-    galleryImages: node.galleryImages?.nodes?.map((img: any) => ({
-      sourceUrl: img.sourceUrl,
-      altText: img.altText || node.name
-    })) || [],
+    galleryImages:
+      node.galleryImages?.nodes?.map((img: any) => ({
+        sourceUrl: img.sourceUrl,
+        altText: img.altText || node.name,
+      })) || [],
     price: {
       amount: rawPrice,
-      formatted: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice)
+      formatted: new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(rawPrice),
     },
-    stockStatus: node.stockStatus === 'IN_STOCK' ? 'IN_STOCK' : 'OUT_OF_STOCK',
-    sku: node.sku || '',
+    stockStatus: node.stockStatus === "IN_STOCK" ? "IN_STOCK" : "OUT_OF_STOCK",
+    sku: node.sku || "",
     categories: node.productCategories?.nodes?.map((c: any) => c.slug) || [],
     dimensions: {
       length: Number(node.productSpecifications?.length) || 0,
       width: Number(node.productSpecifications?.width) || 0,
       thickness: Number(node.productSpecifications?.thickness) || 0,
       area: Number(node.productSpecifications?.area) || 0,
-    }
+    },
   };
 };
 
@@ -145,13 +166,15 @@ export const getProducts = async (): Promise<Product[]> => {
       }
     }
   `);
-  
+
   // Nếu API lỗi hoặc không có dữ liệu, dùng Mock Data để không sập trang
   if (!data || !data.products) {
-      console.warn("⚠️ Không lấy được Products từ API (đang dùng Mock Data). Hãy kiểm tra lại tên trường trong GraphiQL.");
-      return PRODUCTS as unknown as Product[]; 
+    console.warn(
+      "⚠️ Không lấy được Products từ API (đang dùng Mock Data). Hãy kiểm tra lại tên trường trong GraphiQL.",
+    );
+    return PRODUCTS as unknown as Product[];
   }
-  
+
   return data.products.nodes.map(mapProduct);
 };
 // 1. Interface cho Shop Settings
@@ -160,8 +183,8 @@ export interface ShopSettings {
   benefits: {
     warranty: { icon: string; heading: string; subHeading: string };
     shipping: { icon: string; heading: string; subHeading: string };
-    variety:  { icon: string; heading: string; subHeading: string };
-  }
+    variety: { icon: string; heading: string; subHeading: string };
+  };
 }
 
 // 2. Hàm lấy dữ liệu trang Shop (Giả sử trang Shop có slug là 'cua-hang' hoặc 'shop')
@@ -195,38 +218,41 @@ export const getShopSettings = async (): Promise<ShopSettings | null> => {
   if (!settings) return null;
 
   return {
-    description: settings.shopDescription || '',
+    description: settings.shopDescription || "",
     benefits: {
       warranty: {
-        heading: settings.benefitWarranty?.heading || '',
-        subHeading: settings.benefitWarranty?.subHeading || '',
-        icon: settings.benefitWarranty?.icon?.node?.sourceUrl || '',
+        heading: settings.benefitWarranty?.heading || "",
+        subHeading: settings.benefitWarranty?.subHeading || "",
+        icon: settings.benefitWarranty?.icon?.node?.sourceUrl || "",
       },
       shipping: {
-        heading: settings.benefitShipping?.heading || '',
-        subHeading: settings.benefitShipping?.subHeading || '',
-        icon: settings.benefitShipping?.icon?.node?.sourceUrl || '',
+        heading: settings.benefitShipping?.heading || "",
+        subHeading: settings.benefitShipping?.subHeading || "",
+        icon: settings.benefitShipping?.icon?.node?.sourceUrl || "",
       },
       variety: {
-        heading: settings.benefitVariety?.heading || '',
-        subHeading: settings.benefitVariety?.subHeading || '',
-        icon: settings.benefitVariety?.icon?.node?.sourceUrl || '',
+        heading: settings.benefitVariety?.heading || "",
+        subHeading: settings.benefitVariety?.subHeading || "",
+        icon: settings.benefitVariety?.icon?.node?.sourceUrl || "",
       },
     },
   };
 };
 
-
-
-export const getProductBySlug = async (slug: string): Promise<Product | undefined> => {
-  const data = await fetchAPI(`
+export const getProductBySlug = async (
+  slug: string,
+): Promise<Product | undefined> => {
+  const data = await fetchAPI(
+    `
     ${PRODUCT_FIELDS}
     query GetProductBySlug($slug: ID!) {
       product(id: $slug, idType: SLUG) {
         ...ProductFields
       }
     }
-  `, { variables: { slug } });
+  `,
+    { variables: { slug } },
+  );
 
   if (!data?.product) return undefined;
   return mapProduct(data.product);
@@ -241,19 +267,18 @@ const mapCategory = (node: any): Category => {
     count: node.count || 0,
     image:
       node.image?.sourceUrl ||
-      'https://via.placeholder.com/400x400?text=Category',
+      "https://via.placeholder.com/400x400?text=Category",
     description: node.description,
     headerImage:
       node.categoryExtras?.headerImage?.node?.sourceUrl ||
       node.image?.sourceUrl ||
-      '',
-    bottomContent: node.categoryExtras?.bottomContent || '',
-    trendHeader: node.categoryExtras?.trendHeader || '',
-    trendContent: node.categoryExtras?.trendContent || '',
+      "",
+    bottomContent: node.categoryExtras?.bottomContent || "",
+    trendHeader: node.categoryExtras?.trendHeader || "",
+    trendContent: node.categoryExtras?.trendContent || "",
     warrantyMonths: node.categoryExtras?.warrantyMonths || 0,
   };
 };
-
 
 // 2. Cập nhật câu Query GetCategories
 export const getCategories = async (): Promise<Category[]> => {
@@ -287,13 +312,12 @@ export const getCategories = async (): Promise<Category[]> => {
   `);
 
   if (!data || !data.productCategories) {
-      console.warn("⚠️ Không lấy được Categories từ API (đang dùng Mock Data).");
-      return CATEGORIES;
+    console.warn("⚠️ Không lấy được Categories từ API (đang dùng Mock Data).");
+    return CATEGORIES;
   }
 
   return data.productCategories.nodes.map(mapCategory);
 };
-
 
 // Hàm map dữ liệu từ Raw GraphQL sang Interface
 const mapHeroSlides = (acfData: any): HeroSlide[] => {
@@ -301,61 +325,167 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
 
   return acfData.heroSlides.map((slide: any, index: number) => ({
     id: index + 1,
-    subtitle: slide.subtitle || '',
-    title: slide.title || '',
-    description: slide.description || '',
-    image: slide.image?.node?.sourceUrl ?? '',  
-    ctaLink: slide.ctaLink || '/shop',
-    ctaText: slide.ctaText || 'Khám Phá Ngay',
+    subtitle: slide.subtitle || "",
+    title: slide.title || "",
+    description: slide.description || "",
+    image: slide.image?.node?.sourceUrl ?? "",
+    ctaLink: slide.ctaLink || "/shop",
+    ctaText: slide.ctaText || "Khám Phá Ngay",
     productLink: slide.productLink || [],
     // Map Hotspots (Repeater lồng nhau)
-    hotspots: slide.hotspots ? slide.hotspots.map((h: any) => ({
-      x: h.x || '50%',
-      y: h.y || '50%',
-      name: h.name || '',
-      price: h.price || '',
-      position: h.position || 'left',
-      link: h.link || '',
-    })) : []
+    hotspots: slide.hotspots
+      ? slide.hotspots.map((h: any) => ({
+          x: h.x || "50%",
+          y: h.y || "50%",
+          name: h.name || "",
+          price: h.price || "",
+          position: h.position || "left",
+          link: h.link || "",
+          nofollow: h.isNofollow || false,
+        }))
+      : [],
   }));
 };
+const mapAcfProducts = (nodes: any[]): Product[] => {
+  if (!Array.isArray(nodes)) return [];
+  return nodes.map((node) => mapProduct(node)); // Tận dụng hàm mapProduct có sẵn
+};
+// Helper Map Shop Look
+// Helper Map Shop Look (PHIÊN BẢN AN TOÀN NHẤT)
+const mapShopLookItems = (items: any[]): ShopLookItem[] => {
+  if (!items) return [];
+  
+  return items.map((item, index) => {
+    const product = mapProduct(item.product);
+    
+    // [FIX] Kiểm tra kỹ: Phải có ID, có Ảnh VÀ có Giá
+    if (!product || !product.id || !product.image || !product.price) {
+        return null; 
+    }
 
+    return {
+      id: index,
+      x: Number(item.x) || 50,
+      y: Number(item.y) || 50,
+      product: product
+    };
+  })
+  .filter((item): item is ShopLookItem => item !== null);
+};
+const getSingleImage = (field: any) => {
+  if (!field) return '';
+  // Trường hợp 1: Trả về trực tiếp (thường gặp ở bản mới)
+  if (field.sourceUrl) return field.sourceUrl;
+  // Trường hợp 2: Trả về qua node
+  if (field.node?.sourceUrl) return field.node.sourceUrl;
+  // Trường hợp 3: Fallback nếu lỡ nó là mảng
+  if (field.edges?.[0]?.node?.sourceUrl) return field.edges[0].node.sourceUrl;
+  
+  return '';
+};
 // Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
   const data = await fetchAPI(`
+    ${PRODUCT_FIELDS}
     query GetHomePageData {
-      # Lấy page theo URI "/" (Trang được set làm Front Page)
       page(id: "/", idType: URI) {
         homeSettings {
+          
+          # --- HERO SECTION ---
           heroSlides {
-            subtitle
-            title
-            description
-            ctaLink
-            ctaText
-            image {
-              node {
-                sourceUrl
+            subtitle, title, description, ctaLink, ctaText
+            image { node { sourceUrl } }
+            hotspots { x, y, name, price, position, link, isNofollow }
+          }
+
+          # --- CATEGORY SECTION ---
+          categoryHeadingNormal
+          categoryHeadingHighlight
+          categorySubheading
+          catalogueText
+          enableCatNofollow
+
+          # --- SIGNATURE SECTION ---
+          signatureHeadingNormal
+          signatureHeadingHighlight
+          signatureDesc
+          signatureTabs {
+            tabName
+            products {
+              nodes {
+                ... on Product { ...ProductFields }
               }
             }
-            # Repeater Hotspots bên trong Slide
-            hotspots {
-              x
-              y
-              name
-              price
-              position
-              link
+          }
+
+          # --- SHOP THE LOOK (FIXED) ---
+          shopLookHeading
+          shopLookSubheading
+          
+          # [FIX 1] Query ảnh đơn lẻ (thường trả về node hoặc trực tiếp MediaItem)
+          shopLookImage {
+             node { sourceUrl }
+          }
+          
+          shopLookItems {
+            x
+            y
+            # [FIX 2] Bỏ cấp 'nodes' vì Post Object trả về 1 Item trực tiếp
+            products {
+              nodes {
+                
+              
+               ... on Product {
+                 ...ProductFields
+               }
+            }
             }
           }
+
         }
       }
     }
   `);
 
   const settings = data?.page?.homeSettings;
+  const acfData = settings || {};
+  
+  // Helper cũ dùng cho gallery/icon (giữ nguyên nếu các phần khác vẫn dùng)
+  const getArrayImg = (field: any) => field?.edges?.[0]?.node?.sourceUrl || '';
+
+  // Map Signature Tabs (Giữ nguyên)
+  const mapSignatureTabs = (tabsData: any[]): SignatureTab[] => {
+    if (!tabsData) return [];
+    return tabsData.map((tab, idx) => ({
+      id: idx,
+      name: tab.tabName || `Tab ${idx + 1}`,
+      products: mapAcfProducts(tab.products?.nodes || [])
+    }));
+  };
 
   return {
-    heroSlides: settings ? mapHeroSlides(settings) : []
+    // Hero
+    heroSlides: settings ? mapHeroSlides(settings) : [],
+    
+    // Category
+    categoryHeadingNormal: acfData.categoryHeadingNormal || 'Danh Mục',
+    categoryHeadingHighlight: acfData.categoryHeadingHighlight || 'Sản Phẩm',
+    categorySubheading: acfData.categorySubheading || '',
+    catalogueText: acfData.catalogueText || 'Catalogue 2024',
+    enableCategoryNofollow: acfData.enableCatNofollow || false,
+
+    // Signature
+    signatureHeadingNormal: acfData.signatureHeadingNormal || 'Signature',
+    signatureHeadingHighlight: acfData.signatureHeadingHighlight || 'Collection',
+    signatureDesc: acfData.signatureDesc || '',
+    signatureTabs: mapSignatureTabs(acfData.signatureTabs),
+
+    // Shop The Look [MAPPING MỚI]
+    shopLookHeading: acfData.shopLookHeading || 'Shop The Look',
+    shopLookSubheading: acfData.shopLookSubheading || '',
+    // Dùng helper mới cho ảnh đơn
+    shopLookImage: getSingleImage(acfData.shopLookImage), 
+    // Dùng helper mới cho items
+    shopLookItems: mapShopLookItems(acfData.shopLookItems),
   };
 };
