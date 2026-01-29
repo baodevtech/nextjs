@@ -45,6 +45,16 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     image: initialHomeData.shopLookImage,
     items: initialHomeData.shopLookItems || []
   };
+  // [MỚI] Settings cho Accessories
+  const accSettings = {
+    highlights: initialHomeData.accHighlights || [],
+    viewAll: initialHomeData.accViewAll,
+    prodHeading: initialHomeData.accProdHeading,
+    products: initialHomeData.accProducts || [],
+    headNormal: initialHomeData.accHeadNormal || 'Chi Tiết.',
+    headHighlight: initialHomeData.accHeadHighlight || 'Định Hình Đẳng Cấp.',
+    phuKienSub: initialHomeData.accphuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
+  };
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
@@ -64,7 +74,7 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
       <ShopTheLook settings={shopLookSettings} />
 
       {/* 5. ACCESSORIES */}
-      <AccessoriesSection products={products} />
+     <AccessoriesSection settings={accSettings} />
 
       {/* 6. QUALITY STANDARDS */}
       <QualitySection />

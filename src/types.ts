@@ -130,6 +130,15 @@ export interface ShopLookItem {
   y: number;
   product: Product; // Sản phẩm gắn với điểm đó
 }
+
+// [THÊM MỚI] Dữ liệu thẻ highlight phụ kiện
+export interface AccessoryHighlight {
+  id: string | number;
+  title: string;
+  subtitle: string;
+  image: string;
+  link: string;
+}
 export interface HomeSettings {
   // --- HERO SECTION ---
   heroSlides: HeroSlide[];
@@ -149,5 +158,17 @@ export interface HomeSettings {
   shopLookSubheading?: string;
   shopLookImage?: string;
   shopLookItems: ShopLookItem[];
+  // --- ACCESSORIES SECTION  ---
+  headNormal: string;
+  headHighlight: string;
+  phuKienSub: string;
+  accHighlights: AccessoryHighlight[];
+  accViewAll: {
+    text: string;
+    sub: string;
+    link: string;
+  };
+  accProdHeading: string;
+  accProducts: Product[]; 
 
 }

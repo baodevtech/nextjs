@@ -5,6 +5,7 @@ import {
   HeroSlide,
   SignatureTab,
   ShopLookItem,
+  AccessoryHighlight,
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -377,8 +378,8 @@ const mapShopLookItems = (items: any[]): ShopLookItem[] => {
 
     return {
       id: index,
-      x: Number(item.x) || 50,
-      y: Number(item.y) || 50,
+      x: parseFloat(item.x) || 50,
+      y: parseFloat(item.y) || 50,
       product: product
     };
   })
@@ -394,6 +395,18 @@ const getSingleImage = (field: any) => {
   if (field.edges?.[0]?.node?.sourceUrl) return field.edges[0].node.sourceUrl;
   
   return '';
+};
+
+// Helper Map Accesssory Highlights
+const mapAccHighlights = (items: any[]): AccessoryHighlight[] => {
+  if (!items) return [];
+  return items.map((item, idx) => ({
+    id: idx,
+    title: item.title || '',
+    subtitle: item.subtitle || '',
+    image: getSingleImage(item.image), // Dùng lại helper getSingleImage
+    link: item.link || '/shop'
+  }));
 };
 // Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
@@ -444,16 +457,37 @@ export const getHomeData = async (): Promise<HomeSettings> => {
             y
             # [FIX 2] Bỏ cấp 'nodes' vì Post Object trả về 1 Item trực tiếp
             products {
-              nodes {
-                
-              
-               ... on Product {
-                 ...ProductFields
-               }
+                nodes {             
+                ... on Product {
+                  ...ProductFields
+                }
+              }
+            }
+          }
+            
+        # --- ACCESSORIES SECTION ---
+          accessoryHighlights {
+             title
+             subtitle
+             link
+             image { node { sourceUrl } }
+          }
+          accViewAll {
+             viewAllText
+             viewAllSub
+             viewAllLink
+          }
+          headNormal
+          headHighlight
+          phuKienSub
+          accProdHeading
+          accessoryProducts {
+            nodes {
+            ... on Product {
+               ...ProductFields
             }
             }
           }
-
         }
       }
     }
@@ -474,6 +508,9 @@ export const getHomeData = async (): Promise<HomeSettings> => {
       products: mapAcfProducts(tab.products?.nodes || [])
     }));
   };
+  const accProductsRaw = acfData.accessoryProducts?.nodes 
+      ? acfData.accessoryProducts.nodes 
+      : acfData.accessoryProducts;
 
   return {
     // Hero
@@ -499,5 +536,17 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     shopLookImage: getSingleImage(acfData.shopLookImage), 
     // Dùng helper mới cho items
     shopLookItems: mapShopLookItems(acfData.shopLookItems),
+    // [MAPPING ACCESSORIES]
+    headNormal: acfData.headNormal || 'Chi Tiết.',
+    headHighlight: acfData.headHighlight || 'Định Hình Đẳng Cấp.',
+    phuKienSub: acfData.phuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
+    accHighlights: mapAccHighlights(acfData.accessoryHighlights),
+    accViewAll: {
+      text: acfData.accViewAll?.viewAllText || 'Xem Tất Cả Phụ Kiện',
+      sub: acfData.accViewAll?.viewAllSub || 'Khám phá thêm các vật tư phụ trợ',
+      link: acfData.accViewAll?.viewAllLink || '/shop'
+    },
+    accProdHeading: acfData.accProdHeading || 'SẢN PHẨM PHỔ BIẾN',
+    accProducts: mapAcfProducts(accProductsRaw || []),
   };
 };
