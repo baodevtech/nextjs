@@ -352,14 +352,26 @@ const mapAcfProducts = (nodes: any[]): Product[] => {
 };
 // Helper Map Shop Look
 // Helper Map Shop Look (PHIÊN BẢN AN TOÀN NHẤT)
+// Helper Map Shop Look (PHIÊN BẢN DEBUG & NỚI LỎNG)
+// Helper Map Shop Look (ĐÃ FIX THEO CẤU TRÚC LOG)
 const mapShopLookItems = (items: any[]): ShopLookItem[] => {
+  // console.log("🔍 [ShopLook] Raw Items:", items); // Debug
+
   if (!items) return [];
   
   return items.map((item, index) => {
-    const product = mapProduct(item.product);
+    // [FIX] Lấy sản phẩm đầu tiên trong mảng nodes của trường 'products'
+    const productNode = item.products?.nodes?.[0];
+
+    if (!productNode) {
+        // console.warn(`⚠️ [ShopLook] Item ${index} chưa chọn sản phẩm.`);
+        return null;
+    }
+
+    const product = mapProduct(productNode);
     
-    // [FIX] Kiểm tra kỹ: Phải có ID, có Ảnh VÀ có Giá
-    if (!product || !product.id || !product.image || !product.price) {
+    // Kiểm tra dữ liệu sản phẩm hợp lệ
+    if (!product || !product.id) {
         return null; 
     }
 
