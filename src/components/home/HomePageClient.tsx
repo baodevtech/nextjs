@@ -51,9 +51,9 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     viewAll: initialHomeData.accViewAll,
     prodHeading: initialHomeData.accProdHeading,
     products: initialHomeData.accProducts || [],
-    headNormal: initialHomeData.accHeadNormal || 'Chi Tiết.',
-    headHighlight: initialHomeData.accHeadHighlight || 'Định Hình Đẳng Cấp.',
-    phuKienSub: initialHomeData.accphuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
+    headNormal: initialHomeData.headNormal || 'Chi Tiết.',
+    headHighlight: initialHomeData.headHighlight || 'Định Hình Đẳng Cấp.',
+    phuKienSub: initialHomeData.phuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
   };
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
