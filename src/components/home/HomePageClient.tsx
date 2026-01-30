@@ -55,6 +55,14 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     headHighlight: initialHomeData.headHighlight || 'Định Hình Đẳng Cấp.',
     phuKienSub: initialHomeData.phuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
   };
+  // [MỚI] Settings cho Quality Section
+  const qualitySettings = {
+    heading: initialHomeData.qualityHeading,
+    subheading: initialHomeData.qualitySubheading,
+    large: initialHomeData.qualityLarge,
+    small: initialHomeData.qualitySmall
+  };
+  const blogPosts = initialHomeData.blogPosts || [];
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
@@ -77,10 +85,10 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
      <AccessoriesSection settings={accSettings} />
 
       {/* 6. QUALITY STANDARDS */}
-      <QualitySection />
+      <QualitySection settings={qualitySettings} />
 
       {/* 7. BLOG */}
-      <BlogSection />
+      <BlogSection posts={blogPosts} />
 
       {/* 8. CTA BANNER */}
       <CTABanner />

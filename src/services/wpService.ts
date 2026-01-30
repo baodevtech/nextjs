@@ -6,6 +6,9 @@ import {
   SignatureTab,
   ShopLookItem,
   AccessoryHighlight,
+  QualityLargeCard,
+  QualitySmallCard,
+  BlogPost,
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -408,6 +411,94 @@ const mapAccHighlights = (items: any[]): AccessoryHighlight[] => {
     link: item.link || '/shop'
   }));
 };
+// Helper Map Bài viết
+const mapBlogPosts = (nodes: any[]): BlogPost[] => {
+  if (!nodes) return [];
+  return nodes.map((node) => {
+    const date = new Date(node.date);
+    const formattedDate = new Intl.DateTimeFormat('vi-VN').format(date);
+    const cleanExcerpt = node.excerpt ? node.excerpt.replace(/<[^>]+>/g, '') : '';
+
+    return {
+      id: node.id,
+      title: node.title || '',
+      slug: node.slug || '',
+      excerpt: cleanExcerpt,
+      content: node.content || '', // [MỚI] Lấy nội dung HTML
+      date: formattedDate,
+      image: node.featuredImage?.node?.sourceUrl || 'https://via.placeholder.com/800x600?text=No+Image',
+      category: node.categories?.nodes?.[0]?.name || 'Tin tức',
+      author: {
+        name: node.author?.node?.name || 'Admin',
+        avatar: node.author?.node?.avatar?.url || ''
+      },
+      tags: node.tags?.nodes?.map((t: any) => t.name) || [],
+    };
+  });
+};
+// 1. Lấy tất cả bài viết (Cho trang /blog)
+export const getAllPosts = async (): Promise<BlogPost[]> => {
+  const data = await fetchAPI(`
+    query GetAllPosts {
+      posts(first: 100, where: { orderby: { field: DATE, order: DESC } }) {
+        nodes {
+          id
+          title
+          slug
+          date
+          excerpt
+          content
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          tags { 
+            nodes { name, slug }
+          }
+          author {
+            node { name, avatar { url } }
+          }
+        }
+      }
+    }
+  `);
+  return mapBlogPosts(data?.posts?.nodes || []);
+};
+
+// 2. Lấy chi tiết 1 bài viết theo Slug (Cho trang /blog/[slug])
+export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
+  const data = await fetchAPI(`
+    query GetPostBySlug($id: ID!) {
+      post(id: $id, idType: SLUG) {
+        id
+        title
+        slug
+        date
+        excerpt
+        content
+        featuredImage {
+          node { sourceUrl }
+        }
+        categories {
+          nodes { name, slug }
+        }
+        # [QUAN TRỌNG] Thêm đoạn này để lấy Tags
+        tags {
+          nodes { name, slug }
+        }
+        author {
+          node { name, avatar { url } }
+        }
+      }
+    }
+  `, { variables: { id: slug } });
+
+  if (!data?.post) return null;
+  const posts = mapBlogPosts([data.post]);
+  return posts[0];
+};
 // Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
   const data = await fetchAPI(`
@@ -483,9 +574,48 @@ export const getHomeData = async (): Promise<HomeSettings> => {
           accProdHeading
           accessoryProducts {
             nodes {
-            ... on Product {
-               ...ProductFields
+              ... on Product {
+                ...ProductFields
+              }
             }
+          }
+         # --- QUALITY SECTION ---
+          qualityHeading
+          qualitySubheading
+          
+          qualityLarge {
+            title
+            description
+            icon { node { sourceUrl } }
+            image { node { sourceUrl } }
+            tags { text }
+          }
+          
+            qualitySmall {
+              title
+              description
+              icon { node { sourceUrl } }
+            }
+          }
+        }
+        # --- [MỚI] QUERY BÀI VIẾT (Nằm ngoài page, ngang hàng với page) ---
+        posts(first: 3, where: { orderby: { field: DATE, order: DESC } }) {
+        nodes {
+          id
+          title
+          slug
+          date
+          excerpt
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          author {
+            node {
+              name
+              avatar { url }
             }
           }
         }
@@ -495,10 +625,10 @@ export const getHomeData = async (): Promise<HomeSettings> => {
 
   const settings = data?.page?.homeSettings;
   const acfData = settings || {};
-  
+  const postsData = data?.posts?.nodes || [];
   // Helper cũ dùng cho gallery/icon (giữ nguyên nếu các phần khác vẫn dùng)
   const getArrayImg = (field: any) => field?.edges?.[0]?.node?.sourceUrl || '';
-
+  const getImg = (field: any) => field?.node?.sourceUrl || ''; // Helper nhanh cho field group/repeater
   // Map Signature Tabs (Giữ nguyên)
   const mapSignatureTabs = (tabsData: any[]): SignatureTab[] => {
     if (!tabsData) return [];
@@ -511,7 +641,22 @@ export const getHomeData = async (): Promise<HomeSettings> => {
   const accProductsRaw = acfData.accessoryProducts?.nodes 
       ? acfData.accessoryProducts.nodes 
       : acfData.accessoryProducts;
-
+  // Map Quality Data
+  const mapQualityLarge = (data: any): QualityLargeCard => ({
+      title: data?.title || 'Cấu Trúc 5 Lớp Siêu Bền',
+      description: data?.description || 'Công nghệ ép nhiệt Nano tiên tiến...',
+      icon: getImg(data?.icon),
+      image: getImg(data?.image),
+      tags: data?.tags ? data.tags.map((t: any) => ({ text: t.text })) : []
+  });
+  const mapQualitySmall = (list: any[]): QualitySmallCard[] => {
+      if (!list) return [];
+      return list.map(item => ({
+          title: item.title || '',
+          description: item.description || '',
+          icon: getImg(item.icon)
+      }));
+  };
   return {
     // Hero
     heroSlides: settings ? mapHeroSlides(settings) : [],
@@ -548,5 +693,12 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     },
     accProdHeading: acfData.accProdHeading || 'SẢN PHẨM PHỔ BIẾN',
     accProducts: mapAcfProducts(accProductsRaw || []),
+    // [MAPPING QUALITY]
+    qualityHeading: acfData.qualityHeading || 'Tiêu Chuẩn Đại Nam Wall',
+    qualitySubheading: acfData.qualitySubheading || '',
+    qualityLarge: mapQualityLarge(acfData.qualityLarge),
+    qualitySmall: mapQualitySmall(acfData.qualitySmall),
+    // [MAPPING BLOG]
+    blogPosts: mapBlogPosts(postsData),
   };
 };

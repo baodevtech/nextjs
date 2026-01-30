@@ -130,7 +130,23 @@ export interface ShopLookItem {
   y: number;
   product: Product; // Sản phẩm gắn với điểm đó
 }
+export interface QualityTag {
+  text: string;
+}
 
+export interface QualityLargeCard {
+  icon: string;
+  title: string;
+  description: string;
+  image: string;
+  tags: QualityTag[];
+}
+
+export interface QualitySmallCard {
+  icon: string;
+  title: string;
+  description: string;
+}
 // [THÊM MỚI] Dữ liệu thẻ highlight phụ kiện
 export interface AccessoryHighlight {
   id: string | number;
@@ -138,6 +154,20 @@ export interface AccessoryHighlight {
   subtitle: string;
   image: string;
   link: string;
+}
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  date: string;       // Đã format: "20/01/2026"
+  image: string;      // Ảnh đại diện
+  category: string;   // Tên danh mục đầu tiên
+  author: {
+    name: string;
+    avatar: string;
+  };
+  tags: string[];
 }
 export interface HomeSettings {
   // --- HERO SECTION ---
@@ -170,5 +200,11 @@ export interface HomeSettings {
   };
   accProdHeading: string;
   accProducts: Product[]; 
-
+  // --- QUALITY SECTION ---
+  qualityHeading: string;
+  qualitySubheading: string;
+  qualityLarge: QualityLargeCard;
+  qualitySmall: QualitySmallCard[];
+  // --- BLOG SECTION ---
+  blogPosts: BlogPost[]; 
 }
