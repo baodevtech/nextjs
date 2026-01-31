@@ -208,3 +208,24 @@ export interface HomeSettings {
   // --- BLOG SECTION ---
   blogPosts: BlogPost[]; 
 }
+
+export interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  image: string;
+  category: string;     
+  categorySlug: string;  
+  tags: string[];
+  location: string;
+  year: string;
+  area: string;
+  desc: string;
+  architect: string;
+  client: string;
+  challenge: string;
+  solution: string;
+  materials: string[]; // Chuyển thành mảng string
+  gallery: string[];   // Album ảnh
+  subtitle: string;    // Có thể dùng category làm subtitle
+}

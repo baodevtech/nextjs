@@ -232,7 +232,7 @@ export const Header: React.FC = () => {
               {[
                   { name: 'Ứng Dụng', path: '/applications' },
                   { name: 'Báo Giá', path: '/pricing' },
-                  { name: 'Dự Án', path: '/projects' },
+                  { name: 'Dự Án', path: '/du-an' },
                   { name: 'Tin Tức', path: '/blog' },
                   { name: 'Liên Hệ', path: '/contact' },
               ].map((link) => (

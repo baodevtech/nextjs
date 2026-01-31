@@ -9,6 +9,7 @@ import {
   QualityLargeCard,
   QualitySmallCard,
   BlogPost,
+  Project,
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -498,6 +499,174 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   if (!data?.post) return null;
   const posts = mapBlogPosts([data.post]);
   return posts[0];
+};
+// [CẬP NHẬT] Map Projects
+const mapProjects = (nodes: any[]): Project[] => {
+  if (!nodes) return [];
+  return nodes.map((node) => {
+    // Lấy dữ liệu từ nhóm ACF 'projectFields'
+    const acf = node.projectFields || {}; 
+    const firstCat = node.categories?.nodes?.[0];
+
+    // Xử lý Excerpt: Loại bỏ thẻ HTML <p>, <br> thừa
+    const cleanExcerpt = node.excerpt 
+        ? node.excerpt.replace(/<[^>]+>/g, '').trim() 
+        : '';
+
+    return {
+      id: node.id,
+      title: node.title || '',
+      slug: node.slug || '',
+      image: node.featuredImage?.node?.sourceUrl || 'https://via.placeholder.com/800x600',
+      category: firstCat?.name || 'Dự án',
+      categorySlug: firstCat?.slug || 'other', 
+      
+      // [THAY ĐỔI] Lấy từ Excerpt mặc định của WP
+      desc: cleanExcerpt, 
+
+      // Các trường ACF còn lại (Vẫn giữ nguyên)
+      location: acf.location || 'Việt Nam',
+      year: acf.completionYear || '2024',
+      area: acf.area || '---',
+      
+      tags: node.tags?.nodes?.map((t: any) => t.name) || []
+    };
+  });
+};
+
+// [CẬP NHẬT] Hàm query GraphQL
+export const getAllProjects = async (): Promise<Project[]> => {
+  const data = await fetchAPI(`
+    query GetAllProjects {
+      projects(first: 100, where: { orderby: { field: DATE, order: DESC } }) {
+        nodes {
+          id
+          title
+          slug
+          
+          # [MỚI] Lấy mô tả ngắn mặc định của WordPress
+          excerpt
+          
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          tags {
+            nodes { name }
+          }
+          
+          # ACF Fields (Đã bỏ shortDesc)
+          projectFields {
+             location
+             completionYear
+             area
+          }
+        }
+      }
+    }
+  `);
+  return mapProjects(data?.projects?.nodes || []);
+};
+// Helper Map Chi Tiết Dự Án
+const mapProjectDetail = (node: any): Project => {
+  if (!node) return {} as Project;
+  
+  const acf = node.projectFields || {};
+  const firstCat = node.categories?.nodes?.[0];
+
+  // [SỬA LỖI 2] Xử lý Gallery: Phải map qua .nodes
+  const galleryImages = acf.albumImg?.nodes 
+    ? acf.albumImg.nodes.map((img: any) => img.sourceUrl) 
+    : [];
+  
+  // Nếu gallery trống, fallback bằng ảnh đại diện
+  if (galleryImages.length === 0 && node.featuredImage) {
+      galleryImages.push(node.featuredImage.node.sourceUrl);
+  }
+
+  // Xử lý Materials
+  const materialsList = acf.materials 
+    ? acf.materials.split(/\r?\n|,/).map((s: string) => s.trim()).filter(Boolean)
+    : ['Đang cập nhật'];
+
+  // Xử lý Excerpt
+  const cleanExcerpt = node.excerpt 
+    ? node.excerpt.replace(/<[^>]+>/g, '').trim() 
+    : '';
+
+  return {
+    id: node.id,
+    title: node.title || '',
+    slug: node.slug || '',
+    image: node.featuredImage?.node?.sourceUrl || '',
+    
+    category: firstCat?.name || 'Dự án',
+    categorySlug: firstCat?.slug || 'other',
+    subtitle: firstCat?.name || 'Chi tiết dự án',
+
+    // ACF Fields
+    location: acf.location || 'Việt Nam',
+    year: acf.completionYear || '2024',
+    area: acf.area || '---',
+    desc: cleanExcerpt,
+    
+    // Các trường chi tiết
+    architect: acf.architect || 'Đại Nam Wall Team',
+    client: acf.client || 'Khách hàng',
+    challenge: acf.challenge || 'Đang cập nhật nội dung...',
+    solution: acf.solution || 'Đang cập nhật nội dung...',
+    materials: materialsList,
+    gallery: galleryImages,
+    
+    tags: node.tags?.nodes?.map((t: any) => t.name) || []
+  };
+};
+
+// [CẬP NHẬT] Query Lấy 1 Dự án theo Slug (SỬA LỖI 1 & 2)
+export const getProjectBySlug = async (slug: string): Promise<Project | null> => {
+  // [SỬA LỖI 1] Thay vì query 'project', ta query 'projects' và lọc 'where: { name: $slug }'
+  // 'name' trong bộ lọc chính là slug của bài viết
+  const data = await fetchAPI(`
+    query GetProjectBySlug($slug: String!) {
+      projects(first: 1, where: { name: $slug }) {
+        nodes {
+          id
+          title
+          slug
+          excerpt
+          featuredImage { node { sourceUrl } }
+          categories { nodes { name, slug } }
+          tags { nodes { name } }
+          
+          projectFields {
+             location
+             completionYear
+             area
+             architect
+             client
+             challenge
+             solution
+             materials
+             
+             # [SỬA LỖI 2] Gallery phải có 'nodes'
+             albumImg {
+                nodes {
+                  sourceUrl
+                }
+             }
+          }
+        }
+      }
+    }
+  `, { variables: { slug: slug } });
+
+  // Lấy phần tử đầu tiên trong mảng nodes
+  const projectNode = data?.projects?.nodes?.[0];
+  
+  if (!projectNode) return null;
+  return mapProjectDetail(projectNode);
 };
 // Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
