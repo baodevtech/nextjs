@@ -10,6 +10,10 @@ import {
   QualitySmallCard,
   BlogPost,
   Project,
+  ApplicationPageData,
+  ApplicationSpace,
+  Hotspot,
+  Stat
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -869,5 +873,85 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     qualitySmall: mapQualitySmall(acfData.qualitySmall),
     // [MAPPING BLOG]
     blogPosts: mapBlogPosts(postsData),
+  };
+};
+
+const mapHotspots = (acfHotspots: any[]): Hotspot[] => {
+  if (!acfHotspots) return [];
+  return acfHotspots.map(h => ({
+    x: h.xPos || 50,
+    y: h.yPos || 50,
+    label: h.label || '',
+    description: h.desc || '',
+    iconType: h.iconType || 'default'
+  }));
+};
+
+const mapStats = (acfStats: any[]): Stat[] => {
+  if (!acfStats) return [];
+  return acfStats.map(s => ({
+    label: s.statLabel || '',
+    value: s.statValue || ''
+  }));
+};
+
+export const getApplicationsPageData = async (): Promise<ApplicationPageData> => {
+  const data = await fetchAPI(`
+    query GetApplicationOptions {
+      # Query vào Options Page (Tên field bạn đặt ở Bước 1)
+      applicationOptions {
+        # Tên nhóm trường bạn đặt ở Bước 2
+        appData {
+          # Phần Hero
+          heroTitle
+          heroDesc
+          beforeImage { node { sourceUrl } }
+          afterImage { node { sourceUrl } }
+          
+          # Phần Spaces (Giờ là Repeater, không phải nodes nữa)
+          spaces {
+            name
+            subtitle
+            description
+            image { node { sourceUrl } }
+            
+            # Repeater lồng nhau
+            hotspots {
+              xPos
+              yPos
+              label
+              desc
+              iconType
+            }
+            stats {
+              statLabel
+              statValue
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  // Lấy dữ liệu từ đường dẫn mới
+  const acf = data?.applicationOptions?.appData || {};
+  const rawSpaces = acf.spaces || [];
+
+  const spaces: ApplicationSpace[] = rawSpaces.map((item: any, index: number) => ({
+    id: `space-${index}`, // Tự tạo ID vì Repeater không có ID như Post
+    name: item.name || '',
+    title: item.subtitle || '',
+    description: item.description || '',
+    image: item.image?.node?.sourceUrl || '',
+    hotspots: mapHotspots(item.hotspots),
+    stats: mapStats(item.stats)
+  }));
+
+  return {
+    heroTitle: acf.heroTitle || 'Nghệ Thuật Biến Hóa Không Gian',
+    heroDesc: acf.heroDesc || '',
+    beforeImage: acf.beforeImage?.node?.sourceUrl || '',
+    afterImage: acf.afterImage?.node?.sourceUrl || '',
+    spaces
   };
 };

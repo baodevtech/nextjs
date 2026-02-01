@@ -229,3 +229,36 @@ export interface Project {
   gallery: string[];   // Album ảnh
   subtitle: string;    // Có thể dùng category làm subtitle
 }
+
+export type IconType = 'layers' | 'maximize' | 'zap' | 'mic' | 'shield' | 'droplets' | 'star' | 'default';
+
+export interface Hotspot {
+  x: number;
+  y: number;
+  label: string;
+  description: string;
+  iconType: IconType; // Lưu key của icon
+}
+
+export interface Stat {
+  label: string;
+  value: string;
+}
+
+export interface ApplicationSpace {
+  id: string;
+  name: string;      // Post Title (Vd: Phòng Khách)
+  title: string;     // ACF Subtitle (Vd: Tuyệt Tác Phòng Khách)
+  description: string; // Post Excerpt hoặc ACF
+  image: string;
+  hotspots: Hotspot[];
+  stats: Stat[];
+}
+
+export interface ApplicationPageData {
+  heroTitle: string;
+  heroDesc: string;
+  beforeImage: string;
+  afterImage: string;
+  spaces: ApplicationSpace[];
+}
