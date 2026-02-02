@@ -13,7 +13,8 @@ import {
   ApplicationPageData,
   ApplicationSpace,
   Hotspot,
-  Stat
+  Stat,
+  RenovationFeature
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -894,7 +895,14 @@ const mapStats = (acfStats: any[]): Stat[] => {
     value: s.statValue || ''
   }));
 };
-
+const mapRenovationFeatures = (list: any[]): RenovationFeature[] => {
+  if (!list) return [];
+  return list.map(item => ({
+    icon: item.iconType || 'star', // Key của icon (clock, leaf...)
+    title: item.title || '',
+    desc: item.desc || ''
+  }));
+};
 export const getApplicationsPageData = async (): Promise<ApplicationPageData> => {
   const data = await fetchAPI(`
     query GetApplicationOptions {
@@ -905,8 +913,6 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
           # Phần Hero
           heroTitle
           heroDesc
-          beforeImage { node { sourceUrl } }
-          afterImage { node { sourceUrl } }
           
           # Phần Spaces (Giờ là Repeater, không phải nodes nữa)
           spaces {
@@ -928,6 +934,32 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
               statValue
             }
           }
+            # [CẬP NHẬT] Phần Renovation
+          renovationHeading
+          renovationDesc
+          beforeImage { node { sourceUrl } }
+          afterImage { node { sourceUrl } }
+          renovationFeatures { # Repeater mới
+             iconType
+             title
+             desc
+          }
+
+          # [CẬP NHẬT] Phần Commercial
+          commHeading
+          commDesc
+          commLinkText # Field mới
+          commLinkUrl  # Field mới
+          commItems {
+            title
+            desc
+            image { node { sourceUrl } }
+          }
+          # [MỚI] Phần CTA
+          ctaHeading
+          ctaDesc
+          ctaBtnPrimary
+          ctaBtnSecondary
         }
       }
     }
@@ -950,8 +982,24 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
   return {
     heroTitle: acf.heroTitle || 'Nghệ Thuật Biến Hóa Không Gian',
     heroDesc: acf.heroDesc || '',
+    spaces,
+    // [MAP DỮ LIỆU MỚI]
+    renovationHeading: acf.renovationHeading || 'Cải Tạo Thần Tốc',
+    renovationDesc: acf.renovationDesc || 'Chứng kiến sự lột xác ngoạn mục...',
     beforeImage: acf.beforeImage?.node?.sourceUrl || '',
     afterImage: acf.afterImage?.node?.sourceUrl || '',
-    spaces
+    renovationFeatures: mapRenovationFeatures(acf.renovationFeatures),
+
+    commHeading: acf.commHeading || 'Không Gian Thương Mại',
+    commDesc: acf.commDesc || '',
+    commLinkText: acf.commLinkText || 'Xem dự án thực tế',
+    commLinkUrl: acf.commLinkUrl || '/du-an',
+    commItems: acf.commItems?.map((item: any) => ({
+      title: item.title || '', desc: item.desc || '', image: item.image?.node?.sourceUrl || ''
+    })) || [],
+    ctaHeading: acf.ctaHeading || 'Bạn Đã Có Ý Tưởng?',
+    ctaDesc: acf.ctaDesc || '',
+    ctaBtnPrimary: acf.ctaBtnPrimary || 'Đăng Ký Tư Vấn',
+    ctaBtnSecondary: acf.ctaBtnSecondary || 'Xem Catalog'
   };
 };

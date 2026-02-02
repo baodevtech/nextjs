@@ -254,11 +254,35 @@ export interface ApplicationSpace {
   hotspots: Hotspot[];
   stats: Stat[];
 }
-
+export interface RenovationFeature {
+  icon: string;
+  title: string;
+  desc: string;
+}
+export interface CommercialItem {
+  image: string;
+  title: string;
+  desc: string;
+}
 export interface ApplicationPageData {
   heroTitle: string;
   heroDesc: string;
+  spaces: ApplicationSpace[];
+  // [CẬP NHẬT] Renovation Section
+  renovationHeading: string;
+  renovationDesc: string;
   beforeImage: string;
   afterImage: string;
-  spaces: ApplicationSpace[];
+  renovationFeatures: RenovationFeature[]; // Mảng 3 tính năng
+
+  // [CẬP NHẬT] Commercial Section
+  commHeading: string;
+  commDesc: string;
+  commItems: CommercialItem[];
+  commLinkText: string; // [MỚI]
+  commLinkUrl: string;  // [MỚI]
+  ctaHeading: string;
+  ctaDesc: string;
+  ctaBtnPrimary: string;
+  ctaBtnSecondary: string;
 }

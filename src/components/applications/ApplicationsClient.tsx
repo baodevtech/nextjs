@@ -67,7 +67,7 @@ const InteractiveSpace: React.FC<{ space: ApplicationSpace, isActive: boolean }>
                                 ${activeHotspot === idx ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-90 -translate-x-4 pointer-events-none'}
                             `}>
                                 <div className="flex items-start gap-3 mb-2">
-                                    <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
+                                    <div className="p-2 bg-brand-50 rounded-lg text-brand-600">
                                         <IconComponent size={18} />
                                     </div>
                                     <h4 className="font-bold text-slate-900 text-sm pt-1">{spot.label}</h4>
@@ -154,12 +154,19 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: { beforeImage: string, a
 interface ApplicationsClientProps {
     data: ApplicationPageData;
 }
-
+const ICON_COLORS: Record<string, string> = {
+    'clock': 'text-amber-500 bg-amber-500/20',
+    'leaf': 'text-green-500 bg-green-500/20',
+    'droplets': 'text-blue-500 bg-blue-500/20',
+    'default': 'text-slate-200 bg-slate-700'
+};
 export default function ApplicationsClient({ data }: ApplicationsClientProps) {
     const [activeSpaceIdx, setActiveSpaceIdx] = useState(0);
     
     // Fallback an toàn nếu mảng rỗng
     const activeSpace = data.spaces[activeSpaceIdx] || data.spaces[0] || {}; 
+
+    const [bigCommItem, ...smallCommItems] = data.commItems;
 
     return (
         <div className="bg-slate-950 font-sans text-slate-200 animate-fade-in">
@@ -180,7 +187,7 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-amber-400 text-xs font-bold uppercase tracking-widest mb-8 animate-slide-up">
                         <Star size={12} fill="currentColor" /> Premium Wall Solutions
                     </div>
-                    <h1 className="text-6xl md:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight animate-slide-up delay-100">
+                    <h1 className="text-6xl md:text-8xl  font-bold text-white mb-8 leading-[1.1] tracking-tight animate-slide-up delay-100">
                         {data.heroTitle}
                     </h1>
                     <p className="text-slate-300 text-lg md:text-xl font-light max-w-2xl mx-auto mb-12 animate-slide-up delay-200 leading-relaxed whitespace-pre-line">
@@ -202,7 +209,7 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
                         <div className="lg:col-span-4 lg:sticky lg:top-32 z-20">
                             <div className="mb-12">
                                 <span className="text-amber-500 font-bold uppercase tracking-widest text-xs mb-4 block">Interactive Tour</span>
-                                <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
+                                <h2 className="text-4xl md:text-5xl  font-bold text-white mb-6">
                                     Giải Pháp <br/> Từng Phòng
                                 </h2>
                                 <p className="text-slate-400 text-lg font-light leading-relaxed">
@@ -277,9 +284,11 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
                         <span className="text-amber-500 font-bold uppercase tracking-[0.2em] text-xs mb-4 block">Renovation Magic</span>
-                        <h2 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">Cải Tạo Thần Tốc</h2>
+                        <h2 className="text-4xl md:text-6xl  font-bold text-white mb-6">
+                            {data.renovationHeading}
+                        </h2>
                         <p className="text-slate-400 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-                            Chứng kiến sự lột xác ngoạn mục. Thi công trực tiếp trên tường cũ, không đập phá, không bụi bặm.
+                            {data.renovationDesc}
                         </p>
                     </div>
 
@@ -288,81 +297,82 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
                         afterImage={data.afterImage} 
                     />
                     
+                    {/* Dynamic Features Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 text-center">
-                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                            <div className="w-12 h-12 mx-auto bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mb-4">
-                                <Clock size={24} />
-                            </div>
-                            <h3 className="text-2xl font-bold text-white mb-2">24 Giờ</h3>
-                            <p className="text-slate-400 text-sm">Thời gian thi công hoàn thiện một căn phòng 30m2.</p>
-                        </div>
-                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                            <div className="w-12 h-12 mx-auto bg-green-500/20 rounded-full flex items-center justify-center text-green-500 mb-4">
-                                <Leaf size={24} />
-                            </div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Sạch Sẽ</h3>
-                            <p className="text-slate-400 text-sm">Không bụi bặm, tiếng ồn thấp, có thể vào ở ngay sau khi làm xong.</p>
-                        </div>
-                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                            <div className="w-12 h-12 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 mb-4">
-                                <Droplets size={24} />
-                            </div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Chống Ẩm</h3>
-                            <p className="text-slate-400 text-sm">Giải quyết triệt để tình trạng tường ẩm mốc, bong tróc sơn.</p>
-                        </div>
+                        {data.renovationFeatures.map((feature, idx) => {
+                            const IconComponent = ICON_MAP[feature.icon] || Info;
+                            const colorClass = ICON_COLORS[feature.icon] || ICON_COLORS['default'];
+
+                            return (
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                                    <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4 ${colorClass}`}>
+                                        <IconComponent size={24} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">{feature.title}</h3>
+                                    <p className="text-slate-400 text-sm">{feature.desc}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
 
             {/* 4. COMMERCIAL SHOWCASE (Tĩnh - Hoặc tạo thêm data nếu cần) */}
-            <section className="py-24 bg-white text-slate-900">
+           <section className="py-24 bg-white text-slate-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-16">
                         <div>
-                            <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">Không Gian Thương Mại</h2>
+                            <h2 className="text-4xl md:text-5xl  font-bold text-slate-900 mb-4">
+                                {data.commHeading}
+                            </h2>
                             <p className="text-slate-500 text-lg max-w-xl">
-                                Giải pháp vật liệu bền bỉ, tối ưu chi phí vận hành cho Khách sạn, Nhà hàng & Văn phòng.
+                                {data.commDesc}
                             </p>
                         </div>
-                        <Link href="/du-an" className="hidden md:flex items-center gap-2 font-bold text-amber-600 hover:underline underline-offset-4">
-                            Xem dự án thực tế <ArrowRight size={20} />
+                        {/* Dynamic Link */}
+                        <Link href={data.commLinkUrl} className="hidden md:flex items-center gap-2 font-bold text-brand-600 hover:underline underline-offset-4">
+                            {data.commLinkText} <ArrowRight size={20} />
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Hotel Card */}
-                        <div className="group relative h-[500px] rounded-3xl overflow-hidden cursor-pointer">
-                            <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?q=80&w=1200&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Hotel" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
-                            <div className="absolute bottom-8 left-8 text-white">
-                                <h3 className="text-3xl font-serif font-bold mb-2">Hotel & Resort</h3>
-                                <p className="text-slate-300 mb-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                                    Sang trọng đẳng cấp với tấm ốp vân đá khổ lớn. Chịu được tần suất sử dụng cao.
-                                </p>
-                                <span className="inline-flex items-center gap-2 text-amber-400 font-bold text-sm uppercase tracking-widest">
-                                    Khám phá <ArrowRight size={16} />
-                                </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* ITEM LỚN (Bên trái) */}
+                        {bigCommItem && (
+                            <div className="group relative h-[500px] rounded-3xl overflow-hidden cursor-pointer">
+                                <img 
+                                    src={bigCommItem.image} 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                    alt={bigCommItem.title} 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
+                                <div className="absolute bottom-8 left-8 text-white">
+                                    <h3 className="text-3xl  font-bold mb-2">{bigCommItem.title}</h3>
+                                    <p className="text-slate-300 mb-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                                        {bigCommItem.desc}
+                                    </p>
+                                    <span className="inline-flex items-center gap-2 text-amber-400 font-bold text-sm uppercase tracking-widest">
+                                        Khám phá <ArrowRight size={16} />
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Office Grid */}
+                        {/* CÁC ITEM NHỎ (Bên phải - Stack dọc) */}
                         <div className="grid grid-rows-2 gap-8 h-[500px]">
-                            <div className="group relative rounded-3xl overflow-hidden cursor-pointer">
-                                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Office" />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
-                                <div className="absolute bottom-6 left-6 text-white">
-                                    <h3 className="text-2xl font-bold">Văn Phòng</h3>
-                                    <p className="text-xs text-slate-300 mt-1">Hiện đại, thi công nhanh, không gián đoạn công việc.</p>
+                            {smallCommItems.map((item, idx) => (
+                                <div key={idx} className="group relative rounded-3xl overflow-hidden cursor-pointer">
+                                    <img 
+                                        src={item.image} 
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                        alt={item.title} 
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
+                                    <div className="absolute bottom-6 left-6 text-white">
+                                        <h3 className="text-2xl font-bold">{item.title}</h3>
+                                        <p className="text-xs text-slate-300 mt-1">{item.desc}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="group relative rounded-3xl overflow-hidden cursor-pointer">
-                                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Restaurant" />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
-                                <div className="absolute bottom-6 left-6 text-white">
-                                    <h3 className="text-2xl font-bold">F&B (Nhà Hàng/Cafe)</h3>
-                                    <p className="text-xs text-slate-300 mt-1">Dễ dàng vệ sinh dầu mỡ, tạo điểm nhấn check-in.</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -372,19 +382,21 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
             <section className="py-24 bg-slate-950 text-center border-t border-white/10">
                 <div className="max-w-4xl mx-auto px-4">
                     <Info size={48} className="mx-auto text-amber-500 mb-6" />
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Bạn Đã Có Ý Tưởng Cho Không Gian?</h2>
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                        {data.ctaHeading}
+                    </h2>
                     <p className="text-slate-400 text-lg mb-10 max-w-2xl mx-auto">
-                        Đừng ngần ngại liên hệ với chúng tôi để được tư vấn giải pháp vật liệu phù hợp nhất và nhận bản vẽ phối cảnh 3D miễn phí.
+                        {data.ctaDesc}
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-6">
                         <Link href="/lien-he">
                              <Button className="h-16 px-12 text-sm font-bold uppercase tracking-widest bg-amber-500 text-slate-900 hover:bg-white border-none shadow-[0_0_30px_rgba(245,158,11,0.4)]">
-                                Đăng Ký Tư Vấn Ngay
+                                {data.ctaBtnPrimary}
                              </Button>
                         </Link>
                         <Link href="/san-pham">
                              <Button variant="outline" className="h-16 px-12 text-sm font-bold uppercase tracking-widest border-slate-700 text-white hover:bg-white hover:text-slate-900 hover:border-white">
-                                Xem Catalog Online
+                                {data.ctaBtnSecondary}
                              </Button>
                         </Link>
                     </div>

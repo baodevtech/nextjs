@@ -230,7 +230,7 @@ export const Header: React.FC = () => {
               </div>
 
               {[
-                  { name: 'Ứng Dụng', path: '/applications' },
+                  { name: 'Ứng Dụng', path: 'ung-dung' },
                   { name: 'Báo Giá', path: '/pricing' },
                   { name: 'Dự Án', path: '/du-an' },
                   { name: 'Tin Tức', path: '/blog' },
