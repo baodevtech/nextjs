@@ -14,7 +14,8 @@ import {
   ApplicationSpace,
   Hotspot,
   Stat,
-  RenovationFeature
+  RenovationFeature,
+  PricingPageData
 } from "../types";
 import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
 
@@ -1001,5 +1002,219 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
     ctaDesc: acf.ctaDesc || '',
     ctaBtnPrimary: acf.ctaBtnPrimary || 'Đăng Ký Tư Vấn',
     ctaBtnSecondary: acf.ctaBtnSecondary || 'Xem Catalog'
+  };
+};
+
+// Helper map Product sang Material Item
+// Helper map Product sang Item (Dùng chung cho Materials & Accessories)
+const mapProductToItem = (node: any): any => {
+  if (!node) return null;
+  
+  const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
+  const formattedPrice = rawPrice > 0 
+    ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice)
+    : 'Liên hệ';
+
+  return {
+    name: node.name || '',
+    price: formattedPrice,
+    unit: '', 
+    link: `/product/${node.slug}`, 
+    image: node.image?.sourceUrl || 'https://via.placeholder.com/300'
+  };
+};
+
+export const getPricingPageData = async (): Promise<PricingPageData> => {
+  const data = await fetchAPI(`
+    query GetPricingOptions {
+      pricingOptions {
+        pricingData {
+          # --- Hero & Calculator ---
+          heroTitle
+          heroDesc
+          
+          # [SỬA LỖI] calculatorProduct là Connection -> Phải dùng nodes
+          calculatorProduct {
+            nodes {
+              ... on Product {
+                id
+                name
+                slug
+                sku
+                image { sourceUrl }
+                ... on SimpleProduct { price(format: RAW) }
+                ... on VariableProduct { price(format: RAW) }
+                productSpecifications {
+                   length
+                   width
+                   thickness
+                }
+              }
+            }
+          }
+
+          basePriceTurnkey
+          
+          # --- 1. Packages ---
+          pkgHeading
+          pkgDesc
+          turnkeyPackages {
+            name
+            price
+            unit
+            description
+            isPopular
+            styleType
+            features {
+              text
+            }
+          }
+          
+          # --- 2. Steps ---
+          stepsHeading
+          stepsDesc
+          constructionSteps {
+            stepNumber
+            title
+            desc
+            icon
+          }
+
+          # --- 3. Commitments ---
+          commitments {
+            icon
+            title
+            desc
+          }
+          
+          # --- 4. Materials ---
+          materialsHeading
+          materialsDesc
+          materialProducts {
+            nodes {
+              ... on Product {
+                id, name, slug
+                image { sourceUrl }
+                ... on SimpleProduct { price(format: RAW) }
+                ... on VariableProduct { price(format: RAW) }
+              }
+            }
+          }
+          
+          # --- 5. Accessories ---
+          accHeading
+          accDesc
+          accessoryItems {
+            nodes {
+              ... on Product {
+                id, name, slug
+                image { sourceUrl }
+                ... on SimpleProduct { price(format: RAW) }
+                ... on VariableProduct { price(format: RAW) }
+              }
+            }
+          }
+          
+          # --- FAQ & CTA ---
+          faqs {
+            question
+            answer
+          }
+          ctaHeading
+          ctaDesc
+        }
+      }
+    }
+  `);
+
+  const acf = data?.pricingOptions?.pricingData || {};
+  const mapFeatures = (list: any[]) => list?.map((item: any) => item.text || '') || [];
+
+  // Helper map sản phẩm tính toán
+  const mapCalcProduct = (node: any): Product | null => {
+    if (!node) return null;
+    const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
+    
+    return {
+        id: node.id,
+        databaseId: 0,
+        slug: node.slug,
+        name: node.name,
+        image: { sourceUrl: node.image?.sourceUrl || '', altText: node.name },
+        price: { amount: rawPrice, formatted: '' }, 
+        dimensions: {
+            length: Number(node.productSpecifications?.length) || 0,
+            width: Number(node.productSpecifications?.width) || 0,
+            thickness: Number(node.productSpecifications?.thickness) || 0,
+            area: 0
+        },
+        // Fallback fields
+        brand: '', origin: '', surface: '', warranty: '', description: '', shortDescription: '',
+        galleryImages: [], stockStatus: 'IN_STOCK', sku: node.sku || '', categories: []
+    };
+  };
+
+  // [SỬA LỖI] Lấy node đầu tiên từ danh sách calculatorProduct
+  const calcProductNode = acf.calculatorProduct?.nodes?.[0] || null;
+
+  return {
+    heroTitle: acf.heroTitle || 'Bảng Giá Niêm Yết 2024',
+    heroDesc: acf.heroDesc || 'Công cụ tính toán giúp bạn hình dung chi phí sơ bộ...',
+    
+    // Truyền node đã lấy ở trên vào hàm map
+    calculatorProduct: mapCalcProduct(calcProductNode),
+    
+    basePriceTurnkey: Number(acf.basePriceTurnkey) || 550000,
+    
+    // Packages
+    pkgHeading: acf.pkgHeading || '1. Báo Giá Thi Công Trọn Gói',
+    pkgDesc: acf.pkgDesc || 'Giải pháp tối ưu nhất cho khách hàng bận rộn...',
+    turnkeyPackages: acf.turnkeyPackages?.map((pkg: any, idx: number) => ({
+      id: idx,
+      name: pkg.name || '',
+      price: pkg.price || '',
+      unit: pkg.unit || 'đ/m2',
+      description: pkg.description || '',
+      isPopular: pkg.isPopular || false,
+      styleType: pkg.styleType || 'standard',
+      features: mapFeatures(pkg.features)
+    })) || [],
+
+    // Steps
+    stepsHeading: acf.stepsHeading || 'Quy Trình Thi Công',
+    stepsDesc: acf.stepsDesc || 'Sự chuyên nghiệp tạo nên chất lượng...',
+    constructionSteps: acf.constructionSteps?.map((step: any) => ({
+      step: step.stepNumber || `0${step + 1}`,
+      title: step.title || '',
+      desc: step.desc || '',
+      icon: step.icon || 'default'
+    })) || [],
+
+    // Commitments
+    commitHeading: acf.commitHeading || 'Cam Kết Chất Lượng',
+    commitDesc: acf.commitDesc || '',
+    commitments: acf.commitments?.map((cm: any) => ({
+      icon: cm.icon || 'thumbsup',
+      title: cm.title || '',
+      desc: cm.desc || ''
+    })) || [],
+
+    // Materials
+    materialsHeading: acf.materialsHeading || '2. Báo Giá Vật Tư Lẻ',
+    materialsDesc: acf.materialsDesc || 'Mua vật liệu chính hãng giá tại kho...',
+    materialItems: acf.materialProducts?.nodes?.map(mapProductToItem) || [],
+
+    // Accessories
+    accHeading: acf.accHeading || '3. Phụ Kiện Thi Công',
+    accDesc: acf.accDesc || 'Các vật tư phụ cần thiết...',
+    accessoryItems: acf.accessoryItems?.nodes?.map(mapProductToItem) || [],
+
+    // FAQ & CTA
+    faqs: acf.faqs?.map((f: any) => ({
+      question: f.question || '',
+      answer: f.answer || ''
+    })) || [],
+    ctaHeading: acf.ctaHeading || 'Bạn Vẫn Còn Phân Vân?',
+    ctaDesc: acf.ctaDesc || 'Đừng lo lắng. Hãy để chuyên gia kỹ thuật hỗ trợ.'
   };
 };

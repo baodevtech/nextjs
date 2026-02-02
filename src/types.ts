@@ -286,3 +286,84 @@ export interface ApplicationPageData {
   ctaBtnPrimary: string;
   ctaBtnSecondary: string;
 }
+
+// --- PRICING TYPES ---
+export interface TurnkeyPackage {
+  id: string | number;
+  name: string;
+  price: string;
+  unit: string;
+  description: string;
+  features: string[];
+  isPopular: boolean;
+  styleType: 'standard' | 'dark' | 'gold'; // Để map style CSS
+}
+
+export interface ConstructionStep {
+  step: string;
+  title: string;
+  desc: string;
+  icon: string; // Tên icon để map trong Client Component
+}
+
+export interface MaterialItem {
+  name: string;
+  price: string;
+  unit: string;
+  image: string;
+  link: string;
+}
+
+export interface AccessoryItem {
+  name: string;
+  price: string;
+  image: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+// Thêm type cho Cam kết
+export interface CommitmentItem {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface PricingPageData {
+  // Hero
+  heroTitle: string;
+  heroDesc: string;
+  calculatorProduct: Product | null;
+  basePriceMaterial: number;
+  basePriceTurnkey: number;
+
+  // 1. Packages Section
+  pkgHeading: string; // [MỚI]
+  pkgDesc: string;    // [MỚI]
+  turnkeyPackages: TurnkeyPackage[];
+
+  // 2. Steps Section
+  stepsHeading: string; // [MỚI]
+  stepsDesc: string;    // [MỚI]
+  constructionSteps: ConstructionStep[];
+
+ 
+
+  // 4. Materials Section
+  materialsHeading: string; // [MỚI]
+  materialsDesc: string;    // [MỚI]
+  materialItems: MaterialItem[]; // Dữ liệu sẽ được map từ Product thật
+
+  // 5. Accessories Section
+  accHeading: string; // [MỚI]
+  accDesc: string;    // [MỚI]
+  accessoryItems: AccessoryItem[];
+
+  // FAQ & CTA
+  faqs: FaqItem[];
+  ctaHeading: string;
+  ctaDesc: string;
+}
