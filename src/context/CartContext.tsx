@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useContext, createContext, useMemo, ReactNode } from 'react';
+import React, { useState, useContext, createContext, useMemo, ReactNode, useEffect } from 'react';
 import { Product, CartItem } from '@/types';
 
 interface CartContextType {
@@ -8,6 +8,7 @@ interface CartContextType {
   addToCart: (product: Product, qty?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, delta: number) => void;
+  clearCart: () => void; // [MỚI] Hàm xóa sạch giỏ hàng
   isCartOpen: boolean;
   toggleCart: () => void;
   cartTotal: number;
@@ -23,8 +24,26 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Khởi tạo state cart từ localStorage nếu có (Optional - Code này thêm vào để trải nghiệm tốt hơn)
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Load cart từ localStorage khi mount (Client side only)
+  useEffect(() => {
+    const savedCart = localStorage.getItem('dainam_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Lỗi parse cart:", e);
+      }
+    }
+  }, []);
+
+  // Lưu cart vào localStorage mỗi khi thay đổi
+  useEffect(() => {
+    localStorage.setItem('dainam_cart', JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = (product: Product, qty: number = 1) => {
     setCart(prev => {
@@ -51,6 +70,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
+  // [MỚI] Hàm clearCart
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem('dainam_cart');
+  };
+
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
   const cartTotal = useMemo(() => {
@@ -60,7 +85,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const itemsCount = useMemo(() => cart.reduce((c, item) => c + item.quantity, 0), [cart]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, isCartOpen, toggleCart, cartTotal, itemsCount }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, toggleCart, cartTotal, itemsCount }}>
       {children}
     </CartContext.Provider>
   );

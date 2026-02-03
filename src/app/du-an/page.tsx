@@ -14,6 +14,6 @@ export default async function ProjectsPage() {
   const categories = Array.from(new Set(projects.map(p => p.category)));
 
   return (
-    <ProjectListClient initialProjects={projects} categories={categories} />
+    <ProjectListClient initialProjects={projects} />
   );
 }

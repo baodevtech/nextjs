@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import { Calendar, Clock, Facebook, Twitter, Linkedin, Share2, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getAllPosts } from '@/services/wpService';
 import { TableOfContents } from '@/components/blog/TableOfContents'; // Import Component mới
-import { CATEGORIES } from '@/constants';
 
 interface Props {
   params: Promise<{ slug: string }>;

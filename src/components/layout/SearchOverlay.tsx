@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, X, ArrowRight, Tag, FileText, ShoppingBag } from 'lucide-react';
 import { Product, BlogPost } from '@/types';
 import { getProducts } from '@/services/wpService';
-import { BLOG_POSTS } from '@/constants';
+
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -46,12 +46,8 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
       p.sku.toLowerCase().includes(lowerQ)
     ).slice(0, 4);
 
-    const matchedBlogs = BLOG_POSTS.filter(b => 
-      b.title.toLowerCase().includes(lowerQ) ||
-      b.category.toLowerCase().includes(lowerQ)
-    ).slice(0, 2);
+  
 
-    setResults({ products: matchedProducts, blogs: matchedBlogs });
   }, [query, products]);
 
   if (!isOpen) return null;

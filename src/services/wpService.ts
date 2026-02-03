@@ -1,3 +1,4 @@
+// src/services/wpService.ts
 import {
   Product,
   Category,
@@ -15,9 +16,12 @@ import {
   Hotspot,
   Stat,
   RenovationFeature,
-  PricingPageData
+  PricingPageData,
+  ContactPageData,
 } from "../types";
-import { PRODUCTS, CATEGORIES } from "../constants"; // Import Mock data làm fallback
+
+// [ĐÃ SỬA] Không còn import constants
+// import { PRODUCTS, CATEGORIES } from "../constants";
 
 const API_URL =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
@@ -90,15 +94,12 @@ const PRODUCT_FIELDS = `
         name
       }
     }
-    # --- CẬP NHẬT: Taxonomy product_brand ---
-    # Trong WPGraphQL, product_brand thường chuyển thành productBrands
     productBrands {
       nodes {
         name
         slug
       }
     }
-    # --- ACF Fields ---
     productSpecifications {
       length
       width
@@ -119,18 +120,18 @@ const mapProduct = (node: any): Product => {
     ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
     : 0;
 
-  // Xử lý Brand: Lấy item đầu tiên từ productBrands
+  // Xử lý Brand
   const brandName =
     node.productBrands?.nodes && node.productBrands.nodes.length > 0
       ? node.productBrands.nodes[0].name
-      : "Đại Nam Wall"; // Fallback nếu không có brand
+      : "Đại Nam Wall";
 
   return {
     id: node.id,
     databaseId: node.databaseId,
     slug: node.slug,
     name: node.name,
-    brand: brandName, // Dữ liệu từ Taxonomy product_brand
+    brand: brandName,
     origin: node.productSpecifications?.origin || "",
     surface: node.productSpecifications?.surface || "",
     warranty: node.productSpecifications?.warranty || "",
@@ -178,16 +179,15 @@ export const getProducts = async (): Promise<Product[]> => {
     }
   `);
 
-  // Nếu API lỗi hoặc không có dữ liệu, dùng Mock Data để không sập trang
+  // [ĐÃ SỬA] Trả về mảng rỗng nếu lỗi thay vì constants
   if (!data || !data.products) {
-    console.warn(
-      "⚠️ Không lấy được Products từ API (đang dùng Mock Data). Hãy kiểm tra lại tên trường trong GraphiQL.",
-    );
-    return PRODUCTS as unknown as Product[];
+    console.warn("⚠️ Không lấy được Products từ API.");
+    return [];
   }
 
   return data.products.nodes.map(mapProduct);
 };
+
 // 1. Interface cho Shop Settings
 export interface ShopSettings {
   description: string;
@@ -198,7 +198,7 @@ export interface ShopSettings {
   };
 }
 
-// 2. Hàm lấy dữ liệu trang Shop (Giả sử trang Shop có slug là 'cua-hang' hoặc 'shop')
+// 2. Hàm lấy dữ liệu trang Shop
 export const getShopSettings = async (): Promise<ShopSettings | null> => {
   const data = await fetchAPI(`
     query GetShopSettings {
@@ -305,13 +305,8 @@ export const getCategories = async (): Promise<Category[]> => {
           image {
             sourceUrl
           }
-          # --- THÊM PHẦN NÀY (Yêu cầu cài WPGraphQL ACF) ---
           categoryExtras {
-            headerImage {
-              node {
-                sourceUrl
-              }
-            }
+            headerImage { node { sourceUrl } }
             bottomContent
             trendHeader
             trendContent
@@ -322,15 +317,16 @@ export const getCategories = async (): Promise<Category[]> => {
     }
   `);
 
+  // [ĐÃ SỬA] Trả về mảng rỗng nếu lỗi
   if (!data || !data.productCategories) {
-    console.warn("⚠️ Không lấy được Categories từ API (đang dùng Mock Data).");
-    return CATEGORIES;
+    console.warn("⚠️ Không lấy được Categories từ API.");
+    return [];
   }
 
   return data.productCategories.nodes.map(mapCategory);
 };
 
-// Hàm map dữ liệu từ Raw GraphQL sang Interface
+// Helper Maps
 const mapHeroSlides = (acfData: any): HeroSlide[] => {
   if (!acfData?.heroSlides) return [];
 
@@ -343,7 +339,6 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
     ctaLink: slide.ctaLink || "/shop",
     ctaText: slide.ctaText || "Khám Phá Ngay",
     productLink: slide.productLink || [],
-    // Map Hotspots (Repeater lồng nhau)
     hotspots: slide.hotspots
       ? slide.hotspots.map((h: any) => ({
           x: h.x || "50%",
@@ -357,92 +352,92 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
       : [],
   }));
 };
+
 const mapAcfProducts = (nodes: any[]): Product[] => {
   if (!Array.isArray(nodes)) return [];
-  return nodes.map((node) => mapProduct(node)); // Tận dụng hàm mapProduct có sẵn
+  return nodes.map((node) => mapProduct(node));
 };
-// Helper Map Shop Look
-// Helper Map Shop Look (PHIÊN BẢN AN TOÀN NHẤT)
-// Helper Map Shop Look (PHIÊN BẢN DEBUG & NỚI LỎNG)
-// Helper Map Shop Look (ĐÃ FIX THEO CẤU TRÚC LOG)
-const mapShopLookItems = (items: any[]): ShopLookItem[] => {
-  // console.log("🔍 [ShopLook] Raw Items:", items); // Debug
 
+const mapShopLookItems = (items: any[]): ShopLookItem[] => {
   if (!items) return [];
   
-  return items.map((item, index) => {
-    // [FIX] Lấy sản phẩm đầu tiên trong mảng nodes của trường 'products'
+  return items.reduce<ShopLookItem[]>((acc, item, index) => {
     const productNode = item.products?.nodes?.[0];
 
-    if (!productNode) {
-        // console.warn(`⚠️ [ShopLook] Item ${index} chưa chọn sản phẩm.`);
-        return null;
-    }
+    // Nếu không có dữ liệu sản phẩm thì bỏ qua (không push vào mảng kết quả)
+    if (!productNode) return acc;
 
     const product = mapProduct(productNode);
     
-    // Kiểm tra dữ liệu sản phẩm hợp lệ
-    if (!product || !product.id) {
-        return null; 
-    }
+    // Nếu mapProduct lỗi hoặc không có ID thì cũng bỏ qua
+    if (!product || !product.id) return acc;
 
-    return {
+    // Chỉ push khi dữ liệu hợp lệ
+    acc.push({
       id: index,
       x: parseFloat(item.x) || 50,
       y: parseFloat(item.y) || 50,
       product: product
-    };
-  })
-  .filter((item): item is ShopLookItem => item !== null);
+    });
+
+    return acc;
+  }, []);
 };
 const getSingleImage = (field: any) => {
-  if (!field) return '';
-  // Trường hợp 1: Trả về trực tiếp (thường gặp ở bản mới)
+  if (!field) return "";
   if (field.sourceUrl) return field.sourceUrl;
-  // Trường hợp 2: Trả về qua node
   if (field.node?.sourceUrl) return field.node.sourceUrl;
-  // Trường hợp 3: Fallback nếu lỡ nó là mảng
   if (field.edges?.[0]?.node?.sourceUrl) return field.edges[0].node.sourceUrl;
-  
-  return '';
+  return "";
 };
 
-// Helper Map Accesssory Highlights
 const mapAccHighlights = (items: any[]): AccessoryHighlight[] => {
   if (!items) return [];
   return items.map((item, idx) => ({
     id: idx,
-    title: item.title || '',
-    subtitle: item.subtitle || '',
-    image: getSingleImage(item.image), // Dùng lại helper getSingleImage
-    link: item.link || '/shop'
+    title: item.title || "",
+    subtitle: item.subtitle || "",
+    image: getSingleImage(item.image),
+    link: item.link || "/shop",
   }));
 };
-// Helper Map Bài viết
+
 const mapBlogPosts = (nodes: any[]): BlogPost[] => {
   if (!nodes) return [];
   return nodes.map((node) => {
     const date = new Date(node.date);
     const formattedDate = new Intl.DateTimeFormat('vi-VN').format(date);
+    
+    // Loại bỏ thẻ HTML để lấy text thuần
+    const cleanContent = node.content ? node.content.replace(/<[^>]+>/g, '') : '';
     const cleanExcerpt = node.excerpt ? node.excerpt.replace(/<[^>]+>/g, '') : '';
+    
+    // Tính toán thời gian đọc (giả sử 200 từ/phút)
+    const wordCount = cleanContent.split(/\s+/).length;
+    const readTimeMin = Math.ceil(wordCount / 200);
+    const readTime = readTimeMin > 0 ? `${readTimeMin} phút đọc` : '1 phút đọc';
 
     return {
       id: node.id,
       title: node.title || '',
       slug: node.slug || '',
       excerpt: cleanExcerpt,
-      content: node.content || '', // [MỚI] Lấy nội dung HTML
+      content: node.content || '',
       date: formattedDate,
+      readTime: readTime,
       image: node.featuredImage?.node?.sourceUrl || 'https://via.placeholder.com/800x600?text=No+Image',
       category: node.categories?.nodes?.[0]?.name || 'Tin tức',
       author: {
         name: node.author?.node?.name || 'Admin',
-        avatar: node.author?.node?.avatar?.url || ''
+        avatar: node.author?.node?.avatar?.url || '',
+        // [FIX LỖI] Thêm trường role để khớp với interface Author
+        role: 'Tác giả' 
       },
       tags: node.tags?.nodes?.map((t: any) => t.name) || [],
     };
   });
 };
+
 // 1. Lấy tất cả bài viết (Cho trang /blog)
 export const getAllPosts = async (): Promise<BlogPost[]> => {
   const data = await fetchAPI(`
@@ -474,9 +469,10 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
   return mapBlogPosts(data?.posts?.nodes || []);
 };
 
-// 2. Lấy chi tiết 1 bài viết theo Slug (Cho trang /blog/[slug])
+// 2. Lấy chi tiết 1 bài viết
 export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
-  const data = await fetchAPI(`
+  const data = await fetchAPI(
+    `
     query GetPostBySlug($id: ID!) {
       post(id: $id, idType: SLUG) {
         id
@@ -491,7 +487,6 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
         categories {
           nodes { name, slug }
         }
-        # [QUAN TRỌNG] Thêm đoạn này để lấy Tags
         tags {
           nodes { name, slug }
         }
@@ -500,47 +495,50 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
         }
       }
     }
-  `, { variables: { id: slug } });
+  `,
+    { variables: { id: slug } },
+  );
 
   if (!data?.post) return null;
   const posts = mapBlogPosts([data.post]);
   return posts[0];
 };
-// [CẬP NHẬT] Map Projects
+
 const mapProjects = (nodes: any[]): Project[] => {
   if (!nodes) return [];
   return nodes.map((node) => {
-    // Lấy dữ liệu từ nhóm ACF 'projectFields'
-    const acf = node.projectFields || {}; 
+    const acf = node.projectFields || {};
     const firstCat = node.categories?.nodes?.[0];
-
-    // Xử lý Excerpt: Loại bỏ thẻ HTML <p>, <br> thừa
-    const cleanExcerpt = node.excerpt 
-        ? node.excerpt.replace(/<[^>]+>/g, '').trim() 
-        : '';
+    const cleanExcerpt = node.excerpt
+      ? node.excerpt.replace(/<[^>]+>/g, "").trim()
+      : "";
 
     return {
       id: node.id,
-      title: node.title || '',
-      slug: node.slug || '',
-      image: node.featuredImage?.node?.sourceUrl || 'https://via.placeholder.com/800x600',
-      category: firstCat?.name || 'Dự án',
-      categorySlug: firstCat?.slug || 'other', 
-      
-      // [THAY ĐỔI] Lấy từ Excerpt mặc định của WP
-      desc: cleanExcerpt, 
-
-      // Các trường ACF còn lại (Vẫn giữ nguyên)
-      location: acf.location || 'Việt Nam',
-      year: acf.completionYear || '2024',
-      area: acf.area || '---',
-      
-      tags: node.tags?.nodes?.map((t: any) => t.name) || []
+      title: node.title || "",
+      slug: node.slug || "",
+      image:
+        node.featuredImage?.node?.sourceUrl ||
+        "https://via.placeholder.com/800x600",
+      category: firstCat?.name || "Dự án",
+      categorySlug: firstCat?.slug || "other",
+      desc: cleanExcerpt,
+      location: acf.location || "Việt Nam",
+      year: acf.completionYear || "2024",
+      area: acf.area || "---",
+      tags: node.tags?.nodes?.map((t: any) => t.name) || [],
+      // Các trường fallback cho ProjectDetail
+      architect: "",
+      client: "",
+      challenge: "",
+      solution: "",
+      materials: [],
+      gallery: [],
+      subtitle: "",
     };
   });
 };
 
-// [CẬP NHẬT] Hàm query GraphQL
 export const getAllProjects = async (): Promise<Project[]> => {
   const data = await fetchAPI(`
     query GetAllProjects {
@@ -549,10 +547,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
           id
           title
           slug
-          
-          # [MỚI] Lấy mô tả ngắn mặc định của WordPress
           excerpt
-          
           featuredImage {
             node { sourceUrl }
           }
@@ -562,8 +557,6 @@ export const getAllProjects = async (): Promise<Project[]> => {
           tags {
             nodes { name }
           }
-          
-          # ACF Fields (Đã bỏ shortDesc)
           projectFields {
              location
              completionYear
@@ -575,66 +568,63 @@ export const getAllProjects = async (): Promise<Project[]> => {
   `);
   return mapProjects(data?.projects?.nodes || []);
 };
-// Helper Map Chi Tiết Dự Án
+
 const mapProjectDetail = (node: any): Project => {
   if (!node) return {} as Project;
-  
+
   const acf = node.projectFields || {};
   const firstCat = node.categories?.nodes?.[0];
 
-  // [SỬA LỖI 2] Xử lý Gallery: Phải map qua .nodes
-  const galleryImages = acf.albumImg?.nodes 
-    ? acf.albumImg.nodes.map((img: any) => img.sourceUrl) 
+  const galleryImages = acf.albumImg?.nodes
+    ? acf.albumImg.nodes.map((img: any) => img.sourceUrl)
     : [];
-  
-  // Nếu gallery trống, fallback bằng ảnh đại diện
+
   if (galleryImages.length === 0 && node.featuredImage) {
-      galleryImages.push(node.featuredImage.node.sourceUrl);
+    galleryImages.push(node.featuredImage.node.sourceUrl);
   }
 
-  // Xử lý Materials
-  const materialsList = acf.materials 
-    ? acf.materials.split(/\r?\n|,/).map((s: string) => s.trim()).filter(Boolean)
-    : ['Đang cập nhật'];
+  const materialsList = acf.materials
+    ? acf.materials
+        .split(/\r?\n|,/)
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+    : ["Đang cập nhật"];
 
-  // Xử lý Excerpt
-  const cleanExcerpt = node.excerpt 
-    ? node.excerpt.replace(/<[^>]+>/g, '').trim() 
-    : '';
+  const cleanExcerpt = node.excerpt
+    ? node.excerpt.replace(/<[^>]+>/g, "").trim()
+    : "";
 
   return {
     id: node.id,
-    title: node.title || '',
-    slug: node.slug || '',
-    image: node.featuredImage?.node?.sourceUrl || '',
-    
-    category: firstCat?.name || 'Dự án',
-    categorySlug: firstCat?.slug || 'other',
-    subtitle: firstCat?.name || 'Chi tiết dự án',
+    title: node.title || "",
+    slug: node.slug || "",
+    image: node.featuredImage?.node?.sourceUrl || "",
 
-    // ACF Fields
-    location: acf.location || 'Việt Nam',
-    year: acf.completionYear || '2024',
-    area: acf.area || '---',
+    category: firstCat?.name || "Dự án",
+    categorySlug: firstCat?.slug || "other",
+    subtitle: firstCat?.name || "Chi tiết dự án",
+
+    location: acf.location || "Việt Nam",
+    year: acf.completionYear || "2024",
+    area: acf.area || "---",
     desc: cleanExcerpt,
-    
-    // Các trường chi tiết
-    architect: acf.architect || 'Đại Nam Wall Team',
-    client: acf.client || 'Khách hàng',
-    challenge: acf.challenge || 'Đang cập nhật nội dung...',
-    solution: acf.solution || 'Đang cập nhật nội dung...',
+
+    architect: acf.architect || "Đại Nam Wall Team",
+    client: acf.client || "Khách hàng",
+    challenge: acf.challenge || "Đang cập nhật nội dung...",
+    solution: acf.solution || "Đang cập nhật nội dung...",
     materials: materialsList,
     gallery: galleryImages,
-    
-    tags: node.tags?.nodes?.map((t: any) => t.name) || []
+
+    tags: node.tags?.nodes?.map((t: any) => t.name) || [],
   };
 };
 
-// [CẬP NHẬT] Query Lấy 1 Dự án theo Slug (SỬA LỖI 1 & 2)
-export const getProjectBySlug = async (slug: string): Promise<Project | null> => {
-  // [SỬA LỖI 1] Thay vì query 'project', ta query 'projects' và lọc 'where: { name: $slug }'
-  // 'name' trong bộ lọc chính là slug của bài viết
-  const data = await fetchAPI(`
+export const getProjectBySlug = async (
+  slug: string,
+): Promise<Project | null> => {
+  const data = await fetchAPI(
+    `
     query GetProjectBySlug($slug: String!) {
       projects(first: 1, where: { name: $slug }) {
         nodes {
@@ -655,8 +645,6 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
              challenge
              solution
              materials
-             
-             # [SỬA LỖI 2] Gallery phải có 'nodes'
              albumImg {
                 nodes {
                   sourceUrl
@@ -666,14 +654,15 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
         }
       }
     }
-  `, { variables: { slug: slug } });
+  `,
+    { variables: { slug: slug } },
+  );
 
-  // Lấy phần tử đầu tiên trong mảng nodes
   const projectNode = data?.projects?.nodes?.[0];
-  
   if (!projectNode) return null;
   return mapProjectDetail(projectNode);
 };
+
 // Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
   const data = await fetchAPI(`
@@ -681,22 +670,16 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     query GetHomePageData {
       page(id: "/", idType: URI) {
         homeSettings {
-          
-          # --- HERO SECTION ---
           heroSlides {
             subtitle, title, description, ctaLink, ctaText
             image { node { sourceUrl } }
             hotspots { x, y, name, price, position, link, isNofollow }
           }
-
-          # --- CATEGORY SECTION ---
           categoryHeadingNormal
           categoryHeadingHighlight
           categorySubheading
           catalogueText
           enableCatNofollow
-
-          # --- SIGNATURE SECTION ---
           signatureHeadingNormal
           signatureHeadingHighlight
           signatureDesc
@@ -708,20 +691,14 @@ export const getHomeData = async (): Promise<HomeSettings> => {
               }
             }
           }
-
-          # --- SHOP THE LOOK (FIXED) ---
           shopLookHeading
           shopLookSubheading
-          
-          # [FIX 1] Query ảnh đơn lẻ (thường trả về node hoặc trực tiếp MediaItem)
           shopLookImage {
              node { sourceUrl }
           }
-          
           shopLookItems {
             x
             y
-            # [FIX 2] Bỏ cấp 'nodes' vì Post Object trả về 1 Item trực tiếp
             products {
                 nodes {             
                 ... on Product {
@@ -730,8 +707,6 @@ export const getHomeData = async (): Promise<HomeSettings> => {
               }
             }
           }
-            
-        # --- ACCESSORIES SECTION ---
           accessoryHighlights {
              title
              subtitle
@@ -754,10 +729,8 @@ export const getHomeData = async (): Promise<HomeSettings> => {
               }
             }
           }
-         # --- QUALITY SECTION ---
           qualityHeading
           qualitySubheading
-          
           qualityLarge {
             title
             description
@@ -765,7 +738,6 @@ export const getHomeData = async (): Promise<HomeSettings> => {
             image { node { sourceUrl } }
             tags { text }
           }
-          
             qualitySmall {
               title
               description
@@ -773,7 +745,6 @@ export const getHomeData = async (): Promise<HomeSettings> => {
             }
           }
         }
-        # --- [MỚI] QUERY BÀI VIẾT (Nằm ngoài page, ngang hàng với page) ---
         posts(first: 3, where: { orderby: { field: DATE, order: DESC } }) {
         nodes {
           id
@@ -801,162 +772,134 @@ export const getHomeData = async (): Promise<HomeSettings> => {
   const settings = data?.page?.homeSettings;
   const acfData = settings || {};
   const postsData = data?.posts?.nodes || [];
-  // Helper cũ dùng cho gallery/icon (giữ nguyên nếu các phần khác vẫn dùng)
-  const getArrayImg = (field: any) => field?.edges?.[0]?.node?.sourceUrl || '';
-  const getImg = (field: any) => field?.node?.sourceUrl || ''; // Helper nhanh cho field group/repeater
-  // Map Signature Tabs (Giữ nguyên)
+  const getImg = (field: any) => field?.node?.sourceUrl || "";
+
   const mapSignatureTabs = (tabsData: any[]): SignatureTab[] => {
     if (!tabsData) return [];
     return tabsData.map((tab, idx) => ({
       id: idx,
       name: tab.tabName || `Tab ${idx + 1}`,
-      products: mapAcfProducts(tab.products?.nodes || [])
+      products: mapAcfProducts(tab.products?.nodes || []),
     }));
   };
-  const accProductsRaw = acfData.accessoryProducts?.nodes 
-      ? acfData.accessoryProducts.nodes 
-      : acfData.accessoryProducts;
-  // Map Quality Data
+  const accProductsRaw = acfData.accessoryProducts?.nodes
+    ? acfData.accessoryProducts.nodes
+    : acfData.accessoryProducts;
+
   const mapQualityLarge = (data: any): QualityLargeCard => ({
-      title: data?.title || 'Cấu Trúc 5 Lớp Siêu Bền',
-      description: data?.description || 'Công nghệ ép nhiệt Nano tiên tiến...',
-      icon: getImg(data?.icon),
-      image: getImg(data?.image),
-      tags: data?.tags ? data.tags.map((t: any) => ({ text: t.text })) : []
+    title: data?.title || "Cấu Trúc 5 Lớp Siêu Bền",
+    description: data?.description || "Công nghệ ép nhiệt Nano tiên tiến...",
+    icon: getImg(data?.icon),
+    image: getImg(data?.image),
+    tags: data?.tags ? data.tags.map((t: any) => ({ text: t.text })) : [],
   });
   const mapQualitySmall = (list: any[]): QualitySmallCard[] => {
-      if (!list) return [];
-      return list.map(item => ({
-          title: item.title || '',
-          description: item.description || '',
-          icon: getImg(item.icon)
-      }));
+    if (!list) return [];
+    return list.map((item) => ({
+      title: item.title || "",
+      description: item.description || "",
+      icon: getImg(item.icon),
+    }));
   };
+
   return {
-    // Hero
     heroSlides: settings ? mapHeroSlides(settings) : [],
-    
-    // Category
-    categoryHeadingNormal: acfData.categoryHeadingNormal || 'Danh Mục',
-    categoryHeadingHighlight: acfData.categoryHeadingHighlight || 'Sản Phẩm',
-    categorySubheading: acfData.categorySubheading || '',
-    catalogueText: acfData.catalogueText || 'Catalogue 2024',
+    categoryHeadingNormal: acfData.categoryHeadingNormal || "Danh Mục",
+    categoryHeadingHighlight: acfData.categoryHeadingHighlight || "Sản Phẩm",
+    categorySubheading: acfData.categorySubheading || "",
+    catalogueText: acfData.catalogueText || "Catalogue 2024",
     enableCategoryNofollow: acfData.enableCatNofollow || false,
-
-    // Signature
-    signatureHeadingNormal: acfData.signatureHeadingNormal || 'Signature',
-    signatureHeadingHighlight: acfData.signatureHeadingHighlight || 'Collection',
-    signatureDesc: acfData.signatureDesc || '',
+    signatureHeadingNormal: acfData.signatureHeadingNormal || "Signature",
+    signatureHeadingHighlight:
+      acfData.signatureHeadingHighlight || "Collection",
+    signatureDesc: acfData.signatureDesc || "",
     signatureTabs: mapSignatureTabs(acfData.signatureTabs),
-
-    // Shop The Look [MAPPING MỚI]
-    shopLookHeading: acfData.shopLookHeading || 'Shop The Look',
-    shopLookSubheading: acfData.shopLookSubheading || '',
-    // Dùng helper mới cho ảnh đơn
-    shopLookImage: getSingleImage(acfData.shopLookImage), 
-    // Dùng helper mới cho items
+    shopLookHeading: acfData.shopLookHeading || "Shop The Look",
+    shopLookSubheading: acfData.shopLookSubheading || "",
+    shopLookImage: getSingleImage(acfData.shopLookImage),
     shopLookItems: mapShopLookItems(acfData.shopLookItems),
-    // [MAPPING ACCESSORIES]
-    headNormal: acfData.headNormal || 'Chi Tiết.',
-    headHighlight: acfData.headHighlight || 'Định Hình Đẳng Cấp.',
-    phuKienSub: acfData.phuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
+    headNormal: acfData.headNormal || "Chi Tiết.",
+    headHighlight: acfData.headHighlight || "Định Hình Đẳng Cấp.",
+    phuKienSub:
+      acfData.phuKienSub ||
+      " Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.",
     accHighlights: mapAccHighlights(acfData.accessoryHighlights),
     accViewAll: {
-      text: acfData.accViewAll?.viewAllText || 'Xem Tất Cả Phụ Kiện',
-      sub: acfData.accViewAll?.viewAllSub || 'Khám phá thêm các vật tư phụ trợ',
-      link: acfData.accViewAll?.viewAllLink || '/shop'
+      text: acfData.accViewAll?.viewAllText || "Xem Tất Cả Phụ Kiện",
+      sub: acfData.accViewAll?.viewAllSub || "Khám phá thêm các vật tư phụ trợ",
+      link: acfData.accViewAll?.viewAllLink || "/shop",
     },
-    accProdHeading: acfData.accProdHeading || 'SẢN PHẨM PHỔ BIẾN',
+    accProdHeading: acfData.accProdHeading || "SẢN PHẨM PHỔ BIẾN",
     accProducts: mapAcfProducts(accProductsRaw || []),
-    // [MAPPING QUALITY]
-    qualityHeading: acfData.qualityHeading || 'Tiêu Chuẩn Đại Nam Wall',
-    qualitySubheading: acfData.qualitySubheading || '',
+    qualityHeading: acfData.qualityHeading || "Tiêu Chuẩn Đại Nam Wall",
+    qualitySubheading: acfData.qualitySubheading || "",
     qualityLarge: mapQualityLarge(acfData.qualityLarge),
     qualitySmall: mapQualitySmall(acfData.qualitySmall),
-    // [MAPPING BLOG]
     blogPosts: mapBlogPosts(postsData),
   };
 };
 
 const mapHotspots = (acfHotspots: any[]): Hotspot[] => {
   if (!acfHotspots) return [];
-  return acfHotspots.map(h => ({
+  return acfHotspots.map((h) => ({
     x: h.xPos || 50,
     y: h.yPos || 50,
-    label: h.label || '',
-    description: h.desc || '',
-    iconType: h.iconType || 'default'
+    label: h.label || "",
+    description: h.desc || "",
+    iconType: h.iconType || "default",
   }));
 };
 
 const mapStats = (acfStats: any[]): Stat[] => {
   if (!acfStats) return [];
-  return acfStats.map(s => ({
-    label: s.statLabel || '',
-    value: s.statValue || ''
+  return acfStats.map((s) => ({
+    label: s.statLabel || "",
+    value: s.statValue || "",
   }));
 };
 const mapRenovationFeatures = (list: any[]): RenovationFeature[] => {
   if (!list) return [];
-  return list.map(item => ({
-    icon: item.iconType || 'star', // Key của icon (clock, leaf...)
-    title: item.title || '',
-    desc: item.desc || ''
+  return list.map((item) => ({
+    icon: item.iconType || "star",
+    title: item.title || "",
+    desc: item.desc || "",
   }));
 };
-export const getApplicationsPageData = async (): Promise<ApplicationPageData> => {
-  const data = await fetchAPI(`
+
+export const getApplicationsPageData =
+  async (): Promise<ApplicationPageData> => {
+    const data = await fetchAPI(`
     query GetApplicationOptions {
-      # Query vào Options Page (Tên field bạn đặt ở Bước 1)
       applicationOptions {
-        # Tên nhóm trường bạn đặt ở Bước 2
         appData {
-          # Phần Hero
           heroTitle
           heroDesc
-          
-          # Phần Spaces (Giờ là Repeater, không phải nodes nữa)
           spaces {
             name
             subtitle
             description
             image { node { sourceUrl } }
-            
-            # Repeater lồng nhau
             hotspots {
-              xPos
-              yPos
-              label
-              desc
-              iconType
+              xPos, yPos, label, desc, iconType
             }
             stats {
-              statLabel
-              statValue
+              statLabel, statValue
             }
           }
-            # [CẬP NHẬT] Phần Renovation
           renovationHeading
           renovationDesc
           beforeImage { node { sourceUrl } }
           afterImage { node { sourceUrl } }
-          renovationFeatures { # Repeater mới
-             iconType
-             title
-             desc
+          renovationFeatures {
+             iconType, title, desc
           }
-
-          # [CẬP NHẬT] Phần Commercial
           commHeading
           commDesc
-          commLinkText # Field mới
-          commLinkUrl  # Field mới
+          commLinkText
+          commLinkUrl 
           commItems {
-            title
-            desc
-            image { node { sourceUrl } }
+            title, desc, image { node { sourceUrl } }
           }
-          # [MỚI] Phần CTA
           ctaHeading
           ctaDesc
           ctaBtnPrimary
@@ -966,61 +909,66 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
     }
   `);
 
-  // Lấy dữ liệu từ đường dẫn mới
-  const acf = data?.applicationOptions?.appData || {};
-  const rawSpaces = acf.spaces || [];
+    const acf = data?.applicationOptions?.appData || {};
+    const rawSpaces = acf.spaces || [];
 
-  const spaces: ApplicationSpace[] = rawSpaces.map((item: any, index: number) => ({
-    id: `space-${index}`, // Tự tạo ID vì Repeater không có ID như Post
-    name: item.name || '',
-    title: item.subtitle || '',
-    description: item.description || '',
-    image: item.image?.node?.sourceUrl || '',
-    hotspots: mapHotspots(item.hotspots),
-    stats: mapStats(item.stats)
-  }));
+    const spaces: ApplicationSpace[] = rawSpaces.map(
+      (item: any, index: number) => ({
+        id: `space-${index}`,
+        name: item.name || "",
+        title: item.subtitle || "",
+        description: item.description || "",
+        image: item.image?.node?.sourceUrl || "",
+        hotspots: mapHotspots(item.hotspots),
+        stats: mapStats(item.stats),
+      }),
+    );
 
-  return {
-    heroTitle: acf.heroTitle || 'Nghệ Thuật Biến Hóa Không Gian',
-    heroDesc: acf.heroDesc || '',
-    spaces,
-    // [MAP DỮ LIỆU MỚI]
-    renovationHeading: acf.renovationHeading || 'Cải Tạo Thần Tốc',
-    renovationDesc: acf.renovationDesc || 'Chứng kiến sự lột xác ngoạn mục...',
-    beforeImage: acf.beforeImage?.node?.sourceUrl || '',
-    afterImage: acf.afterImage?.node?.sourceUrl || '',
-    renovationFeatures: mapRenovationFeatures(acf.renovationFeatures),
-
-    commHeading: acf.commHeading || 'Không Gian Thương Mại',
-    commDesc: acf.commDesc || '',
-    commLinkText: acf.commLinkText || 'Xem dự án thực tế',
-    commLinkUrl: acf.commLinkUrl || '/du-an',
-    commItems: acf.commItems?.map((item: any) => ({
-      title: item.title || '', desc: item.desc || '', image: item.image?.node?.sourceUrl || ''
-    })) || [],
-    ctaHeading: acf.ctaHeading || 'Bạn Đã Có Ý Tưởng?',
-    ctaDesc: acf.ctaDesc || '',
-    ctaBtnPrimary: acf.ctaBtnPrimary || 'Đăng Ký Tư Vấn',
-    ctaBtnSecondary: acf.ctaBtnSecondary || 'Xem Catalog'
+    return {
+      heroTitle: acf.heroTitle || "Nghệ Thuật Biến Hóa Không Gian",
+      heroDesc: acf.heroDesc || "",
+      spaces,
+      renovationHeading: acf.renovationHeading || "Cải Tạo Thần Tốc",
+      renovationDesc:
+        acf.renovationDesc || "Chứng kiến sự lột xác ngoạn mục...",
+      beforeImage: acf.beforeImage?.node?.sourceUrl || "",
+      afterImage: acf.afterImage?.node?.sourceUrl || "",
+      renovationFeatures: mapRenovationFeatures(acf.renovationFeatures),
+      commHeading: acf.commHeading || "Không Gian Thương Mại",
+      commDesc: acf.commDesc || "",
+      commLinkText: acf.commLinkText || "Xem dự án thực tế",
+      commLinkUrl: acf.commLinkUrl || "/du-an",
+      commItems:
+        acf.commItems?.map((item: any) => ({
+          title: item.title || "",
+          desc: item.desc || "",
+          image: item.image?.node?.sourceUrl || "",
+        })) || [],
+      ctaHeading: acf.ctaHeading || "Bạn Đã Có Ý Tưởng?",
+      ctaDesc: acf.ctaDesc || "",
+      ctaBtnPrimary: acf.ctaBtnPrimary || "Đăng Ký Tư Vấn",
+      ctaBtnSecondary: acf.ctaBtnSecondary || "Xem Catalog",
+    };
   };
-};
 
-// Helper map Product sang Material Item
-// Helper map Product sang Item (Dùng chung cho Materials & Accessories)
 const mapProductToItem = (node: any): any => {
   if (!node) return null;
-  
-  const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
-  const formattedPrice = rawPrice > 0 
-    ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawPrice)
-    : 'Liên hệ';
-
+  const rawPrice = node.price
+    ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
+    : 0;
+  const formattedPrice =
+    rawPrice > 0
+      ? new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(rawPrice)
+      : "Liên hệ";
   return {
-    name: node.name || '',
+    name: node.name || "",
     price: formattedPrice,
-    unit: '', 
-    link: `/product/${node.slug}`, 
-    image: node.image?.sourceUrl || 'https://via.placeholder.com/300'
+    unit: "",
+    link: `/product/${node.slug}`,
+    image: node.image?.sourceUrl || "https://via.placeholder.com/300",
   };
 };
 
@@ -1029,67 +977,34 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
     query GetPricingOptions {
       pricingOptions {
         pricingData {
-          # --- Hero & Calculator ---
           heroTitle
           heroDesc
-          
-          # [SỬA LỖI] calculatorProduct là Connection -> Phải dùng nodes
           calculatorProduct {
             nodes {
               ... on Product {
-                id
-                name
-                slug
-                sku
+                id, name, slug, sku
                 image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
                 productSpecifications {
-                   length
-                   width
-                   thickness
+                   length, width, thickness
                 }
               }
             }
           }
-
           basePriceTurnkey
-          
-          # --- 1. Packages ---
-          pkgHeading
-          pkgDesc
+          pkgHeading, pkgDesc
           turnkeyPackages {
-            name
-            price
-            unit
-            description
-            isPopular
-            styleType
-            features {
-              text
-            }
+            name, price, unit, description, isPopular, styleType, features { text }
           }
-          
-          # --- 2. Steps ---
-          stepsHeading
-          stepsDesc
+          stepsHeading, stepsDesc
           constructionSteps {
-            stepNumber
-            title
-            desc
-            icon
+            stepNumber, title, desc, icon
           }
-
-          # --- 3. Commitments ---
           commitments {
-            icon
-            title
-            desc
+            icon, title, desc
           }
-          
-          # --- 4. Materials ---
-          materialsHeading
-          materialsDesc
+          materialsHeading, materialsDesc
           materialProducts {
             nodes {
               ... on Product {
@@ -1100,10 +1015,7 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
               }
             }
           }
-          
-          # --- 5. Accessories ---
-          accHeading
-          accDesc
+          accHeading, accDesc
           accessoryItems {
             nodes {
               ... on Product {
@@ -1114,107 +1026,349 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
               }
             }
           }
-          
-          # --- FAQ & CTA ---
-          faqs {
-            question
-            answer
-          }
-          ctaHeading
-          ctaDesc
+          faqs { question, answer }
+          ctaHeading, ctaDesc
         }
       }
     }
   `);
 
   const acf = data?.pricingOptions?.pricingData || {};
-  const mapFeatures = (list: any[]) => list?.map((item: any) => item.text || '') || [];
+  const mapFeatures = (list: any[]) =>
+    list?.map((item: any) => item.text || "") || [];
 
-  // Helper map sản phẩm tính toán
   const mapCalcProduct = (node: any): Product | null => {
     if (!node) return null;
-    const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, '')) : 0;
-    
+    const rawPrice = node.price
+      ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
+      : 0;
     return {
-        id: node.id,
-        databaseId: 0,
-        slug: node.slug,
-        name: node.name,
-        image: { sourceUrl: node.image?.sourceUrl || '', altText: node.name },
-        price: { amount: rawPrice, formatted: '' }, 
-        dimensions: {
-            length: Number(node.productSpecifications?.length) || 0,
-            width: Number(node.productSpecifications?.width) || 0,
-            thickness: Number(node.productSpecifications?.thickness) || 0,
-            area: 0
-        },
-        // Fallback fields
-        brand: '', origin: '', surface: '', warranty: '', description: '', shortDescription: '',
-        galleryImages: [], stockStatus: 'IN_STOCK', sku: node.sku || '', categories: []
+      id: node.id,
+      databaseId: 0,
+      slug: node.slug,
+      name: node.name,
+      image: { sourceUrl: node.image?.sourceUrl || "", altText: node.name },
+      price: { amount: rawPrice, formatted: "" },
+      dimensions: {
+        length: Number(node.productSpecifications?.length) || 0,
+        width: Number(node.productSpecifications?.width) || 0,
+        thickness: Number(node.productSpecifications?.thickness) || 0,
+        area: 0,
+      },
+      brand: "",
+      origin: "",
+      surface: "",
+      warranty: "",
+      description: "",
+      shortDescription: "",
+      galleryImages: [],
+      stockStatus: "IN_STOCK",
+      sku: node.sku || "",
+      categories: [],
     };
   };
 
-  // [SỬA LỖI] Lấy node đầu tiên từ danh sách calculatorProduct
   const calcProductNode = acf.calculatorProduct?.nodes?.[0] || null;
 
   return {
-    heroTitle: acf.heroTitle || 'Bảng Giá Niêm Yết 2024',
-    heroDesc: acf.heroDesc || 'Công cụ tính toán giúp bạn hình dung chi phí sơ bộ...',
-    
-    // Truyền node đã lấy ở trên vào hàm map
+    heroTitle: acf.heroTitle || "Bảng Giá Niêm Yết 2024",
+    heroDesc:
+      acf.heroDesc || "Công cụ tính toán giúp bạn hình dung chi phí sơ bộ...",
     calculatorProduct: mapCalcProduct(calcProductNode),
-    
     basePriceTurnkey: Number(acf.basePriceTurnkey) || 550000,
-    
-    // Packages
-    pkgHeading: acf.pkgHeading || '1. Báo Giá Thi Công Trọn Gói',
-    pkgDesc: acf.pkgDesc || 'Giải pháp tối ưu nhất cho khách hàng bận rộn...',
-    turnkeyPackages: acf.turnkeyPackages?.map((pkg: any, idx: number) => ({
-      id: idx,
-      name: pkg.name || '',
-      price: pkg.price || '',
-      unit: pkg.unit || 'đ/m2',
-      description: pkg.description || '',
-      isPopular: pkg.isPopular || false,
-      styleType: pkg.styleType || 'standard',
-      features: mapFeatures(pkg.features)
-    })) || [],
-
-    // Steps
-    stepsHeading: acf.stepsHeading || 'Quy Trình Thi Công',
-    stepsDesc: acf.stepsDesc || 'Sự chuyên nghiệp tạo nên chất lượng...',
-    constructionSteps: acf.constructionSteps?.map((step: any) => ({
-      step: step.stepNumber || `0${step + 1}`,
-      title: step.title || '',
-      desc: step.desc || '',
-      icon: step.icon || 'default'
-    })) || [],
-
-    // Commitments
-    commitHeading: acf.commitHeading || 'Cam Kết Chất Lượng',
-    commitDesc: acf.commitDesc || '',
-    commitments: acf.commitments?.map((cm: any) => ({
-      icon: cm.icon || 'thumbsup',
-      title: cm.title || '',
-      desc: cm.desc || ''
-    })) || [],
-
-    // Materials
-    materialsHeading: acf.materialsHeading || '2. Báo Giá Vật Tư Lẻ',
-    materialsDesc: acf.materialsDesc || 'Mua vật liệu chính hãng giá tại kho...',
+    pkgHeading: acf.pkgHeading || "1. Báo Giá Thi Công Trọn Gói",
+    pkgDesc: acf.pkgDesc || "Giải pháp tối ưu nhất cho khách hàng bận rộn...",
+    turnkeyPackages:
+      acf.turnkeyPackages?.map((pkg: any, idx: number) => ({
+        id: idx,
+        name: pkg.name || "",
+        price: pkg.price || "",
+        unit: pkg.unit || "đ/m2",
+        description: pkg.description || "",
+        isPopular: pkg.isPopular || false,
+        styleType: pkg.styleType || "standard",
+        features: mapFeatures(pkg.features),
+      })) || [],
+    stepsHeading: acf.stepsHeading || "Quy Trình Thi Công",
+    stepsDesc: acf.stepsDesc || "Sự chuyên nghiệp tạo nên chất lượng...",
+    constructionSteps:
+      acf.constructionSteps?.map((step: any) => ({
+        step: step.stepNumber || `0${step + 1}`,
+        title: step.title || "",
+        desc: step.desc || "",
+        icon: step.icon || "default",
+      })) || [],
+    commitments:
+      acf.commitments?.map((cm: any) => ({
+        icon: cm.icon || "thumbsup",
+        title: cm.title || "",
+        desc: cm.desc || "",
+      })) || [],
+    materialsHeading: acf.materialsHeading || "2. Báo Giá Vật Tư Lẻ",
+    materialsDesc:
+      acf.materialsDesc || "Mua vật liệu chính hãng giá tại kho...",
     materialItems: acf.materialProducts?.nodes?.map(mapProductToItem) || [],
-
-    // Accessories
-    accHeading: acf.accHeading || '3. Phụ Kiện Thi Công',
-    accDesc: acf.accDesc || 'Các vật tư phụ cần thiết...',
+    accHeading: acf.accHeading || "3. Phụ Kiện Thi Công",
+    accDesc: acf.accDesc || "Các vật tư phụ cần thiết...",
     accessoryItems: acf.accessoryItems?.nodes?.map(mapProductToItem) || [],
-
-    // FAQ & CTA
-    faqs: acf.faqs?.map((f: any) => ({
-      question: f.question || '',
-      answer: f.answer || ''
-    })) || [],
-    ctaHeading: acf.ctaHeading || 'Bạn Vẫn Còn Phân Vân?',
-    ctaDesc: acf.ctaDesc || 'Đừng lo lắng. Hãy để chuyên gia kỹ thuật hỗ trợ.'
+    faqs:
+      acf.faqs?.map((f: any) => ({
+        question: f.question || "",
+        answer: f.answer || "",
+      })) || [],
+    ctaHeading: acf.ctaHeading || "Bạn Vẫn Còn Phân Vân?",
+    ctaDesc: acf.ctaDesc || "Đừng lo lắng. Hãy để chuyên gia kỹ thuật hỗ trợ.",
   };
+};
+
+export const getContactPageData = async (): Promise<ContactPageData> => {
+  const data = await fetchAPI(`
+    query GetContactOptions {
+      contactOptions {
+        contactData {
+          heroTitle, heroDesc, heroImage { node { sourceUrl } }
+          address, hotline, email, workingHours, zaloUrl, facebookUrl
+          mapEmbedUrl
+          formHeading, formDesc, namePlaceholder, phonePlaceholder, emailPlaceholder
+          messagePlaceholder, btnText, successTitle, successMessage
+          topics { value, label }
+          faqsContact { question, answer }
+        }
+      }
+    }
+  `);
+
+  const acf = data?.contactOptions?.contactData || {};
+
+  return {
+    heroTitle: acf.heroTitle || 'Liên Hệ Với Chúng Tôi',
+    heroDesc: acf.heroDesc || 'Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn.',
+    heroImage: acf.heroImage?.node?.sourceUrl || 'https://via.placeholder.com/1920x600',
+    
+    info: {
+      address: acf.address || 'Đang cập nhật địa chỉ...',
+      hotline: acf.hotline || '0912.345.678',
+      email: acf.email || 'info@domain.com',
+      workingHours: acf.workingHours || 'Thứ 2 - Thứ 7: 8:00 - 17:30',
+      zaloUrl: acf.zaloUrl || '#',
+      facebookUrl: acf.facebookUrl || '#'
+    },
+    
+    mapUrl: acf.mapEmbedUrl || '',
+
+    // [FIX LỖI] Thêm thuộc tính 'form' còn thiếu
+    form: {
+      heading: acf.formHeading || 'Gửi Tin Nhắn',
+      desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.',
+    },
+
+    formConfig: {
+        heading: acf.formHeading || 'Gửi Tin Nhắn',
+        desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.',
+        namePlaceholder: acf.namePlaceholder || 'Nguyễn Văn A',
+        phonePlaceholder: acf.phonePlaceholder || '0912 xxx xxx',
+        emailPlaceholder: acf.emailPlaceholder || 'example@gmail.com',
+        messagePlaceholder: acf.messagePlaceholder || 'Nội dung cần tư vấn...',
+        btnText: acf.btnText || 'Gửi Yêu Cầu',
+        successTitle: acf.successTitle || 'Gửi thành công!',
+        successMessage: acf.successMessage || 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.',
+        topics: acf.topics?.map((t: any) => ({
+            value: t.value || 'general',
+            label: t.label || 'Tư vấn chung'
+        })) || [
+            { value: 'advice', label: 'Tư vấn sản phẩm' }
+        ]
+      },
+
+    faqsContact: acf.faqsContact?.map((item: any) => ({
+        question: item.question || '',
+        answer: item.answer || ''
+    })) || []
+  };
+};
+
+export const submitContactForm = async (formData: {
+  name: string;
+  phone: string;
+  email: string;
+  topic: string;
+  message: string;
+}) => {
+  const restBaseUrl = API_URL.replace("/graphql", "/wp-json/dainam/v1/contact");
+  try {
+    const res = await fetch(restBaseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Lỗi khi gửi form");
+    return json;
+  } catch (error) {
+    console.error("❌ Submit Form Error:", error);
+    return null;
+  }
+};
+
+const ADD_TO_CART_MUTATION = `
+mutation AddToCart($productId: Int!, $quantity: Int!) {
+  addToCart(input: { productId: $productId, quantity: $quantity }) {
+    cart {
+      contents {
+        nodes {
+          key
+          quantity
+          product {
+            node {
+              name
+              databaseId
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`;
+
+const CHECKOUT_MUTATION = `
+mutation Checkout($input: CheckoutInput!) {
+  checkout(input: $input) {
+    result
+    redirect
+    order {
+      databaseId
+      orderNumber
+      status
+      total
+    }
+  }
+}
+`;
+
+// --- QUẢN LÝ SESSION ---
+const getSession = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('woo-session');
+  }
+  return null;
+};
+
+const setSession = (token: string) => {
+  if (typeof window !== 'undefined' && token) {
+    localStorage.setItem('woo-session', token);
+  }
+};
+
+// --- HÀM GỌI API CHO CART/CHECKOUT ---
+const fetchGraphQL = async (query: string, variables: any = {}) => {
+  const headers: Record<string, string> = { 
+    "Content-Type": "application/json" 
+  };
+  
+  // 1. Gửi Session Token đi (nếu đã có)
+  const session = getSession();
+  if (session) {
+    headers['woocommerce-session'] = `Session ${session}`;
+  }
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query, variables }),
+    credentials: "include", // Quan trọng để xử lý cookie nếu server dùng cookie
+    cache: "no-store",
+  });
+
+  // 2. Lấy Session Token mới từ Server trả về (nếu có) và lưu lại
+  // Lưu ý: Tên header có thể là 'woocommerce-session' hoặc 'x-woocommerce-session' tùy server
+  const newSession = res.headers.get('woocommerce-session') || res.headers.get('x-woocommerce-session');
+  
+  if (newSession) {
+    setSession(newSession);
+  }
+
+  return res.json();
+};
+
+export const createOrder = async (
+  formData: {
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    note: string;
+    paymentMethod?: string;
+  },
+  cartItems: any[],
+) => {
+  try {
+    const fullName = formData.name.trim();
+    const lastSpaceIndex = fullName.lastIndexOf(" ");
+    let firstName = fullName;
+    let lastName = ".";
+    if (lastSpaceIndex > 0) {
+      firstName = fullName.substring(0, lastSpaceIndex);
+      lastName = fullName.substring(lastSpaceIndex + 1);
+    }
+    console.log("🛒 Bắt đầu thêm vào giỏ hàng...");
+
+    for (const item of cartItems) {
+      const pId = Number(item.databaseId);
+      if (!pId || isNaN(pId)) continue;
+      const res = await fetchGraphQL(ADD_TO_CART_MUTATION, {
+        productId: pId,
+        quantity: item.quantity,
+      });
+      if (res.errors) {
+        console.error("AddToCart Error:", res.errors);
+        return { success: false, message: res.errors[0].message };
+      }
+    }
+
+    const checkoutInput = {
+      clientMutationId: `order_${Date.now()}`,
+      paymentMethod: formData.paymentMethod || "cod",
+      isPaid: false,
+      billing: {
+        firstName,
+        lastName,
+        address1: formData.address,
+        city: "Hồ Chí Minh",
+        country: "VN",
+        phone: formData.phone,
+        email: formData.email || "no-email@example.com",
+      },
+      shipping: {
+        firstName,
+        lastName,
+        address1: formData.address,
+        city: "Hồ Chí Minh",
+        country: "VN",
+      },
+      customerNote: formData.note,
+    };
+
+    const data = await fetchGraphQL(CHECKOUT_MUTATION, {
+      input: checkoutInput,
+    });
+
+    if (data.errors) {
+      console.error("❌ Checkout Error:", data.errors);
+      return { success: false, message: data.errors[0].message };
+    }
+
+    return {
+      success: true,
+      order: data.data?.checkout?.order,
+    };
+  } catch (error) {
+    console.error("Exception:", error);
+    return {
+      success: false,
+      message:
+        "Lỗi hệ thống: " +
+        (error instanceof Error ? error.message : String(error)),
+    };
+  }
 };

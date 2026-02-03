@@ -2,14 +2,18 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Trash2, Send, CheckCircle, ShieldCheck, Phone } from 'lucide-react';
+import { ArrowLeft, Trash2, Send, CheckCircle, ShieldCheck, Phone, AlertCircle } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/common/UI';
+import { createOrder } from '@/services/wpService'; // Import service
 
 export default function CheckoutPage() {
-    const { cart, cartTotal, removeFromCart } = useCart();
+    // Lấy thêm clearCart
+    const { cart, cartTotal, removeFromCart, clearCart } = useCart();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [orderInfo, setOrderInfo] = useState<{ id: string, total: string } | null>(null);
+    const [errorMsg, setErrorMsg] = useState('');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -19,6 +23,7 @@ export default function CheckoutPage() {
         note: ''
     });
 
+    // Nếu giỏ hàng trống và chưa đặt thành công -> Hiện màn hình trống
     if (cart.length === 0 && !isSuccess) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-center px-4">
@@ -37,10 +42,23 @@ export default function CheckoutPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        // Simulate API
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        setErrorMsg('');
+
+        // Gọi hàm tạo đơn hàng thật
+        const result = await createOrder(formData, cart);
+
         setIsSubmitting(false);
-        setIsSuccess(true);
+
+        if (result.success && result.order) {
+            setOrderInfo({
+                id: result.order.orderNumber,
+                total: result.order.total
+            });
+            setIsSuccess(true);
+            clearCart(); // Xóa giỏ hàng sau khi thành công
+        } else {
+            setErrorMsg(result.message || 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.');
+        }
     };
 
     if (isSuccess) {
@@ -49,17 +67,26 @@ export default function CheckoutPage() {
                 <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-6 shadow-inner animate-bounce">
                     <CheckCircle size={48} className="text-green-500" />
                 </div>
-                <h1 className="text-3xl md:text-4xl  font-bold text-slate-900 mb-4">Gửi Yêu Cầu Thành Công!</h1>
-                <p className="text-slate-500 mb-8 max-w-lg text-lg">
-                    Cảm ơn <strong>{formData.name}</strong>. Đại Nam Wall đã nhận được danh sách sản phẩm quan tâm của bạn.
-                    Nhân viên kinh doanh sẽ liên hệ qua số <strong>{formData.phone}</strong> trong vòng 15 phút.
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Đặt Hàng Thành Công!</h1>
+                <p className="text-slate-500 mb-2 text-lg">
+                    Cảm ơn <strong>{formData.name}</strong>. Đơn hàng của bạn đã được ghi nhận.
                 </p>
+                {orderInfo && (
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 inline-block text-left">
+                        <p className="text-sm text-slate-500">Mã đơn hàng: <strong className="text-slate-900">#{orderInfo.id}</strong></p>
+                        <p className="text-sm text-slate-500">Tổng tiền: <strong className="text-brand-600">{orderInfo.total}</strong></p>
+                    </div>
+                )}
+                <p className="text-slate-400 mb-8 max-w-lg text-sm">
+                    Nhân viên kinh doanh sẽ liên hệ qua số <strong>{formData.phone}</strong> để xác nhận đơn hàng và lịch giao hàng.
+                </p>
+                
                 <div className="flex gap-4">
                     <Link href="/">
                         <Button variant="outline">Về Trang Chủ</Button>
                     </Link>
                     <Link href="/shop">
-                        <Button>Tiếp Tục Xem Mẫu</Button>
+                        <Button>Tiếp Tục Mua Sắm</Button>
                     </Link>
                 </div>
             </div>
@@ -75,15 +102,23 @@ export default function CheckoutPage() {
                     </Link>
                 </div>
                 
-                <h1 className="text-3xl md:text-4xl  font-bold text-slate-900 mb-8">Yêu Cầu Báo Giá & Tư Vấn</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8">Đặt Hàng & Thanh Toán</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    {/* LEFT COLUMN: FORM */}
                     <div className="lg:col-span-7">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
                             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <span className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm">1</span>
                                 Thông tin người nhận
                             </h2>
+                            
+                            {errorMsg && (
+                                <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                                    <AlertCircle size={16}/> {errorMsg}
+                                </div>
+                            )}
+
                             <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
@@ -109,6 +144,18 @@ export default function CheckoutPage() {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500 tracking-wider">Email (Không bắt buộc)</label>
+                                    <input 
+                                        type="email" 
+                                        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all font-medium"
+                                        value={formData.email}
+                                        onChange={e => setFormData({...formData, email: e.target.value})}
+                                        placeholder="email@example.com (để nhận thông báo đơn hàng)"
+                                    />
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500 tracking-wider">Địa chỉ giao hàng (Dự kiến)</label>
                                     <input 
@@ -126,7 +173,7 @@ export default function CheckoutPage() {
                                         className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all font-medium resize-none"
                                         value={formData.note}
                                         onChange={e => setFormData({...formData, note: e.target.value})}
-                                        placeholder="Ví dụ: Cần thi công trọn gói, chung cư tầng 15..."
+                                        placeholder="Ví dụ: Cần thi công trọn gói, giao hàng giờ hành chính..."
                                     ></textarea>
                                 </div>
                             </form>
@@ -137,17 +184,18 @@ export default function CheckoutPage() {
                              <div>
                                  <h4 className="font-bold text-brand-900 mb-1">Cam kết từ Đại Nam Wall</h4>
                                  <p className="text-sm text-brand-700/80">
-                                     Thông tin của bạn được bảo mật tuyệt đối. Chúng tôi chỉ sử dụng để tư vấn báo giá và không chia sẻ cho bên thứ ba.
+                                     Đơn hàng sẽ được xử lý và xác nhận qua điện thoại trước khi giao. Thanh toán linh hoạt khi nhận hàng hoặc chuyển khoản.
                                  </p>
                              </div>
                         </div>
                     </div>
 
+                    {/* RIGHT COLUMN: CART & ACTIONS */}
                     <div className="lg:col-span-5">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 sticky top-24">
                             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <span className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm">2</span>
-                                Danh sách sản phẩm
+                                Đơn hàng của bạn
                             </h2>
 
                             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar mb-6">
@@ -186,13 +234,13 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between text-slate-600">
                                     <span>Phí vận chuyển:</span>
-                                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-bold">Báo sau</span>
+                                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-bold">Tính sau</span>
                                 </div>
                                 <div className="flex justify-between text-xl font-bold text-slate-900 pt-4 border-t border-gray-100">
-                                    <span>Tổng ước tính:</span>
+                                    <span>Tổng cộng:</span>
                                     <span className="text-brand-600">{cartTotal.toLocaleString('vi-VN')}₫</span>
                                 </div>
-                                <p className="text-xs text-slate-400 italic text-right">Chưa bao gồm VAT và chi phí thi công (nếu có)</p>
+                                <p className="text-xs text-slate-400 italic text-right">Giá đã bao gồm VAT (nếu có)</p>
                             </div>
 
                             <Button 
@@ -201,7 +249,7 @@ export default function CheckoutPage() {
                                 disabled={isSubmitting}
                                 className="mt-8 h-14 text-base shadow-lg shadow-brand-500/20"
                             >
-                                {isSubmitting ? 'Đang gửi...' : <span className="flex items-center gap-2">Gửi Yêu Cầu Báo Giá <Send size={18}/></span>}
+                                {isSubmitting ? 'Đang xử lý...' : <span className="flex items-center gap-2">Đặt Hàng Ngay <Send size={18}/></span>}
                             </Button>
 
                             <div className="mt-6 pt-6 border-t border-gray-100 text-center">

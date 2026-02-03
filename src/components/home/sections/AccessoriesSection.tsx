@@ -9,6 +9,9 @@ import { useCart } from '@/context/CartContext';
 
 interface AccessoriesSectionProps {
   settings?: {
+    headNormal?: string;      // <-- Thêm dòng này
+    headHighlight?: string;   // <-- Thêm dòng này
+    phuKienSub?: string;      // <-- Thêm dòng này
     highlights: AccessoryHighlight[]; // Mảng chứa 3 thẻ: [0]=Lớn, [1]=Nhỏ 1, [2]=Nhỏ 2
     viewAll: { text: string; sub: string; link: string };
     prodHeading: string;

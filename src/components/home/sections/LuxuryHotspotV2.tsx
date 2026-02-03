@@ -103,7 +103,7 @@ const [isSafeToAnimate, setIsSafeToAnimate] = useState(false);
                         transitionDelay: show ? `${baseDelay + 400}ms` : '0ms'
                     }}
                 >
-                    <Link  href={hasLink ? data.link : ''} className="group flex items-stretch cursor-pointer" rel={relAttributes}>
+                    <Link  href={hasLink ? data.link || '' : '#'} className="group flex items-stretch cursor-pointer" rel={relAttributes}>
                         
                         {/* Thanh màu điểm nhấn */}
                         <div className={`w-1 bg-amber-400 transition-all group-hover:w-1.5 ${showContentOnLeft ? 'order-2 rounded-r-sm' : 'order-1 rounded-l-sm'}`}></div>

@@ -1,3 +1,4 @@
+// src/types.ts
 
 // Mimicking WP GraphQL Structure
 export interface WpImage {
@@ -6,30 +7,32 @@ export interface WpImage {
 }
 
 export interface WpPrice {
-  amount: number; // Changed to number for easier calc
-  formatted: string; // "150.000₫"
+  amount: number;
+  formatted: string;
 }
 
 export interface ProductDimensions {
-  length: number; // mm
-  width: number; // mm
-  thickness: number; // mm
-  area: number; // m2 per piece
+  length: number;
+  width: number;
+  thickness: number;
+  area: number;
 }
+
 export interface PolicyBlock {
   icon: string;
   heading: string;
   content: string;
 }
+
 export interface Product {
   id: string;
   databaseId: number;
   slug: string;
   name: string;
-  brand: string; // Vẫn giữ string, nhưng dữ liệu lấy từ Taxonomy
-  origin: string; // Mới: Xuất xứ
-  surface: string; // Mới: Bề mặt
-  warranty: string; // Mới: Bảo hành
+  brand: string;
+  origin: string;
+  surface: string;
+  warranty: string;
   description: string;
   shortDescription: string;
   image: WpImage;
@@ -56,23 +59,20 @@ export interface Category {
   name: string;
   slug: string;
   count: number;
-  image: string;      // Ảnh nhỏ (Thumbnail)
+  image: string;
   description?: string;
-  
-  // --- CÁC TRƯỜNG MỚI TỪ ACF ---
-  headerImage?: string;   // Ảnh Banner lớn
-  bottomContent?: string; // Nội dung SEO dưới cùng
-  trendHeader?: string;   // Tiêu đề xu hướng (VD: XU HƯỚNG 2024)
-  trendContent?: string;  // Nội dung xu hướng
-  warrantyMonths?: number; // Số năm bảo hành
+  headerImage?: string;
+  bottomContent?: string;
+  trendHeader?: string;
+  trendContent?: string;
+  warrantyMonths?: number;
 }
 
-// --- THÊM MỚI INTERFACE CHO BANNER ---
 export interface BannerConfig {
   title: string;
   description: string;
-  trendContent: string;   // Nội dung xu hướng (VD: "Xu hướng 2026")
-  warrantyMonths: number; // Số tháng bảo hành (VD: 240)
+  trendContent: string;
+  warrantyMonths: number;
   backgroundImage: string;
 }
 
@@ -83,27 +83,28 @@ export interface Author {
   role: string;
 }
 
+// [FIX LỖI] Hợp nhất BlogPost thành 1 Interface duy nhất
 export interface BlogPost {
   id: string;
   title: string;
   slug: string;
   excerpt: string;
-  content: string; // HTML
+  content: string;
   image: string;
   category: string;
   date: string;
-  readTime: string;
-  author: Author;
+  readTime: string; // Đã thêm trường này
+  author: Author;   // Sử dụng interface Author chuẩn
   tags: string[];
 }
 
-// --- HERO SECTION TYPES (NEW) ---
+// --- HERO SECTION TYPES ---
 export interface HotspotItem {
-  x: string; // Vd: "55%"
-  y: string; // Vd: "40%"
+  x: string;
+  y: string;
   name: string;
   price: string;
-  position: 'left' | 'right'; // Vị trí tooltip
+  position: 'left' | 'right';
   link?: string;
   nofollow?: boolean;
 }
@@ -115,21 +116,24 @@ export interface HeroSlide {
   description: string;
   image: string;
   ctaLink: string;
-  ctaText?: string; // Nút bấm
+  ctaText?: string;
   hotspots: HotspotItem[];
   productLink?: string;
 }
+
 export interface SignatureTab {
   id: string | number;
   name: string;
-  products: Product[]; // Sử dụng lại interface Product đã có
+  products: Product[];
 }
+
 export interface ShopLookItem {
   id: string | number;
   x: number;
   y: number;
-  product: Product; // Sản phẩm gắn với điểm đó
+  product: Product;
 }
+
 export interface QualityTag {
   text: string;
 }
@@ -147,7 +151,7 @@ export interface QualitySmallCard {
   title: string;
   description: string;
 }
-// [THÊM MỚI] Dữ liệu thẻ highlight phụ kiện
+
 export interface AccessoryHighlight {
   id: string | number;
   title: string;
@@ -155,40 +159,22 @@ export interface AccessoryHighlight {
   image: string;
   link: string;
 }
-export interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  date: string;       // Đã format: "20/01/2026"
-  image: string;      // Ảnh đại diện
-  category: string;   // Tên danh mục đầu tiên
-  author: {
-    name: string;
-    avatar: string;
-  };
-  tags: string[];
-}
+
 export interface HomeSettings {
-  // --- HERO SECTION ---
   heroSlides: HeroSlide[];
-  // --- CATEGORY SECTION ---
   categoryHeadingNormal?: string;
   categoryHeadingHighlight?: string;
   categorySubheading?: string;
   catalogueText?: string;
   enableCategoryNofollow?: boolean;
-  // --- SIGNATURE SECTION ---
   signatureHeadingNormal?: string;
   signatureHeadingHighlight?: string;
   signatureDesc?: string;
-  signatureTabs: SignatureTab[]; // Mảng các Tab
-  // --- SHOP THE LOOK  ---
+  signatureTabs: SignatureTab[];
   shopLookHeading?: string;
   shopLookSubheading?: string;
   shopLookImage?: string;
   shopLookItems: ShopLookItem[];
-  // --- ACCESSORIES SECTION  ---
   headNormal: string;
   headHighlight: string;
   phuKienSub: string;
@@ -200,12 +186,10 @@ export interface HomeSettings {
   };
   accProdHeading: string;
   accProducts: Product[]; 
-  // --- QUALITY SECTION ---
   qualityHeading: string;
   qualitySubheading: string;
   qualityLarge: QualityLargeCard;
   qualitySmall: QualitySmallCard[];
-  // --- BLOG SECTION ---
   blogPosts: BlogPost[]; 
 }
 
@@ -225,9 +209,9 @@ export interface Project {
   client: string;
   challenge: string;
   solution: string;
-  materials: string[]; // Chuyển thành mảng string
-  gallery: string[];   // Album ảnh
-  subtitle: string;    // Có thể dùng category làm subtitle
+  materials: string[];
+  gallery: string[];
+  subtitle: string;
 }
 
 export type IconType = 'layers' | 'maximize' | 'zap' | 'mic' | 'shield' | 'droplets' | 'star' | 'default';
@@ -237,7 +221,7 @@ export interface Hotspot {
   y: number;
   label: string;
   description: string;
-  iconType: IconType; // Lưu key của icon
+  iconType: IconType;
 }
 
 export interface Stat {
@@ -247,40 +231,40 @@ export interface Stat {
 
 export interface ApplicationSpace {
   id: string;
-  name: string;      // Post Title (Vd: Phòng Khách)
-  title: string;     // ACF Subtitle (Vd: Tuyệt Tác Phòng Khách)
-  description: string; // Post Excerpt hoặc ACF
+  name: string;
+  title: string;
+  description: string;
   image: string;
   hotspots: Hotspot[];
   stats: Stat[];
 }
+
 export interface RenovationFeature {
   icon: string;
   title: string;
   desc: string;
 }
+
 export interface CommercialItem {
   image: string;
   title: string;
   desc: string;
 }
+
 export interface ApplicationPageData {
   heroTitle: string;
   heroDesc: string;
   spaces: ApplicationSpace[];
-  // [CẬP NHẬT] Renovation Section
   renovationHeading: string;
   renovationDesc: string;
   beforeImage: string;
   afterImage: string;
-  renovationFeatures: RenovationFeature[]; // Mảng 3 tính năng
-
-  // [CẬP NHẬT] Commercial Section
+  renovationFeatures: RenovationFeature[];
   commHeading: string;
   commDesc: string;
   commItems: CommercialItem[];
-  commLinkText: string; // [MỚI]
-  commLinkUrl: string;  // [MỚI]
+  commLinkText: string;
+  commLinkUrl: string;
   ctaHeading: string;
   ctaDesc: string;
   ctaBtnPrimary: string;
@@ -296,14 +280,14 @@ export interface TurnkeyPackage {
   description: string;
   features: string[];
   isPopular: boolean;
-  styleType: 'standard' | 'dark' | 'gold'; // Để map style CSS
+  styleType: 'standard' | 'dark' | 'gold';
 }
 
 export interface ConstructionStep {
   step: string;
   title: string;
   desc: string;
-  icon: string; // Tên icon để map trong Client Component
+  icon: string;
 }
 
 export interface MaterialItem {
@@ -325,7 +309,6 @@ export interface FaqItem {
   answer: string;
 }
 
-// Thêm type cho Cam kết
 export interface CommitmentItem {
   icon: string;
   title: string;
@@ -333,37 +316,68 @@ export interface CommitmentItem {
 }
 
 export interface PricingPageData {
-  // Hero
   heroTitle: string;
   heroDesc: string;
   calculatorProduct: Product | null;
-  basePriceMaterial: number;
   basePriceTurnkey: number;
-
-  // 1. Packages Section
-  pkgHeading: string; // [MỚI]
-  pkgDesc: string;    // [MỚI]
+  pkgHeading: string;
+  pkgDesc: string;
   turnkeyPackages: TurnkeyPackage[];
-
-  // 2. Steps Section
-  stepsHeading: string; // [MỚI]
-  stepsDesc: string;    // [MỚI]
+  stepsHeading: string;
+  stepsDesc: string;
   constructionSteps: ConstructionStep[];
-
- 
-
-  // 4. Materials Section
-  materialsHeading: string; // [MỚI]
-  materialsDesc: string;    // [MỚI]
-  materialItems: MaterialItem[]; // Dữ liệu sẽ được map từ Product thật
-
-  // 5. Accessories Section
-  accHeading: string; // [MỚI]
-  accDesc: string;    // [MỚI]
+  commitments: CommitmentItem[];
+  materialsHeading: string;
+  materialsDesc: string;
+  materialItems: MaterialItem[];
+  accHeading: string;
+  accDesc: string;
   accessoryItems: AccessoryItem[];
-
-  // FAQ & CTA
   faqs: FaqItem[];
   ctaHeading: string;
   ctaDesc: string;
+}
+
+export interface ContactTopic {
+    value: string;
+    label: string;
+}
+
+export interface ContactFormConfig {
+    heading: string;
+    desc: string;
+    namePlaceholder: string;
+    phonePlaceholder: string;
+    emailPlaceholder: string;
+    messagePlaceholder: string;
+    btnText: string;
+    successTitle: string;
+    successMessage: string;
+    topics: ContactTopic[];
+}
+
+export interface ContactFaq {
+    question: string;
+    answer: string;
+}
+
+export interface ContactPageData {
+  heroTitle: string;
+  heroDesc: string;
+  heroImage: string;
+  info: {
+    address: string;
+    hotline: string;
+    email: string;
+    workingHours: string;
+    zaloUrl: string;
+    facebookUrl: string;
+  };
+  mapUrl: string;
+  form: {
+    heading: string;
+    desc: string;
+  };
+  formConfig: ContactFormConfig;
+  faqsContact: ContactFaq[];
 }
