@@ -12,7 +12,6 @@ import { Button } from '@/components/common/UI';
 import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
 
-// Next.js 15 yêu cầu params phải là một Promise
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [product, setProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
@@ -20,7 +19,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    // Giải nén params từ Promise
     params.then(resolvedParams => {
       if (resolvedParams.slug) {
         getProductBySlug(resolvedParams.slug).then(p => setProduct(p || null));
