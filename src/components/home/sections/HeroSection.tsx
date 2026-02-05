@@ -3,18 +3,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlayCircle, ChevronLeft, ArrowRight } from 'lucide-react';
+import { PlayCircle, ChevronLeft, ShoppingBag, Info, X, ChevronRight, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/common/UI';
 import { LuxuryHotspotV2 } from './LuxuryHotspotV2';
 import { HeroSlide } from '@/types';
 
-// Dữ liệu dự phòng
+// --- Dữ liệu mẫu (Giữ nguyên) ---
 const DEFAULT_SLIDES: HeroSlide[] = [
     {
         id: 1,
         subtitle: "Bộ Sưu Tập 2024",
         title: "Vân Gỗ \nThượng Hạng",
-        description: "Tái hiện vẻ đẹp nguyên bản của gỗ sồi Nga và óc chó Mỹ trong không gian sống hiện đại.",
+        description: "Tái hiện vẻ đẹp nguyên bản của gỗ sồi Nga và óc chó Mỹ trong không gian sống hiện đại. Sự kết hợp hoàn hảo giữa kỹ thuật thủ công và công nghệ tiên tiến.",
         image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000",
         ctaLink: "/shop",
         ctaText: "Mua Ngay",
@@ -24,7 +24,7 @@ const DEFAULT_SLIDES: HeroSlide[] = [
         id: 2,
         subtitle: "Không Gian Sống",
         title: "Tinh Tế \nĐẳng Cấp",
-        description: "Sự kết hợp hoàn hảo giữa ánh sáng tự nhiên và chất liệu cao cấp tạo nên sự sang trọng.",
+        description: "Sự kết hợp hoàn hảo giữa ánh sáng tự nhiên và chất liệu cao cấp tạo nên sự sang trọng. Mỗi chi tiết đều được chăm chút tỉ mỉ để mang lại trải nghiệm sống động.",
         image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2000",
         ctaLink: "/projects",
         ctaText: "Xem Dự Án",
@@ -37,14 +37,17 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
-    // Logic Fallback
     const dataToRender = slides.length > 0 ? slides : DEFAULT_SLIDES;
 
+    // --- STATE ---
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [hotspotsVisible, setHotspotsVisible] = useState(false);
     
-    // State cho Mobile Swipe
+    // State Mobile (Từ Code 2)
+    const [showInfo, setShowInfo] = useState(false); 
+    const [activeHotspotIndex, setActiveHotspotIndex] = useState<number | null>(null);
+
+    // Swipe Logic
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const minSwipeDistance = 50;
@@ -54,7 +57,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
     const parallaxRef = useRef<HTMLDivElement>(null);
     const requestRef = useRef<number | null>(null);
 
-    // --- HELPER FUNCTIONS ---
+    // --- ACTIONS ---
     const nextSlide = useCallback(() => {
         if (isAnimating) return;
         setIsAnimating(true);
@@ -76,7 +79,8 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
         setTimeout(() => setIsAnimating(false), 1000);
     };
 
-    // --- 1. LOGIC PARALLAX (Desktop Only) ---
+    // --- EFFECTS ---
+    // 1. Parallax (Desktop)
     useEffect(() => {
         const isMobile = window.innerWidth < 768;
         if (isMobile) return;
@@ -100,12 +104,10 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
         };
     }, []);
 
-    // --- 2. LOGIC AUTO SLIDE & HOTSPOTS ---
+    // 2. Auto Slide & Reset Mobile State
     useEffect(() => {
-        setHotspotsVisible(false);
-        const hotspotTimer = setTimeout(() => {
-            setHotspotsVisible(true);
-        }, 1500);
+        setActiveHotspotIndex(null); 
+        setShowInfo(false);
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
@@ -114,11 +116,10 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            clearTimeout(hotspotTimer);
         };
     }, [currentSlide, nextSlide]);
 
-    // --- 3. SWIPE HANDLERS (Mobile) ---
+    // --- SWIPE HANDLERS ---
     const onTouchStart = (e: React.TouchEvent) => {
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
@@ -131,136 +132,176 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
     const onTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
         const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-        
-        if (isLeftSwipe) nextSlide();
-        else if (isRightSwipe) prevSlide();
+        if (distance > minSwipeDistance) nextSlide();
+        else if (distance < -minSwipeDistance) prevSlide();
     };
 
     const nextSlideIndex = (currentSlide + 1) % dataToRender.length;
 
     return (
         <section 
-            className="relative w-full overflow-hidden bg-slate-900 group/hero 
-            /* Mobile: Height dùng dvh để fix lỗi thanh địa chỉ browser + padding */
-            h-[calc(100dvh-60px)] p-4
-            /* Desktop: Height full viewport trừ header, reset padding */
+            className="relative w-full overflow-hidden bg-slate-50 group/hero
+            /* Mobile: Auto height + padding (giống Code 2) */
+            h-auto pb-2 md:pb-0
+            /* Desktop: Full height */
             md:h-[calc(100vh-102px)] md:min-h-[600px] 2xl:min-h-[750px] md:p-0"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
         >
-
+            
             {/* ==============================================
-                MOBILE LAYOUT: WHITE CARD STYLE (Từ Code 2)
-                Chỉ hiện ở md:hidden
+                MOBILE LAYOUT: CODE 2 INTEGRATION
+                (Aspect Video Card, Dark Theme, Icons)
                ============================================== */}
-            <div className="md:hidden w-full h-full flex flex-col justify-center">
-                {/* Card Container - White Background */}
-                <div className="relative w-full h-full max-h-[620px] bg-white rounded-[24px] overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] ring-1 ring-white/10 flex flex-col">
+         {/* ==============================================
+                MOBILE LAYOUT: SUPER COMPACT (Siêu nhỏ)
+               ============================================== */}
+            <div className="md:hidden w-full px-3 pt-3 pb-0">
+                
+                {/* Container: Aspect Video */}
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md shadow-amber-900/5 ring-1 ring-slate-900/5 bg-slate-900">
                     
-                    {/* 1. Image Area (Top ~55%) */}
-                    <div className="relative h-[55%] w-full overflow-hidden bg-slate-100">
-                        {dataToRender.map((slide, idx) => (
-                            <div 
-                                key={slide.id}
-                                className={`absolute inset-0 transition-opacity duration-700 ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                            >
-                                <Image
-                                    src={slide.image} 
-                                    alt={slide.title} 
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 768px) 100vw, 33vw"
-                                />
-                                {/* Gradient dưới chân ảnh để blend vào phần trắng */}
-                                <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+                    {/* 1. Image Layer */}
+                    {dataToRender.map((slide, idx) => (
+                        <div 
+                            key={slide.id}
+                            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        >
+                            <Image 
+                                src={slide.image} 
+                                alt={slide.title} 
+                                fill
+                                className="object-cover object-center" 
+                                sizes="(max-width: 768px) 100vw, 33vw"
+                                priority={idx === 0}
+                            />
+                            
+                            {/* Gradient: Clean, Bottom-focused */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-95"></div>
 
-                                {/* Hotspots Mobile (Optional) */}
-                                {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
-                                    <LuxuryHotspotV2 key={hIdx} data={hotspot} isVisible={hotspotsVisible} delayIndex={hIdx} />
+                            {/* Mobile Hotspots */}
+                            <div className={`absolute inset-0 z-20 transition-opacity duration-300 ${showInfo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                               {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
+                                    <LuxuryHotspotV2
+                                        key={hIdx}
+                                        data={hotspot}
+                                        isVisible={true}
+                                        delayIndex={hIdx}
+                                    />
                                 ))}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* 2. Content Area (Bottom ~45%) - White & Clean */}
-                    <div className="flex-1 relative p-6 flex flex-col bg-white">
-                        
-                        {/* Top Row: Subtitle + Pagination */}
-                        <div className="flex justify-between items-start mb-3">
-                            <div className="overflow-hidden">
-                                {dataToRender.map((slide, idx) => (
-                                    currentSlide === idx && (
-                                        <div key={idx} className="animate-slide-in-right flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            <span className="text-amber-600 text-[10px] font-bold tracking-[0.2em] uppercase">
-                                                {slide.subtitle}
-                                            </span>
-                                        </div>
-                                    )
-                                ))}
-                            </div>
-                            <div className="font-mono text-[10px] text-slate-400 font-medium tracking-widest border border-slate-200 px-2 py-1 rounded-full">
-                                {currentSlide + 1 < 10 ? `0${currentSlide + 1}` : currentSlide + 1} / {dataToRender.length < 10 ? `0${dataToRender.length}` : dataToRender.length}
                             </div>
                         </div>
+                    ))}
 
-                        {/* Main Content Slider */}
-                        <div className="relative flex-1">
+                    {/* 2. LEFT COMPACT BADGE (Vertical Pill) - THU NHỎ */}
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-16 z-30 flex flex-col items-center justify-between py-1.5 bg-black/20 backdrop-blur-sm border border-white/10 rounded-full shadow-sm">
+                        <span className="text-[7px] font-bold text-white font-mono leading-none">
+                            0{currentSlide + 1}
+                        </span>
+                        <div className="w-[1px] h-full bg-gradient-to-b from-transparent via-white/40 to-transparent my-1"></div>
+                        <span className="text-[7px] font-bold text-white/40 font-mono leading-none">
+                            0{dataToRender.length}
+                        </span>
+                    </div>
+
+                    {/* 3. TOP RIGHT: Video Button - THU NHỎ */}
+                    <div className="absolute top-2.5 right-2.5 z-30">
+                        <Link href="/projects">
+                            <button className="w-7 h-7 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:bg-white hover:text-black transition-all active:scale-95 shadow-sm">
+                                <PlayCircle size={12} strokeWidth={1.5} />
+                            </button>
+                        </Link>
+                    </div>
+
+                    {/* 4. BOTTOM AREA: Text & Actions */}
+                    <div className="absolute bottom-0 left-0 right-0 pl-8 pr-2.5 pb-2.5 z-30 flex items-end justify-between gap-2">
+                        
+                        {/* Text Content */}
+                        <div className="flex-1 min-w-0 pb-0.5">
                             {dataToRender.map((slide, idx) => (
-                                <div 
-                                    key={slide.id}
-                                    className={`transition-all duration-500 ease-out absolute inset-0 flex flex-col justify-center
-                                    ${currentSlide === idx ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8 pointer-events-none'}`}
-                                >
-                                    {/* Title - Dark Text for White bg */}
-                                    <div className="pl-4 border-l-2 border-amber-500 mb-3">
-                                        <h1 className="text-2xl font-serif font-bold text-slate-900 leading-[1.1]">
-                                            {slide.title}
-                                        </h1>
-                                    </div>
+                                currentSlide === idx && (
+                                    <div key={idx} className="flex flex-col animate-slide-in-right relative">
+                                        
+                                        {/* Description Panel (Expandable) */}
+                                        <div 
+                                            className={`
+                                                overflow-hidden transition-all duration-300 ease-out origin-bottom
+                                                ${showInfo ? 'max-h-24 opacity-100 mb-1.5' : 'max-h-0 opacity-0 mb-0'}
+                                            `}
+                                        >
+                                            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-2 text-slate-100">
+                                                <p className="text-[9px] leading-relaxed font-medium line-clamp-3">
+                                                    {slide.description}
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                    <p className="text-slate-500 text-xs leading-relaxed line-clamp-2 mb-6 pr-4 font-medium">
-                                        {slide.description}
-                                    </p>
-
-                                    {/* Buttons Mobile */}
-                                    <div className="flex items-center gap-3 w-full mt-auto">
-                                        <Link href={slide.ctaLink || '/shop'} className="flex-[3]">
-                                            <Button className="w-full h-11 text-[11px] font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:!bg-amber-500 hover:!text-white transition-all shadow-lg shadow-amber-200/50 rounded-lg group border-none">
-                                                Chi tiết <ArrowRight size={14} className="ml-1 transition-transform group-hover:translate-x-1" />
-                                            </Button>
-                                        </Link>
-                                        <Link href="/projects" className="flex-[2]">
-                                            <Button className="w-full h-11 text-[10px] font-bold uppercase tracking-widest bg-transparent border border-slate-200 text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors rounded-lg flex items-center justify-center">
-                                                Dự án
-                                            </Button>
-                                        </Link>
+                                        {/* Subtitle - THU NHỎ */}
+                                        <span className="text-amber-400 text-[7px] font-bold uppercase tracking-widest mb-0.5 opacity-90">
+                                            {slide.subtitle}
+                                        </span>
+                                        
+                                        {/* Title Row - THU NHỎ FONT */}
+                                        <div className="flex items-center gap-1.5">
+                                            <h1 className="text-sm  font-bold text-white leading-none drop-shadow-sm truncate">
+                                                {slide.title.replace('\n', ' ')}
+                                            </h1>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
+                                                className={`shrink-0 w-4 h-4 rounded-full border border-white/30 flex items-center justify-center transition-all ${showInfo ? 'bg-white text-black border-white' : 'bg-transparent text-white/80 hover:bg-white/20'}`}
+                                            >
+                                                {showInfo ? <X size={8} /> : <Info size={8} />}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )
                             ))}
                         </div>
 
-                        {/* Progress Bar Bottom Mobile */}
-                        <div className="absolute bottom-0 left-6 right-6 h-[2px] bg-slate-100 rounded-full overflow-hidden">
-                            <div 
-                                className="h-full bg-amber-500 transition-all duration-500 ease-out"
-                                style={{ width: `${((currentSlide + 1) / dataToRender.length) * 100}%` }}
-                            ></div>
+                        {/* Action Stack (Bottom Right Corner) - THU NHỎ BUTTONS */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            
+                            {/* Primary Action: Shop */}
+                            <Link href={dataToRender[currentSlide].ctaLink || '/shop'}>
+                                <button className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition-transform relative group">
+                                    <ShoppingBag size={12} strokeWidth={2} />
+                                </button>
+                            </Link>
+
+                            {/* Navigation: Next (Progress Ring) */}
+                            <div className="relative w-8 h-8 cursor-pointer active:scale-95 transition-transform" onClick={nextSlide}>
+                                {/* SVG Progress Ring */}
+                                <svg className="w-full h-full -rotate-90 transform">
+                                    <circle 
+                                        cx="16" cy="16" r="14" 
+                                        stroke="currentColor" strokeWidth="1.5" fill="none" 
+                                        className="text-white/10" 
+                                    />
+                                    <circle 
+                                        key={currentSlide}
+                                        cx="16" cy="16" r="14" 
+                                        stroke="currentColor" strokeWidth="1.5" fill="none" 
+                                        className="text-amber-500 transition-all duration-[7000ms] ease-linear" 
+                                        strokeDasharray="88" // 2 * pi * r (approx for r=14)
+                                        strokeDashoffset="0"
+                                        style={{ strokeDashoffset: '0', animation: 'dash 7s linear forwards' }}
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center text-white">
+                                    <ChevronRight size={14} strokeWidth={2} className="ml-0.5" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* ==============================================
-                DESKTOP LAYOUT: FULL SCREEN PARALLAX (Từ Code 1)
-                Chỉ hiện ở hidden md:block
+                DESKTOP LAYOUT (Giữ nguyên của Code 1)
                ============================================== */}
             <div className="hidden md:block absolute inset-0 w-full h-full">
-                
-                {/* --- BACKGROUND PARALLAX --- */}
+                {/* Parallax Background */}
                 <div ref={parallaxRef} className="absolute -top-[10%] left-0 w-full h-[120%] pointer-events-none z-0 will-change-transform">
                     {dataToRender.map((slide, idx) => (
                         <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
@@ -268,52 +309,34 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                                 <Image
                                     src={slide.image} alt={slide.title} fill sizes="100vw"
                                     priority={idx === 0}
-                                    quality={90}
                                     className="object-cover"
                                 />
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent"></div>
-                            
-                            {/* Hotspots Desktop */}
                             {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
-                                <LuxuryHotspotV2 key={hIdx} data={hotspot} isVisible={hotspotsVisible} delayIndex={hIdx} />
+                                <LuxuryHotspotV2 key={hIdx} data={hotspot} isVisible={true} delayIndex={hIdx} />
                             ))}
                         </div>
                     ))}
                 </div>
 
-                {/* --- CONTENT OVERLAY DESKTOP --- */}
+                {/* Content Overlay */}
                 <div className="absolute inset-0 z-20 flex items-center px-10 2xl:px-20 pointer-events-none">
-                    <div className="w-full pointer-events-auto pb-10 2xl:pb-0 max-w-2xl 2xl:max-w-4xl">
+                    <div className="w-full pointer-events-auto max-w-2xl 2xl:max-w-4xl">
                         {dataToRender.map((slide, idx) => (
-                            <div key={slide.id} className={`transition-all duration-1000 absolute top-1/2 -translate-y-1/2 left-10 2xl:left-20 pr-4 ${currentSlide === idx ? 'opacity-100 translate-y-[-55%] 2xl:translate-y-[-50%] blur-0' : 'opacity-0 translate-y-[-45%] blur-sm pointer-events-none'}`}>
-                                
-                                <div className="flex items-center gap-3 mb-3 2xl:mb-6 overflow-hidden">
-                                    <span className="w-8 2xl:w-12 h-[2px] bg-amber-400 inline-block"></span>
-                                    <span className="text-amber-400 font-bold tracking-[0.2em] uppercase text-xs 2xl:text-sm animate-slide-in-right">
-                                        {slide.subtitle}
-                                    </span>
+                            <div key={slide.id} className={`transition-all duration-1000 absolute top-1/2 -translate-y-1/2 left-10 2xl:left-20 pr-4 ${currentSlide === idx ? 'opacity-100 translate-y-[-50%] blur-0' : 'opacity-0 translate-y-[-45%] blur-sm pointer-events-none'}`}>
+                                <div className="flex items-center gap-3 mb-4 2xl:mb-6">
+                                    <span className="w-12 h-[2px] bg-amber-400 inline-block"></span>
+                                    <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-xs 2xl:text-sm animate-slide-in-right">{slide.subtitle}</span>
                                 </div>
-
-                                <h1 className="text-5xl 2xl:text-8xl font-serif font-bold text-white mb-5 2xl:mb-8 leading-[1.15] tracking-tight drop-shadow-2xl">
-                                    {slide.title}
-                                </h1>
-
-                                <p className="text-slate-200 text-[13px] 2xl:text-lg font-light max-w-[400px] 2xl:max-w-lg mb-6 2xl:mb-10 leading-relaxed opacity-90 border-l border-white/20 pl-5 2xl:pl-6">
-                                    {slide.description}
-                                </p>
-
+                                <h1 className="text-6xl 2xl:text-8xl  font-bold text-white mb-6 2xl:mb-8 leading-[1.1] tracking-tight drop-shadow-2xl">{slide.title}</h1>
+                                <p className="text-slate-200 text-sm 2xl:text-lg font-light max-w-[450px] 2xl:max-w-lg mb-8 2xl:mb-12 leading-loose border-l border-white/20 pl-6">{slide.description}</p>
                                 <div className="flex flex-row items-center gap-5 2xl:gap-6">
                                     <Link href={slide.ctaLink || '/shop'}>
-                                        <Button className="h-10 px-6 text-xs 2xl:h-14 2xl:px-10 2xl:text-sm font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:!bg-white hover:!text-slate-900 border-none transition-all shadow-lg whitespace-nowrap">
-                                            {slide.ctaText || "Mua Ngay"}
-                                        </Button>
+                                        <Button className="h-12 px-8 text-xs 2xl:h-14 2xl:px-10 2xl:text-sm font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:!bg-white border-none transition-all shadow-xl rounded-none">{slide.ctaText || 'Xem Chi Tiết'}</Button>
                                     </Link>
                                     <Link href="/projects" className="group flex items-center gap-3 text-white font-bold text-xs 2xl:text-sm uppercase tracking-widest hover:text-amber-400 transition-colors">
-                                        <span className="w-9 h-9 2xl:w-12 2xl:h-12 rounded-full border border-white/30 flex items-center justify-center group-hover:border-amber-400 group-hover:scale-110 transition-all bg-white/5 backdrop-blur-sm">
-                                            <PlayCircle size={14} className="2xl:w-5 2xl:h-5 ml-0.5" />
-                                        </span>
-                                        Dự Án
+                                        Video Dự Án <ArrowUpRight size={14} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                                     </Link>
                                 </div>
                             </div>
@@ -321,7 +344,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                     </div>
                 </div>
 
-                {/* --- NAVIGATION CONTROLS DESKTOP --- */}
+                {/* Navigation Controls */}
                 <div className="absolute bottom-0 left-0 right-0 z-30 px-10 2xl:px-20 py-6 2xl:py-10 flex items-end justify-between pointer-events-none">
                     <div className="flex items-center gap-6 2xl:gap-8 pointer-events-auto">
                         <div className="text-white font-mono text-xs 2xl:text-sm">
@@ -331,41 +354,22 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                         </div>
                         <div className="flex gap-2 2xl:gap-3">
                             {dataToRender.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => goToSlide(idx)}
-                                    className={`h-1 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-10 2xl:w-16 bg-amber-400' : 'w-3 2xl:w-4 bg-white/20 hover:bg-white/50'}`}
-                                />
+                                <button key={idx} onClick={() => goToSlide(idx)} className={`h-[2px] transition-all duration-500 ${currentSlide === idx ? 'w-10 2xl:w-16 bg-amber-400' : 'w-4 2xl:w-6 bg-white/20 hover:bg-white/50'}`} />
                             ))}
                         </div>
                     </div>
-
                     <div className="flex items-center gap-4 2xl:gap-6 pointer-events-auto">
-                        <button onClick={prevSlide} className="w-10 h-10 2xl:w-14 2xl:h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all">
-                            <ChevronLeft size={20} className="2xl:w-6 2xl:h-6" />
+                        <button onClick={prevSlide} className="w-12 h-12 2xl:w-14 2xl:h-14 border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all">
+                            <ChevronLeft size={20} />
                         </button>
-
-                        <div onClick={nextSlide} className="group relative w-32 h-20 2xl:w-48 2xl:h-32 rounded-lg 2xl:rounded-xl overflow-hidden cursor-pointer border border-white/20 hover:border-amber-400 transition-colors shadow-2xl">
-                            {dataToRender[nextSlideIndex] && (
-                                <>
-                                    <div className="absolute inset-0 w-full h-full">
-                                        <Image src={dataToRender[nextSlideIndex].image} alt="Next" fill sizes="200px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                                    </div>
-                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/20 transition-colors z-10"></div>
-                                    <div className="absolute inset-0 flex flex-col justify-center items-center text-white z-20">
-                                        <span className="text-[8px] 2xl:text-[10px] uppercase tracking-widest font-bold mb-1 opacity-80">Tiếp theo</span>
-                                        <span className="font-serif font-bold text-xs 2xl:text-lg text-center px-2 line-clamp-1">
-                                            {dataToRender[nextSlideIndex].title?.split('\n')[0]}
-                                        </span>
-                                    </div>
-                                </>
-                            )}
-                            <div key={currentSlide} className="absolute bottom-0 left-0 h-1 bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left z-30"></div>
+                        <div onClick={nextSlide} className="group relative w-32 h-20 2xl:w-48 2xl:h-32 cursor-pointer overflow-hidden shadow-lg border border-white/20 hover:border-amber-400 transition-colors">
+                            {dataToRender[nextSlideIndex] && <Image src={dataToRender[nextSlideIndex].image} alt="Next" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />}
+                            <div className="absolute inset-0 bg-black/50 group-hover:bg-black/20 transition-colors z-10"></div>
+                            <div className="absolute bottom-0 left-0 h-[2px] bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left z-30"></div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </section>
     );
 };
