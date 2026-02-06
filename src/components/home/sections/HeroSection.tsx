@@ -321,54 +321,66 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                 </div>
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 z-20 flex items-center px-10 2xl:px-20 pointer-events-none">
-                    <div className="w-full pointer-events-auto max-w-2xl 2xl:max-w-4xl">
-                        {dataToRender.map((slide, idx) => (
-                            <div key={slide.id} className={`transition-all duration-1000 absolute top-1/2 -translate-y-1/2 left-10 2xl:left-20 pr-4 ${currentSlide === idx ? 'opacity-100 translate-y-[-50%] blur-0' : 'opacity-0 translate-y-[-45%] blur-sm pointer-events-none'}`}>
-                                <div className="flex items-center gap-3 mb-4 2xl:mb-6">
-                                    <span className="w-12 h-[2px] bg-amber-400 inline-block"></span>
-                                    <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-xs 2xl:text-sm animate-slide-in-right">{slide.subtitle}</span>
-                                </div>
-                                <h1 className="text-6xl 2xl:text-8xl  font-bold text-white mb-6 2xl:mb-8 leading-[1.1] tracking-tight drop-shadow-2xl">{slide.title}</h1>
-                                <p className="text-slate-200 text-sm 2xl:text-lg font-light max-w-[450px] 2xl:max-w-lg mb-8 2xl:mb-12 leading-loose border-l border-white/20 pl-6">{slide.description}</p>
-                                <div className="flex flex-row items-center gap-5 2xl:gap-6">
-                                    <Link href={slide.ctaLink || '/shop'}>
-                                        <Button className="h-12 px-8 text-xs 2xl:h-14 2xl:px-10 2xl:text-sm font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:!bg-white border-none transition-all shadow-xl rounded-none">{slide.ctaText || 'Xem Chi Tiết'}</Button>
-                                    </Link>
-                                    <Link href="/projects" className="group flex items-center gap-3 text-white font-bold text-xs 2xl:text-sm uppercase tracking-widest hover:text-amber-400 transition-colors">
-                                        Video Dự Án <ArrowUpRight size={14} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                     <div className="absolute inset-0 z-20 flex items-center px-6 sm:px-12 lg:px-20 pointer-events-none">
+             <div className="max-w-4xl w-full pointer-events-auto">
+                 {dataToRender.map((slide, idx) => (
+                     <div key={slide.id} className={`transition-all duration-1000 absolute top-1/2 -translate-y-1/2 left-6 sm:left-12 lg:left-20 ${currentSlide === idx ? 'opacity-100 translate-y-[-50%] blur-0' : 'opacity-0 translate-y-[-40%] blur-sm pointer-events-none'}`}>
+                         <div className="flex items-center gap-4 mb-6 overflow-hidden">
+                             <span className="w-12 h-[2px] bg-amber-400 inline-block"></span>
+                             <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-sm animate-slide-in-right">{slide.subtitle}</span>
+                         </div>
+                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight whitespace-pre-line drop-shadow-2xl">{slide.title}</h1>
+                         <p className="text-slate-200 text-lg font-light max-w-lg mb-10 leading-relaxed opacity-90 border-l border-white/20 pl-6">{slide.description}</p>
+                         <div className="flex items-center gap-6">
+                             <Link href={slide.ctaLink}>
+                                 <Button className="h-14 px-10 text-sm font-bold uppercase tracking-widest !bg-amber-400 !text-slate-900 hover:bg-amber-400 hover:text-slate-900 border-none transition-all duration-300">
+                                    {slide.ctaText || "Khám Phá Ngay"}
+                                 </Button>
+                             </Link>
+                             <Link href="/projects" className="group flex items-center gap-3 text-white font-bold text-sm uppercase tracking-widest hover:text-amber-400 transition-colors">
+                                 <span className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center group-hover:border-amber-400 group-hover:scale-110 transition-all"><PlayCircle size={20} className="ml-1" /></span>
+                                 Xem Dự Án
+                             </Link>
+                         </div>
+                     </div>
+                 ))}
+             </div>
+         </div>
 
                 {/* Navigation Controls */}
-                <div className="absolute bottom-0 left-0 right-0 z-30 px-10 2xl:px-20 py-6 2xl:py-10 flex items-end justify-between pointer-events-none">
-                    <div className="flex items-center gap-6 2xl:gap-8 pointer-events-auto">
-                        <div className="text-white font-mono text-xs 2xl:text-sm">
-                            <span className="text-xl 2xl:text-2xl font-bold">0{currentSlide + 1}</span>
-                            <span className="text-white/40 mx-2">/</span>
-                            <span className="text-white/40">0{dataToRender.length}</span>
-                        </div>
-                        <div className="flex gap-2 2xl:gap-3">
-                            {dataToRender.map((_, idx) => (
-                                <button key={idx} onClick={() => goToSlide(idx)} className={`h-[2px] transition-all duration-500 ${currentSlide === idx ? 'w-10 2xl:w-16 bg-amber-400' : 'w-4 2xl:w-6 bg-white/20 hover:bg-white/50'}`} />
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4 2xl:gap-6 pointer-events-auto">
-                        <button onClick={prevSlide} className="w-12 h-12 2xl:w-14 2xl:h-14 border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all">
-                            <ChevronLeft size={20} />
-                        </button>
-                        <div onClick={nextSlide} className="group relative w-32 h-20 2xl:w-48 2xl:h-32 cursor-pointer overflow-hidden shadow-lg border border-white/20 hover:border-amber-400 transition-colors">
-                            {dataToRender[nextSlideIndex] && <Image src={dataToRender[nextSlideIndex].image} alt="Next" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />}
-                            <div className="absolute inset-0 bg-black/50 group-hover:bg-black/20 transition-colors z-10"></div>
-                            <div className="absolute bottom-0 left-0 h-[2px] bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left z-30"></div>
-                        </div>
-                    </div>
-                </div>
+               <div className="absolute bottom-0 left-0 right-0 z-30 px-6 sm:px-12 lg:px-20 py-10 flex items-end justify-between">
+             <div className="flex items-center gap-8">
+                 <div className="text-white font-mono text-sm">
+                     <span className="text-2xl font-bold">0{currentSlide + 1}</span>
+                     <span className="text-white/40 mx-2">/</span>
+                     <span className="text-white/40">0{dataToRender.length}</span>
+                 </div>
+                 <div className="flex gap-3">
+                     {dataToRender.map((_, idx) => (
+                         <button key={idx} onClick={() => goToSlide(idx)} className={`h-1 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-16 bg-amber-400' : 'w-4 bg-white/20 hover:bg-white/50'}`}/>
+                     ))}
+                 </div>
+             </div>
+             <div className="hidden md:flex items-center gap-6">
+                 <button onClick={prevSlide} className="w-14 h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all"><ChevronLeft size={24}/></button>
+                 
+                 {/* Next Slide Preview */}
+                 <div onClick={nextSlide} className="group relative w-48 h-32 rounded-xl overflow-hidden cursor-pointer border border-white/20 hover:border-amber-400 transition-colors">
+                     {/* Kiểm tra nextSlide có tồn tại không trước khi render ảnh */}
+                     {dataToRender[nextSlideIndex] && (
+                        <>
+                           <img src={dataToRender[nextSlideIndex].image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Next"/>
+                           <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors"></div>
+                           <div className="absolute inset-0 flex flex-col justify-center items-center text-white">
+                               <span className="text-[10px] uppercase tracking-widest font-bold mb-1">Tiếp theo</span>
+                               <span className="font-serif font-bold text-lg text-center px-2 line-clamp-1">{dataToRender[nextSlideIndex].title.split('\n')[0]}</span>
+                           </div>
+                        </>
+                     )}
+                     <div key={currentSlide} className="absolute bottom-0 left-0 h-1 bg-amber-400 animate-[progress_7s_linear_forwards] w-full origin-left"></div>
+                 </div>
+             </div>
+         </div>
             </div>
         </section>
     );
