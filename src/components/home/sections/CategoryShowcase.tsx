@@ -38,11 +38,19 @@ const FeatureBar = () => {
 };
 
 // --- PHẦN 2: APPLE-STYLE CATEGORY GRID ---
+
 interface CategoryShowcaseProps {
   categories: Category[];
+  settings?: {
+    headingNormal?: string;
+    headingHighlight?: string;
+    subheading?: string;
+    catalogueText?: string;
+    enableNofollow?: boolean;
+  };
 }
-
-export const CategoryShowcase = ({ categories }: CategoryShowcaseProps) => {
+export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps) => {
+  const headingNormal = settings?.headingNormal || "Shop by Category";
   return (
     <section className="pt-8 pb-16 bg-white">
       
@@ -56,7 +64,7 @@ export const CategoryShowcase = ({ categories }: CategoryShowcaseProps) => {
         {/* HEADER: Typography chuẩn Apple (San Francisco style) */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl md:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
-            Browse by Category
+            {headingNormal}
           </h2>
           <Link href="/shop" className="group flex items-center text-sm font-medium text-[#0066cc] hover:underline hover:decoration-1 underline-offset-4 transition-all">
             See All <ChevronRight size={14} className="ml-1 transition-transform group-hover:translate-x-0.5" />
