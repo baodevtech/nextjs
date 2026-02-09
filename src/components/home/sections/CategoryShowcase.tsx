@@ -3,32 +3,87 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, Truck, RotateCcw, ShieldCheck, Headphones } from 'lucide-react';
-import { Category } from '@/types';
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  Truck, 
+  RotateCcw, 
+  ShieldCheck, 
+  Headphones 
+} from 'lucide-react';
 
-// --- PHẦN 1: APPLE-STYLE FEATURE BAR ---
-// Tinh tế, font nhỏ, icon mảnh, màu xám trung tính
+// --- 1. DEFINITIONS ---
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+}
+
+// Interface chính xác bạn yêu cầu
+export interface CategoryShowcaseProps {
+  categories: Category[];
+  settings?: {
+    headingNormal?: string;      // Phần chữ đen (VD: "Store.")
+    headingHighlight?: string;   // Phần chữ xám (VD: "Browse by Category.")
+    subheading?: string;         // Mô tả nhỏ bên dưới
+    catalogueText?: string;      // Chữ nút xem thêm (VD: "See All")
+    enableNofollow?: boolean;    // SEO: rel="nofollow"
+  };
+}
+
+// --- 2. COMPONENT: FEATURE BAR (Giữ nguyên thiết kế kính mờ sang trọng) ---
 const FeatureBar = () => {
   const features = [
-    { icon: <Truck strokeWidth={1.5} size={18} />, text: "Free Shipping over $200" },
-    { icon: <RotateCcw strokeWidth={1.5} size={18} />, text: "Free Returns" },
-    { icon: <ShieldCheck strokeWidth={1.5} size={18} />, text: "Secure Payment" },
-    { icon: <Headphones strokeWidth={1.5} size={18} />, text: "24/7 Support" },
+    { 
+      icon: <Truck strokeWidth={1.5} size={22} />, 
+      title: "Free Shipping", 
+      desc: "On orders over $200" 
+    },
+    { 
+      icon: <RotateCcw strokeWidth={1.5} size={22} />, 
+      title: "1 & 1 Returns", 
+      desc: "Cancel after 1 day" 
+    },
+    { 
+      icon: <ShieldCheck strokeWidth={1.5} size={22} />, 
+      title: "100% Secure", 
+      desc: "Secure payments" 
+    },
+    { 
+      icon: <Headphones strokeWidth={1.5} size={22} />, 
+      title: "24/7 Support", 
+      desc: "Anywhere & anytime" 
+    },
   ];
 
   return (
-    <div className="w-full bg-white/80 backdrop-blur-md border-b border-gray-100/50 sticky top-0 z-10">
+    <div className="w-full bg-white/80 backdrop-blur-md border-b border-gray-100/50 py-4 md:py-6 sticky top-0 z-20 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="
-            flex items-center gap-8 py-3 overflow-x-auto scrollbar-hide snap-x
-            md:justify-center md:gap-12
+            flex items-center 
+            justify-between 
+            overflow-x-auto scrollbar-hide snap-x snap-mandatory
+            lg:justify-between lg:gap-8
         ">
           {features.map((item, index) => (
-            <div key={index} className="flex items-center gap-2 shrink-0 snap-center opacity-80 hover:opacity-100 transition-opacity">
-              <div className="text-[#1d1d1f]">{item.icon}</div>
-              <span className="text-[11px] md:text-xs font-medium text-[#424245] tracking-tight whitespace-nowrap">
-                {item.text}
-              </span>
+            <div key={index} className="
+                flex items-center gap-3 
+                min-w-[200px] lg:min-w-0 
+                snap-start pl-4 first:pl-0 lg:pl-0
+                group cursor-default
+            ">
+              <div className="text-[#1d1d1f] transition-transform duration-300 group-hover:scale-110 group-hover:text-[#0066CC]">
+                {item.icon}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[13px] md:text-sm font-bold text-[#1d1d1f] tracking-tight leading-tight">
+                  {item.title}
+                </span>
+                <span className="text-[10px] md:text-[11px] text-gray-500 font-medium mt-0.5 tracking-wide">
+                  {item.desc}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -37,97 +92,143 @@ const FeatureBar = () => {
   );
 };
 
-// --- PHẦN 2: APPLE-STYLE CATEGORY GRID ---
-
-interface CategoryShowcaseProps {
-  categories: Category[];
-  settings?: {
-    headingNormal?: string;
-    headingHighlight?: string;
-    subheading?: string;
-    catalogueText?: string;
-    enableNofollow?: boolean;
-  };
+// --- 3. COMPONENT: SECTION HEADER (Xử lý headingNormal & Highlight) ---
+interface SectionHeaderProps {
+  settings: CategoryShowcaseProps['settings'];
 }
-export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps) => {
-  const headingNormal = settings?.headingNormal || "Shop by Category";
+
+const SectionHeader = ({ settings }: SectionHeaderProps) => {
+  // Giá trị mặc định
+  const headingNormal = settings?.headingNormal || "Store.";
+  const headingHighlight = settings?.headingHighlight || "Browse by Category.";
+  const subheading = settings?.subheading;
+  const catalogueText = settings?.catalogueText || "See All";
+  const isNofollow = settings?.enableNofollow;
+
   return (
-    <section className="pt-8 pb-16 bg-white">
+    <div className="flex items-end justify-between mb-8 px-2">
       
-      {/* Feature Bar (Có thể đặt ở Layout cha nếu muốn nó sticky toàn trang) */}
-      <div className="mb-10">
-        <FeatureBar />
+      {/* Title Area */}
+      <div className="flex flex-col">
+        <h2 className="text-[22px] md:text-[28px] font-semibold tracking-tight text-[#1d1d1f] leading-tight">
+          {headingNormal} <span className="text-[#86868b] font-semibold">{headingHighlight}</span>
+        </h2>
+        {/* Subheading nếu có */}
+        {subheading && (
+          <span className="text-[13px] md:text-[15px] text-[#86868b] mt-1 font-medium tracking-normal">
+            {subheading}
+          </span>
+        )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Actions Area */}
+      <div className="flex items-center gap-4">
         
-        {/* HEADER: Typography chuẩn Apple (San Francisco style) */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl md:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
-            {headingNormal}
-          </h2>
-          <Link href="/shop" className="group flex items-center text-sm font-medium text-[#0066cc] hover:underline hover:decoration-1 underline-offset-4 transition-all">
-            See All <ChevronRight size={14} className="ml-1 transition-transform group-hover:translate-x-0.5" />
+        {/* Mobile Link */}
+        <Link 
+          href="/shop" 
+          rel={isNofollow ? "nofollow" : undefined}
+          className="md:hidden text-[13px] font-medium text-[#0066CC] hover:underline flex items-center whitespace-nowrap"
+        >
+          {catalogueText} <ChevronRight size={12} className="ml-0.5" />
+        </Link>
+
+        {/* Desktop Buttons */}
+        <div className="hidden md:flex items-center gap-3">
+          <button 
+            className="w-9 h-9 rounded-full bg-[#F5F5F7] text-gray-400 flex items-center justify-center cursor-not-allowed"
+            disabled
+          >
+            <ChevronLeft size={18} strokeWidth={2} />
+          </button>
+
+          <Link href="/shop" rel={isNofollow ? "nofollow" : undefined}>
+            <button 
+              className="
+                w-9 h-9 rounded-full bg-[#e8e8ed] text-[#1d1d1f] 
+                flex items-center justify-center 
+                hover:bg-[#1d1d1f] hover:text-white hover:scale-105
+                transition-all duration-300 shadow-sm
+              "
+            >
+              <ChevronRight size={18} strokeWidth={2} />
+            </button>
           </Link>
         </div>
 
-        {/* --- GRID LAYOUT --- */}
+      </div>
+    </div>
+  );
+};
+
+// --- 4. MAIN COMPONENT: CATEGORY SHOWCASE ---
+export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps) => {
+  const isNofollow = settings?.enableNofollow;
+
+  return (
+    <section className="bg-white">
+      
+      <FeatureBar />
+
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-8 md:py-10">
+        
+        {/* Truyền settings xuống Header */}
+        <SectionHeader settings={settings} />
+
+        {/* Grid Layout (Mobile 4 - PC 6) */}
         <div className="
-            /* MOBILE: 2 Rows, Horizontal Scroll */
             grid 
-            grid-rows-2 
-            grid-flow-col 
-            auto-cols-[80px] /* Chiều rộng tối ưu cho cảm giác 'thoáng' */
-            gap-x-4 gap-y-8  /* Gap Y lớn hơn để tách biệt rõ tên và ảnh hàng dưới */
-            
-            overflow-x-auto 
-            scrollbar-hide 
-            snap-x snap-mandatory 
-            
-            /* Padding bottom để tránh cắt text */
-            pb-4
-            
-            /* DESKTOP: Reset về Grid chuẩn */
-            md:grid-rows-none md:grid-flow-row 
-            md:grid-cols-6 md:auto-cols-auto md:gap-10
+            grid-cols-4 
+            gap-x-2 gap-y-6
+            md:grid-cols-5 
+            md:gap-6
+            lg:grid-cols-6 
+            lg:gap-10
         ">
           {categories.map((cat) => (
             <Link 
               key={cat.id} 
               href={`/shop?cat=${cat.slug}`}
-              className="group flex flex-col items-center gap-3 snap-start cursor-pointer"
+              rel={isNofollow ? "nofollow" : undefined}
+              className="group flex flex-col items-center gap-3 cursor-pointer w-full"
             >
-              {/* CONTAINER ẢNH: Màu nền #F5F5F7 (Signature Apple Gray) */}
+              {/* Image Container: Circular Apple Style */}
               <div className="
                   relative 
-                  w-[80px] h-[80px] md:w-[160px] md:h-[160px] 
-                  bg-[#F5F5F7] /* Màu nền đặc trưng Apple */
-                  rounded-[20px] md:rounded-[32px] /* Bo góc lớn (Squircle) */
+                  w-full aspect-square 
+                  max-w-[72px] md:max-w-[140px] 
+                  bg-[#F5F5F7] 
+                  rounded-full 
                   flex items-center justify-center 
+                  mx-auto
                   overflow-hidden
                   transition-all duration-500 ease-out
-                  
-                  /* Hiệu ứng Scale nhẹ nhàng khi hover, không đổi màu nền */
-                  group-hover:scale-105 
+                  group-hover:scale-105
+                  group-hover:shadow-lg group-hover:shadow-gray-200/50
               ">
                 <Image
                   src={cat.image}
                   alt={cat.name}
                   width={140} 
                   height={140}
-                  // Mix-blend-multiply giúp ảnh hòa vào nền xám nếu ảnh có nền trắng
-                  className="object-contain w-3/5 h-3/5 mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity"
+                  className="
+                    object-contain 
+                    w-[55%] h-[55%] 
+                    mix-blend-multiply 
+                    opacity-85 group-hover:opacity-100 
+                    transition-all duration-500
+                    group-hover:scale-110 
+                  "
                 />
               </div>
 
-              {/* TÊN DANH MỤC */}
-              {/* Font Inter/System, tracking-tight, màu gần đen */}
+              {/* Category Name */}
               <h3 className="
-                text-center font-medium text-[#1d1d1f] 
-                text-[11px] md:text-sm tracking-tight
-                leading-snug
-                w-full truncate px-1
-                group-hover:text-[#0066cc] transition-colors duration-300
+                text-center font-semibold text-[#1d1d1f] 
+                text-[10px] leading-tight 
+                w-full px-0.5 line-clamp-2 break-words
+                md:text-[14px] md:mt-1
+                group-hover:text-[#0066CC] transition-colors duration-300
               ">
                 {cat.name}
               </h3>
