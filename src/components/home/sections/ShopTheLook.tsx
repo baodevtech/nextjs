@@ -6,7 +6,7 @@ import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/common/UI';
 import { ShopLookItem } from '@/types';
 
-// --- SUB-COMPONENT 1: Pin (Giữ nguyên logic của bạn) ---
+// --- SUB-COMPONENT 1: Pin (Giữ nguyên) ---
 interface PinProps {
     x: number; y: number; label: string; onClick?: () => void; isActive?: boolean;
 }
@@ -20,7 +20,6 @@ const ShopTheLookPin: React.FC<PinProps> = ({ x, y, label, onClick, isActive }) 
         <span className={`absolute inset-0 rounded-full animate-ping ${isActive ? 'bg-brand-500/60' : 'bg-white/40'}`}></span>
         <span className={`relative w-3 h-3 rounded-full shadow-lg border-2 ring-1 transition-all duration-300 ${isActive ? 'bg-brand-500 border-white ring-brand-200 scale-125' : 'bg-white border-white ring-black/10 group-hover/pin:scale-110'}`}></span>
         
-        {/* Tooltip (Chỉ hiện khi active hoặc hover) */}
         <div className={`
             absolute left-1/2 bottom-full mb-3 -translate-x-1/2 transition-all duration-300 z-30
             ${isActive ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-2 invisible group-hover/pin:visible group-hover/pin:opacity-100 group-hover/pin:translate-y-0'}
@@ -33,7 +32,7 @@ const ShopTheLookPin: React.FC<PinProps> = ({ x, y, label, onClick, isActive }) 
     </button>
 );
 
-// --- SUB-COMPONENT 2: Product Row (Sử dụng Style Rộng Rãi: p-4, w-16) ---
+// --- SUB-COMPONENT 2: Product Row (Giữ nguyên) ---
 interface ProductRowProps {
     item: ShopLookItem; isActive: boolean; onClick: () => void;
 }
@@ -44,7 +43,6 @@ const ProductRow = React.forwardRef<HTMLDivElement, ProductRowProps>(({ item, is
     return (
         <div 
             ref={ref} onClick={onClick}
-            // Style: p-4, gap-4 (Rộng rãi, dễ nhìn)
             className={`
                 flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 scroll-mt-24
                 ${isActive 
@@ -82,6 +80,10 @@ interface ShopTheLookProps {
 export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // [NEW] Ref cho container chứa danh sách để scroll nội bộ
+  const listRef = useRef<HTMLDivElement>(null);
+  // [NEW] Ref chặn lần render đầu tiên
+  const isFirstRender = useRef(true);
 
   // Data props
   const heading = settings?.heading || "Cảm Hứng Không Gian";
@@ -90,10 +92,36 @@ export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
   const items = settings?.items || [];
   const activeProduct = items[activeIdx]?.product;
 
-  // Logic Scroll: Auto scroll khi activeIdx thay đổi
+  // [NEW LOGIC] Thay thế scrollIntoView bằng scrollTo trên container
   useEffect(() => {
-    if (items.length > 0 && itemRefs.current[activeIdx]) {
-        itemRefs.current[activeIdx]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // 1. Chặn chạy code trong lần đầu tiên tải trang
+    if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+    }
+
+    const container = listRef.current;
+    const item = itemRefs.current[activeIdx];
+
+    if (container && item) {
+        // Tính toán vị trí tương đối của item so với container
+        const itemTop = item.offsetTop;
+        const itemHeight = item.clientHeight;
+        const containerHeight = container.clientHeight;
+        const containerScrollTop = container.scrollTop;
+
+        // Logic "Nearest": Chỉ cuộn nếu item bị khuất
+        // Nếu item nằm phía trên vùng nhìn thấy -> cuộn lên
+        if (itemTop < containerScrollTop) {
+            container.scrollTo({ top: itemTop, behavior: 'smooth' });
+        } 
+        // Nếu item nằm phía dưới vùng nhìn thấy -> cuộn xuống
+        else if (itemTop + itemHeight > containerScrollTop + containerHeight) {
+            container.scrollTo({ 
+                top: itemTop + itemHeight - containerHeight + 16, // +16 padding cho thoáng
+                behavior: 'smooth' 
+            });
+        }
     }
   }, [activeIdx, items.length]);
 
@@ -103,29 +131,26 @@ export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
   }, [items]);
 
   return (
-      // 1. OUTER SECTION: Fullscreen PC & Mobile
-      // h-[calc(100vh-64px)] -> Trừ header để vừa khít màn hình
       <section className="bg-slate-50 h-[calc(100vh-64px)] overflow-hidden w-full relative">
           
           <div className="h-full w-full max-w-[1440px] mx-auto px-0 md:px-6 lg:px-8 py-0 md:py-6 flex flex-col">
               
-              {/* Header: Chỉ hiện trên PC */}
+              {/* Header */}
               <div className="hidden md:block mb-4 md:mb-6 shrink-0 text-center lg:text-left">
                   <h2 className="text-3xl font-bold text-slate-900">{heading}</h2>
                   <p className="text-slate-500 mt-1">{subheading}</p>
               </div>
 
-              {/* BODY CONTENT: Grid Layout */}
+              {/* BODY CONTENT */}
               <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-12 md:gap-8 lg:gap-10">
                   
-                  {/* --- LEFT: IMAGE (Mobile: 40% height, PC: Full height) --- */}
+                  {/* LEFT: IMAGE */}
                   <div className="relative shrink-0 md:col-span-8 lg:col-span-8 bg-slate-200 overflow-hidden select-none
                                   h-[40%] md:h-full w-full
                                   md:rounded-3xl shadow-sm group"> 
                       <img src={bgImage} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt={heading} />
                       <div className="absolute inset-0 bg-black/10 transition-colors duration-500"></div>
 
-                      {/* Mobile Floating Header (Nổi trên ảnh) */}
                       <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-xl shadow-lg md:hidden z-10 border border-white/50">
                           <span className="text-sm font-bold text-slate-900 uppercase tracking-wide">{heading}</span>
                       </div>
@@ -138,28 +163,26 @@ export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
                       ))}
                   </div>
 
-                  {/* --- RIGHT: LIST (Mobile: Flex-1, PC: Full height) --- */}
+                  {/* RIGHT: LIST */}
                   <div className="md:col-span-4 lg:col-span-4 flex flex-col h-full min-h-0 relative z-10">
                       
-                      {/* Container Trắng chứa list */}
                       <div className="flex-1 flex flex-col bg-white w-full h-full overflow-hidden
                                       md:rounded-3xl md:border border-slate-100 md:shadow-xl
                                       rounded-t-3xl -mt-6 md:mt-0 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] md:shadow-none">
                           
-                          {/* Decoration Blob (Chỉ hiện trên PC cho đẹp) */}
                           <div className="hidden md:block absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-
-                          {/* Mobile Handle Bar */}
                           <div className="w-16 h-1.5 bg-slate-200 rounded-full mx-auto my-4 md:hidden shrink-0"></div>
 
-                          {/* Title List */}
                           <div className="px-6 pb-2 pt-2 md:pt-6 flex justify-between items-center shrink-0 relative z-10">
                             <h3 className="text-lg font-bold text-slate-900">Danh Sách Vật Tư</h3>
                             <span className="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-500">{items.length} món</span>
                           </div>
                           
-                          {/* SCROLLABLE LIST: Padding lớn (px-4 md:px-6) */}
-                          <div className="flex-1 overflow-y-auto px-4 md:px-6 space-y-3 pb-4 custom-scrollbar relative z-10">
+                          {/* [IMPORTANT] Gắn ref={listRef} vào container này */}
+                          <div 
+                              ref={listRef}
+                              className="flex-1 overflow-y-auto px-4 md:px-6 space-y-3 pb-4 custom-scrollbar relative z-10 scroll-smooth"
+                          >
                               {items.length > 0 ? (
                                   items.map((item, idx) => (
                                       <ProductRow 
