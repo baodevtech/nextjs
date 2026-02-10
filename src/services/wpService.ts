@@ -34,6 +34,7 @@ const API_URL =
 async function fetchAPI(
   query: string,
   { variables }: { variables?: any } = {},
+  customRevalidate?: number // Thêm tham số này để tùy chỉnh từng query
 ) {
   const headers = { "Content-Type": "application/json" };
 
@@ -42,7 +43,8 @@ async function fetchAPI(
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
-      next: { revalidate: 60 }, // Revalidate mỗi 60s
+      // Tăng mặc định lên 3600s (1 giờ) thay vì 60s
+      next: { revalidate: customRevalidate ?? 3600 }, 
     });
 
     const json = await res.json();

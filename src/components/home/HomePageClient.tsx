@@ -1,17 +1,49 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import dynamic from 'next/dynamic';
 import { Product, Category, HomeSettings } from '@/types';
+
+// 1. ABOVE THE FOLD (Load ngay lập tức để tối ưu LCP/CLS)
+// Hero và Category là những thứ khách thấy đầu tiên, không được lazy load
+import { HeroSection } from './sections/HeroSection';
 import { CategoryShowcase } from './sections/CategoryShowcase';
 
-// Import các section con đã tách
-import { HeroSection } from './sections/HeroSection';
-import { SignatureProduct } from './sections/SignatureProduct';
-import { ShopTheLook } from './sections/ShopTheLook';
-import { AccessoriesSection } from './sections/AccessoriesSection';
-import { QualitySection } from './sections/QualitySection';
-import { BlogSection } from './sections/BlogSection';
-import { CTABanner } from './sections/CTABanner';
+// 2. BELOW THE FOLD (Lazy Load để giảm Bundle Size và TBT)
+// Tạo một khung xương (Skeleton) nhẹ để hiển thị trong lúc chờ tải component thật
+const SectionSkeleton = () => (
+  <div className="w-full h-96 bg-slate-50 animate-pulse my-8 rounded-sm" />
+);
+
+const SignatureProduct = dynamic(
+  () => import('./sections/SignatureProduct').then((mod) => mod.SignatureProduct),
+  { loading: () => <SectionSkeleton /> }
+);
+
+const ShopTheLook = dynamic(
+  () => import('./sections/ShopTheLook').then((mod) => mod.ShopTheLook),
+  { loading: () => <SectionSkeleton /> }
+);
+
+const AccessoriesSection = dynamic(
+  () => import('./sections/AccessoriesSection').then((mod) => mod.AccessoriesSection),
+  { loading: () => <SectionSkeleton /> }
+);
+
+const QualitySection = dynamic(
+  () => import('./sections/QualitySection').then((mod) => mod.QualitySection),
+  { loading: () => <SectionSkeleton /> }
+);
+
+const BlogSection = dynamic(
+  () => import('./sections/BlogSection').then((mod) => mod.BlogSection),
+  { loading: () => <SectionSkeleton /> }
+);
+
+const CTABanner = dynamic(
+  () => import('./sections/CTABanner').then((mod) => mod.CTABanner),
+  { loading: () => <div className="w-full h-64 bg-slate-100 animate-pulse" /> }
+);
 
 interface HomePageClientProps {
     initialProducts: Product[];
@@ -20,12 +52,7 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ initialProducts, initialCategories, initialHomeData }: HomePageClientProps) {
-  // Vì HomePageClient nhận props từ server component (page.tsx)
-  // nên ta có thể dùng trực tiếp, hoặc lưu vào state nếu cần lọc/thay đổi ở client
-  // Ở đây tôi dùng trực tiếp để đơn giản hoá, nhưng vẫn giữ state nếu bạn muốn fetch lại.
-  const [products] = useState<Product[]>(initialProducts);
-  const [categories] = useState<Category[]>(initialCategories);
-  const [homeSettings] = useState<HomeSettings>(initialHomeData);
+  // Tách settings ra biến để code gọn hơn
   const categorySettings = {
     headingNormal: initialHomeData.categoryHeadingNormal,
     headingHighlight: initialHomeData.categoryHeadingHighlight,
@@ -33,19 +60,21 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     catalogueText: initialHomeData.catalogueText,
     enableNofollow: initialHomeData.enableCategoryNofollow
   };
+
   const signatureSettings = {
     headingNormal: initialHomeData.signatureHeadingNormal,
     headingHighlight: initialHomeData.signatureHeadingHighlight,
     description: initialHomeData.signatureDesc,
-    tabs: initialHomeData.signatureTabs // Truyền mảng tabs xuống
+    tabs: initialHomeData.signatureTabs
   };
+
   const shopLookSettings = {
     heading: initialHomeData.shopLookHeading,
     subheading: initialHomeData.shopLookSubheading,
     image: initialHomeData.shopLookImage,
     items: initialHomeData.shopLookItems || []
   };
-  // [MỚI] Settings cho Accessories
+
   const accSettings = {
     highlights: initialHomeData.accHighlights || [],
     viewAll: initialHomeData.accViewAll,
@@ -53,44 +82,41 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     products: initialHomeData.accProducts || [],
     headNormal: initialHomeData.headNormal || 'Chi Tiết.',
     headHighlight: initialHomeData.headHighlight || 'Định Hình Đẳng Cấp.',
-    phuKienSub: initialHomeData.phuKienSub || ' Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.',
+    phuKienSub: initialHomeData.phuKienSub,
   };
-  // [MỚI] Settings cho Quality Section
+
   const qualitySettings = {
     heading: initialHomeData.qualityHeading,
     subheading: initialHomeData.qualitySubheading,
     large: initialHomeData.qualityLarge,
     small: initialHomeData.qualitySmall
   };
+
   const blogPosts = initialHomeData.blogPosts || [];
+
   return (
     <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
       
-      {/* 1. HERO SECTION */}
-      <HeroSection slides={homeSettings.heroSlides} />
+      {/* 1. HERO SECTION - Critical LCP Element */}
+      <HeroSection slides={initialHomeData.heroSlides} />
 
-      {/* 2. CATEGORY STRIP */}
+      {/* 2. CATEGORY STRIP - Critical Navigation */}
       <CategoryShowcase 
-         categories={categories} 
+         categories={initialCategories} 
          settings={categorySettings} 
       />
 
-      {/* 3. SIGNATURE COLLECTION */}
+      {/* 3. DYNAMIC SECTIONS - Chỉ load khi user cuộn trang */}
       <SignatureProduct settings={signatureSettings} />
 
-      {/* 4. SHOP THE LOOK */}
       <ShopTheLook settings={shopLookSettings} />
 
-      {/* 5. ACCESSORIES */}
-     <AccessoriesSection settings={accSettings} />
+      <AccessoriesSection settings={accSettings} />
 
-      {/* 6. QUALITY STANDARDS */}
       <QualitySection settings={qualitySettings} />
 
-      {/* 7. BLOG */}
       <BlogSection posts={blogPosts} />
 
-      {/* 8. CTA BANNER */}
       <CTABanner />
 
     </div>

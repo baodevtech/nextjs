@@ -37,6 +37,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className="scroll-smooth">
+      <head>
+        {/* Preconnect tới server ảnh để giảm thời gian DNS Lookup */}
+        <link rel="preconnect" href="https://portal.khopanel.com" />
+        <link rel="dns-prefetch" href="https://portal.khopanel.com" />
+      </head>
       <body className={`${inter.variable} ${merriweather.variable} font-sans bg-white text-slate-900 selection:bg-brand-100 selection:text-brand-900 antialiased`}>
         <Providers>
           <Header />
