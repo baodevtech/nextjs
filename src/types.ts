@@ -430,3 +430,49 @@ export interface HeaderData {
   // [MỚI] Gọi duy nhất 1 biến megaMenu
   megaMenu: MegaMenuData; 
 }
+
+export interface TrustBadge {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface FooterLink {
+  title: string;
+  url: string;
+  badge?: string;
+  badgeColor?: string;
+}
+
+export interface CompanyInfo {
+  logoText: string;
+  desc: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+export interface FooterCol {
+  title: string;
+  links: FooterLink[];
+}
+
+export interface SocialLinks {
+  facebook: string;
+  instagram: string;
+  youtube: string;
+}
+
+export interface BottomBar {
+  copyright: string;
+  links: FooterLink[];
+}
+
+export interface FooterData {
+  trustBadges: TrustBadge[];
+  companyInfo: CompanyInfo;
+  shopCategories: FooterCol;
+  customerService: FooterCol;
+  socialLinks: SocialLinks;
+  bottomBar: BottomBar;
+}

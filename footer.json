@@ -1,0 +1,347 @@
+[
+    {
+        "key": "group_footer_settings",
+        "title": "Cấu hình Footer",
+        "fields": [
+            {
+                "key": "field_footer_data",
+                "label": "Dữ liệu Footer",
+                "name": "footerData",
+                "type": "group",
+                "instructions": "Quản lý toàn bộ nội dung của phần Footer",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "show_in_graphql": 1,
+                "graphql_field_name": "footerData",
+                "layout": "block",
+                "sub_fields": [
+                    {
+                        "key": "field_trust_badges",
+                        "label": "1. Cam kết chất lượng (Trust Badges)",
+                        "name": "trustBadges",
+                        "type": "repeater",
+                        "instructions": "Các ô cam kết như Giao hàng, Bảo hành (Tối đa 4 ô cho đẹp)",
+                        "required": 0,
+                        "conditional_logic": 0,
+                        "wrapper": {
+                            "width": "",
+                            "class": "",
+                            "id": ""
+                        },
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "trustBadges",
+                        "layout": "table",
+                        "button_label": "Thêm Cam Kết",
+                        "sub_fields": [
+                            {
+                                "key": "field_tb_icon",
+                                "label": "Icon (Lucide)",
+                                "name": "icon",
+                                "type": "text",
+                                "instructions": "Nhập tên icon: Truck, ShieldCheck, CreditCard, Headphones",
+                                "required": 0,
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "icon",
+                                "default_value": "CheckCircle"
+                            },
+                            {
+                                "key": "field_tb_title",
+                                "label": "Tiêu đề",
+                                "name": "title",
+                                "type": "text",
+                                "required": 1,
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "title"
+                            },
+                            {
+                                "key": "field_tb_desc",
+                                "label": "Mô tả ngắn",
+                                "name": "desc",
+                                "type": "text",
+                                "required": 0,
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "desc"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field_company_info",
+                        "label": "2. Cột 1: Thông tin công ty",
+                        "name": "companyInfo",
+                        "type": "group",
+                        "required": 0,
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "companyInfo",
+                        "layout": "block",
+                        "sub_fields": [
+                            {
+                                "key": "field_ci_logotext",
+                                "label": "Tên Logo Text",
+                                "name": "logoText",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "logoText",
+                                "default_value": "ĐẠI NAM WALL"
+                            },
+                            {
+                                "key": "field_ci_desc",
+                                "label": "Đoạn giới thiệu ngắn",
+                                "name": "desc",
+                                "type": "textarea",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "desc",
+                                "rows": 3
+                            },
+                            {
+                                "key": "field_ci_address",
+                                "label": "Địa chỉ",
+                                "name": "address",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "address"
+                            },
+                            {
+                                "key": "field_ci_phone",
+                                "label": "Hotline",
+                                "name": "phone",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "phone"
+                            },
+                            {
+                                "key": "field_ci_email",
+                                "label": "Email",
+                                "name": "email",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "email"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field_shop_categories",
+                        "label": "3. Cột 2: Danh mục mua sắm",
+                        "name": "shopCategories",
+                        "type": "group",
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "shopCategories",
+                        "layout": "block",
+                        "sub_fields": [
+                            {
+                                "key": "field_sc_title",
+                                "label": "Tiêu đề cột",
+                                "name": "title",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "title",
+                                "default_value": "Danh mục mua sắm"
+                            },
+                            {
+                                "key": "field_sc_links",
+                                "label": "Các liên kết",
+                                "name": "links",
+                                "type": "repeater",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "links",
+                                "layout": "table",
+                                "button_label": "Thêm Link",
+                                "sub_fields": [
+                                    {
+                                        "key": "field_scl_title",
+                                        "label": "Tên hiển thị",
+                                        "name": "title",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "title"
+                                    },
+                                    {
+                                        "key": "field_scl_url",
+                                        "label": "URL (Đường dẫn)",
+                                        "name": "url",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "url"
+                                    },
+                                    {
+                                        "key": "field_scl_badge",
+                                        "label": "Chữ nổi bật (Tùy chọn)",
+                                        "name": "badge",
+                                        "type": "text",
+                                        "instructions": "VD: HOT, MỚI",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "badge"
+                                    },
+                                    {
+                                        "key": "field_scl_badgecolor",
+                                        "label": "Màu chữ nổi bật",
+                                        "name": "badgeColor",
+                                        "type": "text",
+                                        "instructions": "VD: bg-red-600, bg-blue-600",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "badgeColor",
+                                        "default_value": "bg-blue-600"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field_customer_service",
+                        "label": "4. Cột 3: Hỗ trợ dịch vụ",
+                        "name": "customerService",
+                        "type": "group",
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "customerService",
+                        "layout": "block",
+                        "sub_fields": [
+                            {
+                                "key": "field_cs_title",
+                                "label": "Tiêu đề cột",
+                                "name": "title",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "title",
+                                "default_value": "Hỗ trợ dịch vụ"
+                            },
+                            {
+                                "key": "field_cs_links",
+                                "label": "Các liên kết",
+                                "name": "links",
+                                "type": "repeater",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "links",
+                                "layout": "table",
+                                "button_label": "Thêm Link",
+                                "sub_fields": [
+                                    {
+                                        "key": "field_csl_title",
+                                        "label": "Tên hiển thị",
+                                        "name": "title",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "title"
+                                    },
+                                    {
+                                        "key": "field_csl_url",
+                                        "label": "URL (Đường dẫn)",
+                                        "name": "url",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "url"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field_social_links",
+                        "label": "5. Cột 4: Mạng xã hội",
+                        "name": "socialLinks",
+                        "type": "group",
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "socialLinks",
+                        "layout": "table",
+                        "sub_fields": [
+                            {
+                                "key": "field_sl_fb",
+                                "label": "Link Facebook",
+                                "name": "facebook",
+                                "type": "url",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "facebook"
+                            },
+                            {
+                                "key": "field_sl_ig",
+                                "label": "Link Instagram",
+                                "name": "instagram",
+                                "type": "url",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "instagram"
+                            },
+                            {
+                                "key": "field_sl_yt",
+                                "label": "Link YouTube",
+                                "name": "youtube",
+                                "type": "url",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "youtube"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "field_bottom_bar",
+                        "label": "6. Thanh dưới cùng (Bản quyền & Pháp lý)",
+                        "name": "bottomBar",
+                        "type": "group",
+                        "show_in_graphql": 1,
+                        "graphql_field_name": "bottomBar",
+                        "layout": "block",
+                        "sub_fields": [
+                            {
+                                "key": "field_bb_copyright",
+                                "label": "Dòng bản quyền",
+                                "name": "copyright",
+                                "type": "text",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "copyright",
+                                "default_value": "Công ty TNHH Đại Nam Wall. GPĐKKD số 0123456789 do Sở KH&ĐT TP. Hà Nội cấp."
+                            },
+                            {
+                                "key": "field_bb_links",
+                                "label": "Liên kết phụ (Chính sách, Điều khoản...)",
+                                "name": "links",
+                                "type": "repeater",
+                                "show_in_graphql": 1,
+                                "graphql_field_name": "links",
+                                "layout": "table",
+                                "button_label": "Thêm Link",
+                                "sub_fields": [
+                                    {
+                                        "key": "field_bbl_title",
+                                        "label": "Tên hiển thị",
+                                        "name": "title",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "title"
+                                    },
+                                    {
+                                        "key": "field_bbl_url",
+                                        "label": "URL",
+                                        "name": "url",
+                                        "type": "text",
+                                        "show_in_graphql": 1,
+                                        "graphql_field_name": "url"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "options_page",
+                    "operator": "==",
+                    "value": "acf-options-headerfooter"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": 1,
+        "description": "Quản lý dữ liệu động cho phần Footer",
+        "show_in_graphql": 1,
+        "graphql_field_name": "footerSettings"
+    }
+]

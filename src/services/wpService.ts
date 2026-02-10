@@ -1466,3 +1466,71 @@ export const getHeaderData = async (): Promise<HeaderData> => {
     }
   };
 };
+
+import { FooterData } from "../types";
+
+// Cập nhật hàm getFooterData trong src/services/wpService.ts
+export const getFooterData = async (): Promise<FooterData> => {
+  const data = await fetchAPI(`
+    query GetFooterOptions {
+      headerFooterOptions {
+        # Thêm lớp bọc footerSettings (Tên của Field Group)
+        footerSettings {
+          footerData {
+            trustBadges { icon, title, desc }
+            companyInfo { logoText, desc, address, phone, email }
+            shopCategories {
+              title
+              links { title, url, badge, badgeColor }
+            }
+            customerService {
+              title
+              links { title, url }
+            }
+            socialLinks { facebook, instagram, youtube }
+            bottomBar {
+              copyright
+              links { title, url }
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  // Truy cập sâu thêm một tầng vào footerSettings
+  const acf = data?.headerFooterOptions?.footerSettings?.footerData || {};
+
+  return {
+    trustBadges: acf.trustBadges || [
+      { icon: 'Truck', title: 'Giao hàng toàn quốc', desc: 'Hỗ trợ vận chuyển tận nơi' },
+      { icon: 'ShieldCheck', title: 'Bảo hành 15 năm', desc: 'Cam kết chất lượng vật liệu' },
+      { icon: 'CreditCard', title: 'Thanh toán linh hoạt', desc: 'Đa dạng phương thức' },
+      { icon: 'Headphones', title: 'Hỗ trợ 24/7', desc: 'Tư vấn kỹ thuật thi công' }
+    ],
+    companyInfo: {
+      logoText: acf.companyInfo?.logoText || 'ĐẠI NAM WALL',
+      desc: acf.companyInfo?.desc || 'Tổng kho phân phối vật liệu ốp tường cao cấp...',
+      address: acf.companyInfo?.address || '123 Đ. Nguyễn Văn Linh, Q. Long Biên, Hà Nội',
+      phone: acf.companyInfo?.phone || '0912.345.678',
+      email: acf.companyInfo?.email || 'sale@dainamwall.com',
+    },
+    shopCategories: {
+      title: acf.shopCategories?.title || 'Danh mục mua sắm',
+      links: acf.shopCategories?.links || []
+    },
+    customerService: {
+      title: acf.customerService?.title || 'Hỗ trợ dịch vụ',
+      links: acf.customerService?.links || []
+    },
+    socialLinks: {
+      facebook: acf.socialLinks?.facebook || '#',
+      instagram: acf.socialLinks?.instagram || '#',
+      youtube: acf.socialLinks?.youtube || '#',
+    },
+    bottomBar: {
+      copyright: acf.bottomBar?.copyright || 'Công ty TNHH Đại Nam Wall.',
+      links: acf.bottomBar?.links || []
+    }
+  };
+};
