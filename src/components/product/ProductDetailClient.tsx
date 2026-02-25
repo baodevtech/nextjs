@@ -6,10 +6,10 @@ import {
     Minus, Plus, ShoppingCart, MessageCircle, Phone, 
     Check, Truck, ShieldCheck, Star, Maximize2, Layers, Box, Zap 
 } from 'lucide-react';
-import { Product } from '@/types'; //
-import { Button } from '@/components/common/UI'; //
-import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents'; //
-import { useCart } from '@/context/CartContext'; //
+import { Product } from '@/types';
+import { Button } from '@/components/common/UI';
+import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
+import { useCart } from '@/context/CartContext';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -28,10 +28,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:gap-y-12">
       
-      {/* CỘT TRÁI: HÌNH ẢNH & CHI TIẾT */}
-      <div className="lg:col-span-7 flex flex-col gap-10">
+      <div className="order-1 lg:col-span-7 lg:col-start-1 lg:row-start-1">
         <div className="space-y-4">
             <div className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in">
                 <img 
@@ -58,69 +57,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 ))}
             </div>
         </div>
-
-        <div className="space-y-8">
-            <div>
-                <h2 className=" font-bold text-2xl text-slate-900 mb-6 flex items-center gap-3">
-                     Mô Tả Chi Tiết
-                     <div className="h-px bg-gray-200 flex-1"></div>
-                </h2>
-                <div className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-img:rounded-xl">
-                        <div dangerouslySetInnerHTML={{ __html: product.description }} />
-                        {!product.description && (
-                            <p className="text-slate-500 italic">
-                                Đang cập nhật mô tả chi tiết cho sản phẩm này...
-                            </p>
-                        )}
-                </div>
-            </div>
-
-            <div className="bg-slate-50 rounded-2xl p-6 md:p-8 border border-gray-100">
-                 <h2 className=" font-bold text-xl text-slate-900 mb-6">Thông Số Kỹ Thuật</h2>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Mã sản phẩm</span>
-                        <span className="font-bold text-slate-900">{product.sku}</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Thương hiệu</span>
-                        <span className="font-bold text-slate-900">{product.brand}</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Kích thước (D x R)</span>
-                        <span className="font-bold text-slate-900">{product.dimensions.length} x {product.dimensions.width} mm</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Độ dày</span>
-                        <span className="font-bold text-slate-900">{product.dimensions.thickness} mm</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Diện tích tấm</span>
-                        <span className="font-bold text-slate-900">{product.dimensions.area} m²</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Bảo hành</span>
-                        <span className="font-bold text-slate-900">{product.warranty} Tháng</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Bề mặt</span>
-                        <span className="font-bold text-slate-900">{product.surface}</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-gray-200 border-dashed">
-                        <span className="text-slate-500">Xuất xứ</span>
-                        <span className="font-bold text-slate-900">{product.origin}</span>
-                    </div>
-                 </div>
-            </div>
-
-            <div className="border-t border-gray-100 pt-8">
-                 <AIAssistant product={product} />
-            </div>
-        </div>
       </div>
 
-      {/* CỘT PHẢI: GIÁ & MUA HÀNG */}
-      <div className="lg:col-span-5 relative">
+      {/* =======================================================
+          2. GIÁ & MUA HÀNG (THÔNG TIN CHÍNH)
+          - Mobile: Nằm giữa (order-2) - Đẩy thẳng lên dưới ảnh
+          - Desktop: Nằm cột phải, vắt ngang 2 hàng (row-span-2)
+      ======================================================= */}
+      <div className="order-2 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 relative">
          <div className="lg:sticky lg:top-24 space-y-6">
             
             <div>
@@ -133,7 +77,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 leading-snug">
                     {product.name}
                 </h1>
-                <div className="flex items-center gap-4 text-sm pb-4 border-b border-gray-100">
+                <div className="flex flex-wrap items-center gap-3 md:gap-4 text-sm pb-4 border-b border-gray-100">
                     <div className="flex text-amber-400 gap-0.5">
                         {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
                     </div>
@@ -231,10 +175,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <Button 
                         onClick={() => addToCart(product, quantity)}
                         disabled={product.stockStatus === 'OUT_OF_STOCK'}
-                        className="flex-1 h-12 text-sm uppercase tracking-wide font-bold shadow-brand-500/30 shadow-lg hover:-translate-y-0.5 transition-all"
+                        className="flex-1 h-12 text-sm uppercase tracking-wide font-bold shadow-brand-500/30 shadow-lg hover:-translate-y-0.5 transition-all px-2"
                     >
-                        <ShoppingCart size={18} className="mr-2"/>
-                        {product.stockStatus === 'OUT_OF_STOCK' ? 'Hết Hàng' : 'Thêm Vào Giỏ'}
+                        <ShoppingCart size={18} className="mr-1.5 md:mr-2"/>
+                        <span className="truncate">{product.stockStatus === 'OUT_OF_STOCK' ? 'Hết Hàng' : 'Thêm Vào Giỏ'}</span>
                     </Button>
                 </div>
 
@@ -245,24 +189,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         rel="noreferrer"
                         className="flex flex-col items-center justify-center h-12 rounded-lg border border-blue-200 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all group"
                     >
-                       <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-1.5 md:gap-2">
                             <MessageCircle size={18} className="group-hover:scale-110 transition-transform"/> 
-                            <span className="font-bold text-sm">Chat Zalo</span>
+                            <span className="font-bold text-xs md:text-sm">Chat Zalo</span>
                        </div>
                     </a>
                     <a 
                         href="tel:0912345678"
                         className="flex flex-col items-center justify-center h-12 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 transition-all group"
                     >
-                       <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-1.5 md:gap-2">
                             <Phone size={18} className="group-hover:rotate-12 transition-transform"/> 
-                            <span className="font-bold text-sm">0912.345.678</span>
+                            <span className="font-bold text-xs md:text-sm">0912.345.678</span>
                        </div>
                     </a>
                 </div>
             </div>
 
-            <div className="text-[10px] text-slate-400 text-center flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 border-t border-gray-50">
+            <div className="text-[10px] text-slate-400 text-center flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-2 pt-2 border-t border-gray-50">
                 <span className="flex items-center gap-1.5"><Check size={12} className="text-green-500"/> Đổi trả 7 ngày</span>
                 <span className="flex items-center gap-1.5"><Truck size={12} className="text-brand-500"/> Ship toàn quốc</span>
                 <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-500"/> Chính hãng 100%</span>
@@ -270,6 +214,75 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
          </div>
       </div>
+
+      {/* =======================================================
+          3. MÔ TẢ & THÔNG SỐ KỸ THUẬT
+          - Mobile: Bị đẩy xuống dưới cùng (order-3)
+          - Desktop: Nằm cột trái, hàng 2 (col-span-7, row-start-2)
+      ======================================================= */}
+      <div className="order-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 space-y-10">
+        
+        {/* MÔ TẢ CHI TIẾT */}
+        <div>
+            <h2 className="font-bold text-xl md:text-2xl text-slate-900 mb-6 flex items-center gap-3">
+                 Mô Tả Chi Tiết
+                 <div className="h-px bg-gray-200 flex-1"></div>
+            </h2>
+            <div className="prose prose-sm md:prose-base prose-slate max-w-none prose-headings:text-slate-900 prose-img:rounded-xl">
+                    <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                    {!product.description && (
+                        <p className="text-slate-500 italic">
+                            Đang cập nhật mô tả chi tiết cho sản phẩm này...
+                        </p>
+                    )}
+            </div>
+        </div>
+
+        {/* BẢNG THÔNG SỐ */}
+        <div className="bg-slate-50 rounded-2xl p-5 md:p-8 border border-gray-100">
+             <h2 className="font-bold text-lg md:text-xl text-slate-900 mb-6">Thông Số Kỹ Thuật</h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 md:gap-y-4 text-xs md:text-sm">
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Mã sản phẩm</span>
+                    <span className="font-bold text-slate-900">{product.sku}</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Thương hiệu</span>
+                    <span className="font-bold text-slate-900">{product.brand}</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Kích thước (D x R)</span>
+                    <span className="font-bold text-slate-900">{product.dimensions.length} x {product.dimensions.width} mm</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Độ dày</span>
+                    <span className="font-bold text-slate-900">{product.dimensions.thickness} mm</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Diện tích tấm</span>
+                    <span className="font-bold text-slate-900">{product.dimensions.area} m²</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Bảo hành</span>
+                    <span className="font-bold text-slate-900">{product.warranty} Tháng</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Bề mặt</span>
+                    <span className="font-bold text-slate-900">{product.surface}</span>
+                </div>
+                <div className="flex justify-between py-2 md:py-3 border-b border-gray-200 border-dashed">
+                    <span className="text-slate-500">Xuất xứ</span>
+                    <span className="font-bold text-slate-900">{product.origin}</span>
+                </div>
+             </div>
+        </div>
+
+        {/* AI ASSISTANT */}
+        <div className="border-t border-gray-100 pt-8">
+             <AIAssistant product={product} />
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -16,19 +16,26 @@ export default async function BlogPage() {
     <div className="bg-white min-h-screen font-sans text-slate-600">
       
       {/* Hero Banner (Giữ nguyên Static) */}
-      <section className="pt-32 pb-16 bg-slate-50 border-b border-gray-100">
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-amber-600 font-bold tracking-widest uppercase text-xs mb-3 animate-slide-up">
-                Đại Nam Wall Blog
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 animate-slide-up leading-tight">
-                Kiến Thức & Cảm Hứng <br className="hidden md:block" /> Không Gian Sống
-            </h1>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto font-light leading-relaxed animate-slide-up delay-100">
-                Nơi chia sẻ kinh nghiệm thi công, xu hướng thiết kế và những câu chuyện về vật liệu nội thất bền vững.
-            </p>
-         </div>
-      </section>
+     <section className="bg-slate-50 pt-8 pb-4 px-4 text-center md:pt-16 md:pb-12 lg:pt-20 lg:pb-16 border-b border-slate-100">
+    <div className="max-w-3xl mx-auto">
+        
+        {/* Eyebrow / Sub-title */}
+        <span className="text-amber-600 font-bold uppercase tracking-[0.15em] text-[10px] md:text-xs mb-2 md:mb-4 block">
+            Đại Nam Wall Blog
+        </span>
+
+        {/* Main Title - Cực kỳ sát và gọn trên mobile */}
+        <h1 className="text-[26px] sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-2 md:mb-5 leading-[1.2] md:leading-tight tracking-tight">
+            Kiến Thức & Cảm Hứng<br className="hidden sm:block"/> Không Gian Sống
+        </h1>
+
+        {/* Description - Giảm size, làm mờ nhẹ */}
+        <p className="text-[13px] sm:text-sm md:text-base text-slate-500 max-w-2xl mx-auto leading-relaxed px-2 md:px-0">
+            Nơi chia sẻ kinh nghiệm thi công, xu hướng thiết kế và những câu chuyện về vật liệu nội thất bền vững.
+        </p>
+        
+    </div>
+</section>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
