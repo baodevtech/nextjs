@@ -141,7 +141,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({ posts }) => {
                                 <div className="flex flex-wrap items-center gap-3 md:gap-4 text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
                                     <span className="text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">{post.category}</span>
                                     <span className="flex items-center gap-1"><Calendar size={14} className="md:w-3.5 md:h-3.5"/> {post.date}</span>
-                                    <span className="flex items-center gap-1 hidden sm:flex"><Clock size={14} className="md:w-3.5 md:h-3.5"/> {post.readTime || '5'} phút đọc</span>
+                                    <span className="flex items-center gap-1 hidden sm:flex"><Clock size={14} className="md:w-3.5 md:h-3.5"/> {post.readTime || '5'}</span>
                                 </div>
 
                                 <Link href={`/blog/${post.slug}`} className="group-hover:text-amber-700 transition-colors">

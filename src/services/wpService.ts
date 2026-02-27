@@ -1374,3 +1374,95 @@ export const createOrder = async (
     };
   }
 };
+
+
+//header
+import { HeaderData, NavItem } from "../types";
+
+export const getHeaderData = async (): Promise<HeaderData> => {
+  const data = await fetchAPI(`
+    query GetHeaderOptions {
+      headerFooterOptions {
+        headerData {
+          logo { node { sourceUrl } }
+          topBarText
+          hotline
+          navItems { title, link }
+          
+          # Tất cả được bọc trong group megaMenu
+          megaMenu {
+            col1Title
+            col1Items {
+              categoryLink { nodes { name, slug } }
+              customTitle, desc, icon, color
+            }
+            
+            col2Title
+            col2Items {
+              categoryLink { nodes { name, slug } }
+              customTitle, desc, icon, color
+            }
+            
+            quickLinks { title, link }
+            
+            banner {
+              image { node { sourceUrl } }
+              badgeText, title, desc, linkText, linkUrl
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  const acf = data?.headerFooterOptions?.headerData || {};
+  const megaMenu = acf.megaMenu || {}; // Lấy ra group megaMenu
+
+  const mapItems = (items: any[]) => {
+    if (!items) return [];
+    return items.map((item: any) => {
+      const catNode = item.categoryLink?.nodes?.[0];
+      return {
+        title: item.customTitle || catNode?.name || "Đang cập nhật...",
+        slug: catNode?.slug || "",
+        desc: item.desc || "",
+        icon: item.icon || "Box",
+        color: item.color || "text-slate-600 bg-slate-50"
+      };
+    });
+  };
+
+  return {
+    logo: acf.logo?.node?.sourceUrl || "/images/default-logo.png",
+    topBarText: acf.topBarText || "",
+    hotline: acf.hotline || "0909.xxx.xxx",
+    navItems: acf.navItems?.map((item: any) => ({
+      title: item.title || "",
+      link: item.link || "/",
+    })) || [],
+    
+    // Gộp tất cả vào megaMenu
+    megaMenu: {
+      col1: {
+        title: megaMenu.col1Title || "Vật Liệu Chính",
+        items: mapItems(megaMenu.col1Items)
+      },
+      col2: {
+        title: megaMenu.col2Title || "Phụ Kiện & Khác",
+        items: mapItems(megaMenu.col2Items)
+      },
+      quickLinks: megaMenu.quickLinks?.map((item: any) => ({
+        title: item.title || "",
+        link: item.link || "#"
+      })) || [],
+      banner: {
+        image: megaMenu.banner?.image?.node?.sourceUrl || "https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=800&auto=format&fit=crop",
+        badge: megaMenu.banner?.badgeText || "New Collection",
+        title: megaMenu.banner?.title || "Vẻ Đẹp Vượt Thời Gian",
+        desc: megaMenu.banner?.desc || "Khám phá bộ sưu tập mới nhất.",
+        linkText: megaMenu.banner?.linkText || "Xem Ngay",
+        linkUrl: megaMenu.banner?.linkUrl || "/shop"
+      }
+    }
+  };
+};

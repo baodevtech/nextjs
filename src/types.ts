@@ -381,3 +381,52 @@ export interface ContactPageData {
   formConfig: ContactFormConfig;
   faqsContact: ContactFaq[];
 }
+//header types
+export interface NavItem {
+  title: string;
+  link: string;
+}
+
+export interface MegaMenuItem {
+  title: string;
+  slug: string;
+  desc: string;
+  icon: string;
+  color: string;
+}
+
+export interface MegaMenuColumn {
+  title: string;
+  items: MegaMenuItem[];
+}
+
+export interface QuickLink {
+  title: string;
+  link: string;
+}
+
+export interface MegaMenuBanner {
+  image: string;
+  badge: string;
+  title: string;
+  desc: string;
+  linkText: string;
+  linkUrl: string;
+}
+
+// [MỚI] Interface gom nhóm Mega Menu
+export interface MegaMenuData {
+  col1: MegaMenuColumn;
+  col2: MegaMenuColumn;
+  quickLinks: QuickLink[];
+  banner: MegaMenuBanner;
+}
+
+export interface HeaderData {
+  logo: string;
+  topBarText: string;
+  hotline: string;
+  navItems: NavItem[];
+  // [MỚI] Gọi duy nhất 1 biến megaMenu
+  megaMenu: MegaMenuData; 
+}
