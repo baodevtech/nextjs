@@ -8,26 +8,27 @@ import {
 } from 'lucide-react';
 import { getFooterData } from '@/services/wpService';
 
-// Bộ từ điển Icon cho phần Trust Badges
 const IconMap: Record<string, React.ElementType> = {
   Truck, ShieldCheck, CreditCard, Headphones, CheckCircle
 };
 
-// Sử dụng Server Component (Không cần 'use client') để tối ưu tốc độ tải và SEO
+// [TỐI ƯU] Hàm bọc an toàn để sửa lỗi dính tiền tố thư mục
+const safeLink = (url?: string) => {
+  if (!url) return "/";
+  if (url.startsWith("http") || url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("#")) return url;
+  return url.startsWith("/") ? url : `/${url}`;
+};
+
 export async function Footer() {
-  // Lấy dữ liệu động từ WP
   const footerData = await getFooterData();
   const { trustBadges, companyInfo, shopCategories, customerService, socialLinks, bottomBar } = footerData;
 
   return (
     <footer className="bg-[#0B1727] text-slate-300 font-sans border-t-4 border-blue-600">
       
-      {/* Section 1: Trust Badges - Ép 4 cột trên mọi thiết bị (1 hàng) */}
       <div className="bg-[#112136] border-b border-[#1C2E45]">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-5 lg:py-8">
           <div className="grid grid-cols-4 gap-1 sm:gap-4 lg:gap-6 text-sm">
-            
-            {/* Lặp qua danh sách Trust Badges từ WordPress */}
             {trustBadges.map((badge, idx) => {
               const DynamicIcon = IconMap[badge.icon] || CheckCircle;
               return (
@@ -44,16 +45,13 @@ export async function Footer() {
                 </div>
               );
             })}
-
           </div>
         </div>
       </div>
 
-      {/* Section 2: Main Navigation Links - Responsive Grid Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-y-10 gap-x-6 lg:gap-8">
           
-          {/* Cột 1: Thông tin liên hệ - Chiếm trọn 2 cột trên Mobile */}
           <div className="col-span-2 lg:col-span-4 space-y-5 lg:space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold italic text-lg shadow-sm">
@@ -84,13 +82,12 @@ export async function Footer() {
             </ul>
           </div>
 
-          {/* Cột 2: Danh mục mua sắm - Chiếm 1 cột (50%) trên Mobile */}
           <div className="col-span-1 lg:col-span-3 lg:col-start-6">
             <h4 className="text-white font-bold mb-4 lg:mb-5 uppercase text-[13px] lg:text-sm tracking-wider">{shopCategories.title}</h4>
             <ul className="space-y-3.5 text-sm">
               {shopCategories.links.map((link, idx) => (
                 <li key={idx}>
-                  <Link href={link.url} className="text-slate-400 hover:text-white hover:underline underline-offset-4 flex flex-wrap items-center gap-2 w-fit py-0.5">
+                  <Link href={safeLink(link.url)} className="text-slate-400 hover:text-white hover:underline underline-offset-4 flex flex-wrap items-center gap-2 w-fit py-0.5">
                     {link.title}
                     {link.badge && (
                       <span className={`text-[9px] sm:text-[10px] text-white px-1.5 py-0.5 rounded font-bold leading-none ${link.badgeColor || 'bg-blue-600'}`}>
@@ -103,13 +100,12 @@ export async function Footer() {
             </ul>
           </div>
 
-          {/* Cột 3: Chăm sóc khách hàng - Chiếm 1 cột (50%) trên Mobile */}
           <div className="col-span-1 lg:col-span-2">
             <h4 className="text-white font-bold mb-4 lg:mb-5 uppercase text-[13px] lg:text-sm tracking-wider">{customerService.title}</h4>
             <ul className="space-y-3.5 text-sm">
               {customerService.links.map((link, idx) => (
                 <li key={idx}>
-                  <Link href={link.url} className="text-slate-400 hover:text-white hover:underline underline-offset-4 block w-fit py-0.5">
+                  <Link href={safeLink(link.url)} className="text-slate-400 hover:text-white hover:underline underline-offset-4 block w-fit py-0.5">
                     {link.title}
                   </Link>
                 </li>
@@ -117,7 +113,6 @@ export async function Footer() {
             </ul>
           </div>
 
-          {/* Cột 4: Mạng xã hội & Thanh toán - Chiếm trọn 2 cột trên Mobile */}
           <div className="col-span-2 lg:col-span-3 pt-2 lg:pt-0 border-t border-[#1C2E45] lg:border-t-0 mt-2 lg:mt-0">
             <h4 className="text-white font-bold mb-4 lg:mb-5 uppercase text-[13px] lg:text-sm tracking-wider pt-4 lg:pt-0">Kết nối</h4>
             <div className="flex gap-3 mb-8">
@@ -133,7 +128,6 @@ export async function Footer() {
             </div>
             
             <h4 className="text-white font-bold mb-3 lg:mb-4 uppercase text-[13px] lg:text-sm tracking-wider">Thanh toán an toàn</h4>
-            {/* Các icon thanh toán vẫn giữ tĩnh vì đây là chuẩn chung quốc tế */}
             <div className="flex flex-wrap gap-2">
               <div className="w-12 h-8 bg-[#1C2E45] rounded border border-[#2A405C] flex items-center justify-center text-[10px] font-bold text-slate-300">VISA</div>
               <div className="w-12 h-8 bg-[#1C2E45] rounded border border-[#2A405C] flex items-center justify-center text-[10px] font-bold text-slate-300">JCB</div>
@@ -145,14 +139,13 @@ export async function Footer() {
         </div>
       </div>
 
-      {/* Section 3: Legal & Copyright */}
       <div className="bg-[#070F1A] border-t border-[#1C2E45] py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3 lg:gap-4 text-[11px] sm:text-xs text-slate-500 text-center md:text-left">
           <p className="max-w-md lg:max-w-none leading-relaxed">&copy; {new Date().getFullYear()} {bottomBar.copyright}</p>
           <div className="flex flex-wrap justify-center gap-3 lg:gap-4">
             {bottomBar.links.map((link, idx) => (
               <React.Fragment key={idx}>
-                <Link href={link.url} className="hover:text-white transition-colors py-1">{link.title}</Link>
+                <Link href={safeLink(link.url)} className="hover:text-white transition-colors py-1">{link.title}</Link>
                 {idx < bottomBar.links.length - 1 && <span className="text-[#1C2E45] py-1">|</span>}
               </React.Fragment>
             ))}

@@ -18,6 +18,13 @@ const IconMap: Record<string, React.ElementType> = {
   Layers, Activity, Gem, Wrench, Leaf, Sparkles, Box
 };
 
+// [TỐI ƯU] Hàm bọc an toàn để sửa lỗi dính tiền tố thư mục (VD: /product/du-an)
+const safeLink = (url?: string) => {
+  if (!url) return "/";
+  if (url.startsWith("http") || url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("#")) return url;
+  return url.startsWith("/") ? url : `/${url}`;
+};
+
 interface HeaderClientProps {
   headerData: HeaderData;
 }
@@ -37,12 +44,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
 
   const isActive = (path: string) => pathname === path;
   
-  // Tách riêng megaMenu để code bên dưới ngắn gọn hơn
   const { megaMenu } = headerData;
 
   return (
     <>
-      {/* Top Bar */}
       <div className={`bg-brand-900 text-white py-2 px-4 hidden md:block border-b border-white/5 transition-all duration-300 ${scrolled ? 'h-0 py-0 overflow-hidden opacity-0' : 'h-auto opacity-100'}`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.15em]">
           <p className="flex items-center gap-2 cursor-default hover:text-white transition-colors">
@@ -69,7 +74,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             
-            {/* Logo Section */}
             <div className="flex items-center gap-4">
               <button 
                 className="p-2 -ml-2 hover:bg-slate-100 rounded-full lg:hidden text-slate-900 transition-colors"
@@ -90,18 +94,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                 Trang Chủ
               </Link>
 
-              {/* MEGA MENU TRIGGER */}
               <div className="group static">
                   <Link href="/shop" className={`flex items-center gap-1 px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 group-hover:bg-slate-50 group-hover:text-slate-900 ${isActive('/shop') ? 'text-slate-900 bg-slate-50 font-semibold' : 'text-slate-900 hover:text-brand-600 hover:bg-sl'}`}>
                     Sản Phẩm <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300 opacity-50" />
                   </Link>
 
-                  {/* FULL WIDTH MEGA MENU DROPDOWN */}
                   <div className="absolute top-full left-0 w-full bg-white/95 backdrop-blur-2xl border-t border-slate-100 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform translate-y-2 group-hover:translate-y-0">
                       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                           <div className="grid grid-cols-12 gap-8">
                               
-                              {/* Cột 1 */}
                               <div className="col-span-3 space-y-6 border-r border-slate-100 pr-6">
                                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
                                       {megaMenu.col1?.title || "Vật Liệu Chính"}
@@ -124,7 +125,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                   </div>
                               </div>
 
-                              {/* Cột 2 */}
                               <div className="col-span-3 space-y-6 border-r border-slate-100 pr-6 pl-2">
                                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
                                       {megaMenu.col2?.title || "Phụ Kiện & Khác"}
@@ -146,11 +146,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                       })}
                                   </div>
 
-                                  {/* Liên Kết Nhanh */}
                                   {megaMenu.quickLinks && megaMenu.quickLinks.length > 0 && (
                                       <div className="pt-4 mt-4 border-t border-dashed border-slate-100 space-y-1">
                                           {megaMenu.quickLinks.map((ql, idx) => (
-                                              <Link key={idx} href={ql.link} className="flex items-center justify-between text-sm font-bold text-slate-700 hover:text-brand-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                              <Link key={idx} href={safeLink(ql.link)} className="flex items-center justify-between text-sm font-bold text-slate-700 hover:text-brand-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
                                                   {ql.title} <ArrowRight size={14}/>
                                               </Link>
                                           ))}
@@ -158,7 +157,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                   )}
                               </div>
 
-                              {/* Cột 3: Banner */}
                               <div className="col-span-6 pl-4">
                                   <div className="relative h-full w-full rounded-2xl overflow-hidden bg-slate-900 group/card cursor-pointer">
                                       <img 
@@ -179,7 +177,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                           <p className="text-slate-300 text-sm mb-6 max-w-sm line-clamp-2">
                                               {megaMenu.banner?.desc || "Khám phá bộ sưu tập tấm ốp than tre tráng gương."}
                                           </p>
-                                          <Link href={megaMenu.banner?.linkUrl || "/shop"} className="inline-flex items-center gap-2 text-white font-bold text-sm hover:gap-4 transition-all">
+                                          <Link href={safeLink(megaMenu.banner?.linkUrl || "/shop")} className="inline-flex items-center gap-2 text-white font-bold text-sm hover:gap-4 transition-all">
                                               {megaMenu.banner?.linkText || "Xem Ngay"} <ArrowRight size={16}/>
                                           </Link>
                                       </div>
@@ -191,10 +189,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                   </div>
               </div>
 
-              {/* Các Menu chính khác */}
               {headerData.navItems && headerData.navItems.length > 0 ? (
                 headerData.navItems.map((link) => (
-                  <Link key={link.link} href={link.link} className={`px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 ${isActive(link.link) ? 'text-slate-900 bg-slate-50 font-semibold' : 'text-slate-900 hover:text-brand-600 hover:bg-slate-50'}`}>
+                  <Link key={link.link} href={safeLink(link.link)} className={`px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 ${isActive(safeLink(link.link)) ? 'text-slate-900 bg-slate-50 font-semibold' : 'text-slate-900 hover:text-brand-600 hover:bg-slate-50'}`}>
                       {link.title}
                   </Link>
                 ))
@@ -210,7 +207,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
               )}
             </nav>
 
-            {/* Actions */}
             <div className="flex items-center gap-1">
               <button onClick={() => setSearchOpen(true)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-all" title="Tìm kiếm">
                 <Search size={20} strokeWidth={2} />
@@ -253,7 +249,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                         <div className="py-2">
                             <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Sản Phẩm</p>
                             
-                            {/* Mobile Mega Menu Render */}
                             {[megaMenu.col1, megaMenu.col2].map((group, groupIndex) => (
                                 <React.Fragment key={groupIndex}>
                                     {group?.items?.map((item) => {
@@ -270,11 +265,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                 </React.Fragment>
                             ))}
 
-                            {/* Mobile Quick Links */}
                             {megaMenu.quickLinks && megaMenu.quickLinks.length > 0 && (
                                 <div className="mt-2 pt-2 border-t border-slate-100">
                                     {megaMenu.quickLinks.map((ql, idx) => (
-                                        <Link key={`ql-${idx}`} href={ql.link} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <Link key={`ql-${idx}`} href={safeLink(ql.link)} onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                             <span className="text-sm font-bold text-slate-700">{ql.title}</span>
                                             <ChevronRight size={16} className="text-slate-300" />
                                         </Link>
@@ -283,10 +277,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                             )}
                         </div>
 
-                        {/* Mobile Nav Links */}
                         {headerData.navItems && headerData.navItems.length > 0 ? (
                             headerData.navItems.map((link) => (
-                                <Link key={link.link} href={link.link} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${isActive(link.link) ? 'bg-slate-50 text-slate-900 font-bold' : 'text-slate-600 font-medium'}`} onClick={() => setMobileMenuOpen(false)}>
+                                <Link key={link.link} href={safeLink(link.link)} className={`flex items-center justify-between p-3 rounded-xl transition-all group ${isActive(safeLink(link.link)) ? 'bg-slate-50 text-slate-900 font-bold' : 'text-slate-600 font-medium'}`} onClick={() => setMobileMenuOpen(false)}>
                                     <span className="text-sm">{link.title}</span>
                                     <ChevronRight size={16} className="text-slate-300" />
                                 </Link>
