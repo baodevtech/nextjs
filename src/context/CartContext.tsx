@@ -1,3 +1,4 @@
+// src/context/CartContext.tsx
 'use client';
 
 import React, { useState, useContext, createContext, useMemo, ReactNode, useEffect } from 'react';
@@ -8,11 +9,12 @@ interface CartContextType {
   addToCart: (product: Product, qty?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, delta: number) => void;
-  clearCart: () => void; // [MỚI] Hàm xóa sạch giỏ hàng
+  clearCart: () => void;
   isCartOpen: boolean;
   toggleCart: () => void;
   cartTotal: number;
   itemsCount: number;
+  isMounted: boolean; // [TỐI ƯU] Thêm cờ này để fix lỗi Hydration của Next.js
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -24,12 +26,13 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Khởi tạo state cart từ localStorage nếu có (Optional - Code này thêm vào để trải nghiệm tốt hơn)
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Load cart từ localStorage khi mount (Client side only)
+  // 1. Load cart từ localStorage khi mount và báo hiệu đã Mounted
   useEffect(() => {
+    setIsMounted(true);
     const savedCart = localStorage.getItem('dainam_cart');
     if (savedCart) {
       try {
@@ -40,10 +43,29 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  // Lưu cart vào localStorage mỗi khi thay đổi
+  // 2. Lưu cart vào localStorage mỗi khi thay đổi
   useEffect(() => {
-    localStorage.setItem('dainam_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (isMounted) {
+      localStorage.setItem('dainam_cart', JSON.stringify(cart));
+    }
+  }, [cart, isMounted]);
+
+  // 3. [TỐI ƯU] Lắng nghe sự thay đổi của LocalStorage từ các Tab khác
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'dainam_cart') {
+        try {
+          const newCart = e.newValue ? JSON.parse(e.newValue) : [];
+          setCart(newCart);
+        } catch (err) {
+          console.error("Lỗi sync cart:", err);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const addToCart = (product: Product, qty: number = 1) => {
     setCart(prev => {
@@ -70,7 +92,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
-  // [MỚI] Hàm clearCart
   const clearCart = () => {
     setCart([]);
     localStorage.removeItem('dainam_cart');
@@ -85,7 +106,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const itemsCount = useMemo(() => cart.reduce((c, item) => c + item.quantity, 0), [cart]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, toggleCart, cartTotal, itemsCount }}>
+    <CartContext.Provider value={{ 
+        cart, addToCart, removeFromCart, updateQuantity, clearCart, 
+        isCartOpen, toggleCart, cartTotal, itemsCount, isMounted 
+    }}>
       {children}
     </CartContext.Provider>
   );

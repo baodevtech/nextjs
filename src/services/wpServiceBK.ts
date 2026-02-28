@@ -18,10 +18,10 @@ import {
   RenovationFeature,
   PricingPageData,
   ContactPageData,
-  HeaderData,
-  NavItem,
-  FooterData
 } from "../types";
+
+// [ĐÃ SỬA] Không còn import constants
+// import { PRODUCTS, CATEGORIES } from "../constants";
 
 const API_URL =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
@@ -29,13 +29,12 @@ const API_URL =
 
 /**
  * FETCH HELPER
- * Hàm dùng chung để gọi API có xử lý lỗi (try-catch) và cấu hình Cache Tags
+ * Hàm dùng chung để gọi API có xử lý lỗi (try-catch)
  */
 async function fetchAPI(
   query: string,
   { variables }: { variables?: any } = {},
-  customRevalidate?: number,
-  tags: string[] = [] // Thêm tham số tags để Next.js On-demand Revalidation hoạt động
+  customRevalidate?: number // Thêm tham số này để tùy chỉnh từng query
 ) {
   const headers = { "Content-Type": "application/json" };
 
@@ -44,10 +43,8 @@ async function fetchAPI(
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
-      next: { 
-        revalidate: customRevalidate ?? 3600,
-        tags: tags 
-      }, 
+      // Tăng mặc định lên 3600s (1 giờ) thay vì 60s
+      next: { revalidate: customRevalidate ?? 3600 }, 
     });
 
     const json = await res.json();
@@ -117,6 +114,7 @@ const PRODUCT_FIELDS = `
   }
 `;
 
+// Hàm chuyển đổi dữ liệu từ WP sang cấu trúc Frontend
 const mapProduct = (node: any): Product => {
   if (!node) return {} as Product;
 
@@ -124,6 +122,7 @@ const mapProduct = (node: any): Product => {
     ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
     : 0;
 
+  // Xử lý Brand
   const brandName =
     node.productBrands?.nodes && node.productBrands.nodes.length > 0
       ? node.productBrands.nodes[0].name
@@ -180,8 +179,9 @@ export const getProducts = async (): Promise<Product[]> => {
         }
       }
     }
-  `, {}, undefined, ['products']);
+  `);
 
+  // [ĐÃ SỬA] Trả về mảng rỗng nếu lỗi thay vì constants
   if (!data || !data.products) {
     console.warn("⚠️ Không lấy được Products từ API.");
     return [];
@@ -190,6 +190,7 @@ export const getProducts = async (): Promise<Product[]> => {
   return data.products.nodes.map(mapProduct);
 };
 
+// 1. Interface cho Shop Settings
 export interface ShopSettings {
   description: string;
   benefits: {
@@ -199,6 +200,7 @@ export interface ShopSettings {
   };
 }
 
+// 2. Hàm lấy dữ liệu trang Shop
 export const getShopSettings = async (): Promise<ShopSettings | null> => {
   const data = await fetchAPI(`
     query GetShopSettings {
@@ -223,7 +225,7 @@ export const getShopSettings = async (): Promise<ShopSettings | null> => {
         }
       }
     }
-  `, {}, undefined, ['shop_settings', 'options']);
+  `);
 
   const settings = data?.options?.shopSettings;
   if (!settings) return null;
@@ -250,7 +252,9 @@ export const getShopSettings = async (): Promise<ShopSettings | null> => {
   };
 };
 
-export const getProductBySlug = async (slug: string): Promise<Product | undefined> => {
+export const getProductBySlug = async (
+  slug: string,
+): Promise<Product | undefined> => {
   const data = await fetchAPI(
     `
     ${PRODUCT_FIELDS}
@@ -260,15 +264,14 @@ export const getProductBySlug = async (slug: string): Promise<Product | undefine
       }
     }
   `,
-    { variables: { slug } }, undefined, ['products', `product-${slug}`]
+    { variables: { slug } },
   );
 
   if (!data?.product) return undefined;
   return mapProduct(data.product);
 };
 
-// --- 2. CATEGORY QUERIES ---
-
+// 1. Cập nhật hàm mapCategory
 const mapCategory = (node: any): Category => {
   return {
     id: node.id,
@@ -290,6 +293,7 @@ const mapCategory = (node: any): Category => {
   };
 };
 
+// 2. Cập nhật câu Query GetCategories
 export const getCategories = async (): Promise<Category[]> => {
   const data = await fetchAPI(`
     query GetCategories {
@@ -313,8 +317,9 @@ export const getCategories = async (): Promise<Category[]> => {
         }
       }
     }
-  `, {}, undefined, ['categories']);
+  `);
 
+  // [ĐÃ SỬA] Trả về mảng rỗng nếu lỗi
   if (!data || !data.productCategories) {
     console.warn("⚠️ Không lấy được Categories từ API.");
     return [];
@@ -323,8 +328,7 @@ export const getCategories = async (): Promise<Category[]> => {
   return data.productCategories.nodes.map(mapCategory);
 };
 
-// --- HELPER MAPS ---
-
+// Helper Maps
 const mapHeroSlides = (acfData: any): HeroSlide[] => {
   if (!acfData?.heroSlides) return [];
 
@@ -361,10 +365,16 @@ const mapShopLookItems = (items: any[]): ShopLookItem[] => {
   
   return items.reduce<ShopLookItem[]>((acc, item, index) => {
     const productNode = item.products?.nodes?.[0];
+
+    // Nếu không có dữ liệu sản phẩm thì bỏ qua (không push vào mảng kết quả)
     if (!productNode) return acc;
+
     const product = mapProduct(productNode);
+    
+    // Nếu mapProduct lỗi hoặc không có ID thì cũng bỏ qua
     if (!product || !product.id) return acc;
 
+    // Chỉ push khi dữ liệu hợp lệ
     acc.push({
       id: index,
       x: parseFloat(item.x) || 50,
@@ -375,7 +385,6 @@ const mapShopLookItems = (items: any[]): ShopLookItem[] => {
     return acc;
   }, []);
 };
-
 const getSingleImage = (field: any) => {
   if (!field) return "";
   if (field.sourceUrl) return field.sourceUrl;
@@ -400,8 +409,12 @@ const mapBlogPosts = (nodes: any[]): BlogPost[] => {
   return nodes.map((node) => {
     const date = new Date(node.date);
     const formattedDate = new Intl.DateTimeFormat('vi-VN').format(date);
+    
+    // Loại bỏ thẻ HTML để lấy text thuần
     const cleanContent = node.content ? node.content.replace(/<[^>]+>/g, '') : '';
     const cleanExcerpt = node.excerpt ? node.excerpt.replace(/<[^>]+>/g, '') : '';
+    
+    // Tính toán thời gian đọc (giả sử 200 từ/phút)
     const wordCount = cleanContent.split(/\s+/).length;
     const readTimeMin = Math.ceil(wordCount / 200);
     const readTime = readTimeMin > 0 ? `${readTimeMin} phút đọc` : '1 phút đọc';
@@ -419,6 +432,7 @@ const mapBlogPosts = (nodes: any[]): BlogPost[] => {
       author: {
         name: node.author?.node?.name || 'Admin',
         avatar: node.author?.node?.avatar?.url || '',
+        // [FIX LỖI] Thêm trường role để khớp với interface Author
         role: 'Tác giả' 
       },
       tags: node.tags?.nodes?.map((t: any) => t.name) || [],
@@ -426,8 +440,7 @@ const mapBlogPosts = (nodes: any[]): BlogPost[] => {
   });
 };
 
-// --- 3. BLOG QUERIES ---
-
+// 1. Lấy tất cả bài viết (Cho trang /blog)
 export const getAllPosts = async (): Promise<BlogPost[]> => {
   const data = await fetchAPI(`
     query GetAllPosts {
@@ -439,17 +452,26 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
           date
           excerpt
           content
-          featuredImage { node { sourceUrl } }
-          categories { nodes { name, slug } }
-          tags { nodes { name, slug } }
-          author { node { name, avatar { url } } }
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          tags { 
+            nodes { name, slug }
+          }
+          author {
+            node { name, avatar { url } }
+          }
         }
       }
     }
-  `, {}, undefined, ['posts']);
+  `);
   return mapBlogPosts(data?.posts?.nodes || []);
 };
 
+// 2. Lấy chi tiết 1 bài viết
 export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   const data = await fetchAPI(
     `
@@ -461,14 +483,22 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
         date
         excerpt
         content
-        featuredImage { node { sourceUrl } }
-        categories { nodes { name, slug } }
-        tags { nodes { name, slug } }
-        author { node { name, avatar { url } } }
+        featuredImage {
+          node { sourceUrl }
+        }
+        categories {
+          nodes { name, slug }
+        }
+        tags {
+          nodes { name, slug }
+        }
+        author {
+          node { name, avatar { url } }
+        }
       }
     }
   `,
-    { variables: { id: slug } }, undefined, ['posts', `post-${slug}`]
+    { variables: { id: slug } },
   );
 
   if (!data?.post) return null;
@@ -476,124 +506,22 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   return posts[0];
 };
 
-export const getRelatedPosts = async (categoryName: string, currentPostId: string, limit: number = 2): Promise<BlogPost[]> => {
-  const data = await fetchAPI(`
-    query GetRelatedPosts($categoryName: String, $notIn: [ID]) {
-      posts(first: ${limit}, where: { categoryName: $categoryName, notIn: $notIn, orderby: { field: DATE, order: DESC } }) {
-        nodes {
-          id
-          title
-          slug
-          date
-          excerpt
-          content
-          featuredImage { node { sourceUrl } }
-          categories { nodes { name, slug } }
-          tags { nodes { name, slug } }
-          author { node { name, avatar { url } } }
-        }
-      }
-    }
-  `, {
-    variables: { 
-      categoryName: categoryName,
-      notIn: [currentPostId] 
-    }
-  }, undefined, ['posts']);
-
-  return mapBlogPosts(data?.posts?.nodes || []);
-};
-
-// Thêm vào src/services/wpService.ts (Phần 3. BLOG QUERIES)
-
-// Hàm lấy dữ liệu Blog có phân trang và Lọc
-export const getPaginatedPosts = async (
-  first: number = 5,
-  after: string = "",
-  categoryName: string = "All",
-  search: string = "",
-  tagName: string = ""
-) => {
-  // Xây dựng điều kiện lọc (where clause)
-  let whereFilters = `orderby: { field: DATE, order: DESC }`;
-  
-  if (categoryName && categoryName !== "All") {
-    whereFilters += `, categoryName: "${categoryName}"`;
-  }
-  if (search) {
-    whereFilters += `, search: "${search}"`;
-  }
-  if (tagName) {
-    whereFilters += `, tag: "${tagName}"`;
-  }
-
-  const query = `
-    query GetPaginatedPosts($first: Int!, $after: String) {
-      posts(first: $first, after: $after, where: { ${whereFilters} }) {
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-        nodes {
-          id, title, slug, date, excerpt, content
-          featuredImage { node { sourceUrl } }
-          categories { nodes { name, slug } }
-          tags { nodes { name, slug } }
-          author { node { name, avatar { url } } }
-        }
-      }
-    }
-  `;
-
-  const data = await fetchAPI(query, { variables: { first, after } }, undefined, ['posts']);
-
-  return {
-    posts: mapBlogPosts(data?.posts?.nodes || []),
-    pageInfo: data?.posts?.pageInfo || { hasNextPage: false, endCursor: "" }
-  };
-};
-
-// Hàm lấy danh sách Danh mục Blog để làm bộ lọc
-export const getBlogCategoriesList = async (): Promise<string[]> => {
-  const data = await fetchAPI(`
-    query GetBlogCategories {
-      categories(first: 20, where: { hideEmpty: true }) {
-        nodes { name }
-      }
-    }
-  `, {}, undefined, ['categories']);
-  
-  const cats = data?.categories?.nodes?.map((c: any) => c.name) || [];
-  return ['All', ...cats];
-};
-
-// Hàm lấy danh sách Tags phổ biến
-export const getBlogTagsList = async (): Promise<string[]> => {
-  const data = await fetchAPI(`
-    query GetBlogTags {
-      tags(first: 15, where: { hideEmpty: true, orderby: COUNT, order: DESC }) {
-        nodes { name }
-      }
-    }
-  `, {}, undefined, ['posts']); // Dùng chung tag posts
-  
-  return data?.tags?.nodes?.map((t: any) => t.name) || [];
-};
-
-// --- 4. PROJECT QUERIES ---
-
 const mapProjects = (nodes: any[]): Project[] => {
   if (!nodes) return [];
   return nodes.map((node) => {
     const acf = node.projectFields || {};
     const firstCat = node.categories?.nodes?.[0];
-    const cleanExcerpt = node.excerpt ? node.excerpt.replace(/<[^>]+>/g, "").trim() : "";
+    const cleanExcerpt = node.excerpt
+      ? node.excerpt.replace(/<[^>]+>/g, "").trim()
+      : "";
 
     return {
       id: node.id,
       title: node.title || "",
       slug: node.slug || "",
-      image: node.featuredImage?.node?.sourceUrl || "https://via.placeholder.com/800x600",
+      image:
+        node.featuredImage?.node?.sourceUrl ||
+        "https://via.placeholder.com/800x600",
       category: firstCat?.name || "Dự án",
       categorySlug: firstCat?.slug || "other",
       desc: cleanExcerpt,
@@ -601,6 +529,7 @@ const mapProjects = (nodes: any[]): Project[] => {
       year: acf.completionYear || "2024",
       area: acf.area || "---",
       tags: node.tags?.nodes?.map((t: any) => t.name) || [],
+      // Các trường fallback cho ProjectDetail
       architect: "",
       client: "",
       challenge: "",
@@ -621,14 +550,24 @@ export const getAllProjects = async (): Promise<Project[]> => {
           title
           slug
           excerpt
-          featuredImage { node { sourceUrl } }
-          categories { nodes { name, slug } }
-          tags { nodes { name } }
-          projectFields { location, completionYear, area }
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          tags {
+            nodes { name }
+          }
+          projectFields {
+             location
+             completionYear
+             area
+          }
         }
       }
     }
-  `, {}, undefined, ['projects']);
+  `);
   return mapProjects(data?.projects?.nodes || []);
 };
 
@@ -638,37 +577,54 @@ const mapProjectDetail = (node: any): Project => {
   const acf = node.projectFields || {};
   const firstCat = node.categories?.nodes?.[0];
 
-  const galleryImages = acf.albumImg?.nodes ? acf.albumImg.nodes.map((img: any) => img.sourceUrl) : [];
+  const galleryImages = acf.albumImg?.nodes
+    ? acf.albumImg.nodes.map((img: any) => img.sourceUrl)
+    : [];
+
   if (galleryImages.length === 0 && node.featuredImage) {
     galleryImages.push(node.featuredImage.node.sourceUrl);
   }
 
-  const materialsList = acf.materials ? acf.materials.split(/\r?\n|,/).map((s: string) => s.trim()).filter(Boolean) : ["Đang cập nhật"];
-  const cleanExcerpt = node.excerpt ? node.excerpt.replace(/<[^>]+>/g, "").trim() : "";
+  const materialsList = acf.materials
+    ? acf.materials
+        .split(/\r?\n|,/)
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+    : ["Đang cập nhật"];
+
+  const cleanExcerpt = node.excerpt
+    ? node.excerpt.replace(/<[^>]+>/g, "").trim()
+    : "";
 
   return {
     id: node.id,
     title: node.title || "",
     slug: node.slug || "",
     image: node.featuredImage?.node?.sourceUrl || "",
+
     category: firstCat?.name || "Dự án",
     categorySlug: firstCat?.slug || "other",
     subtitle: firstCat?.name || "Chi tiết dự án",
+
     location: acf.location || "Việt Nam",
     year: acf.completionYear || "2024",
     area: acf.area || "---",
     desc: cleanExcerpt,
+
     architect: acf.architect || "Đại Nam Wall Team",
     client: acf.client || "Khách hàng",
     challenge: acf.challenge || "Đang cập nhật nội dung...",
     solution: acf.solution || "Đang cập nhật nội dung...",
     materials: materialsList,
     gallery: galleryImages,
+
     tags: node.tags?.nodes?.map((t: any) => t.name) || [],
   };
 };
 
-export const getProjectBySlug = async (slug: string): Promise<Project | null> => {
+export const getProjectBySlug = async (
+  slug: string,
+): Promise<Project | null> => {
   const data = await fetchAPI(
     `
     query GetProjectBySlug($slug: String!) {
@@ -681,15 +637,27 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
           featuredImage { node { sourceUrl } }
           categories { nodes { name, slug } }
           tags { nodes { name } }
+          
           projectFields {
-             location, completionYear, area, architect, client, challenge, solution, materials
-             albumImg { nodes { sourceUrl } }
+             location
+             completionYear
+             area
+             architect
+             client
+             challenge
+             solution
+             materials
+             albumImg {
+                nodes {
+                  sourceUrl
+                }
+             }
           }
         }
       }
     }
   `,
-    { variables: { slug: slug } }, undefined, ['projects', `project-${slug}`]
+    { variables: { slug: slug } },
   );
 
   const projectNode = data?.projects?.nodes?.[0];
@@ -697,8 +665,7 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
   return mapProjectDetail(projectNode);
 };
 
-// --- 5. PAGE SETTINGS (ACF OPTIONS) ---
-
+// Hàm lấy dữ liệu trang chủ
 export const getHomeData = async (): Promise<HomeSettings> => {
   const data = await fetchAPI(`
     ${PRODUCT_FIELDS}
@@ -732,18 +699,26 @@ export const getHomeData = async (): Promise<HomeSettings> => {
              node { sourceUrl }
           }
           shopLookItems {
-            x, y
+            x
+            y
             products {
                 nodes {             
-                ... on Product { ...ProductFields }
+                ... on Product {
+                  ...ProductFields
+                }
               }
             }
           }
           accessoryHighlights {
-             title, subtitle, link, image { node { sourceUrl } }
+             title
+             subtitle
+             link
+             image { node { sourceUrl } }
           }
           accViewAll {
-             viewAllText, viewAllSub, viewAllLink
+             viewAllText
+             viewAllSub
+             viewAllLink
           }
           headNormal
           headHighlight
@@ -751,29 +726,50 @@ export const getHomeData = async (): Promise<HomeSettings> => {
           accProdHeading
           accessoryProducts {
             nodes {
-              ... on Product { ...ProductFields }
+              ... on Product {
+                ...ProductFields
+              }
             }
           }
           qualityHeading
           qualitySubheading
           qualityLarge {
-            title, description, icon { node { sourceUrl } }, image { node { sourceUrl } }, tags { text }
+            title
+            description
+            icon { node { sourceUrl } }
+            image { node { sourceUrl } }
+            tags { text }
           }
-          qualitySmall {
-            title, description, icon { node { sourceUrl } }
+            qualitySmall {
+              title
+              description
+              icon { node { sourceUrl } }
+            }
           }
         }
-      }
-      posts(first: 3, where: { orderby: { field: DATE, order: DESC } }) {
+        posts(first: 3, where: { orderby: { field: DATE, order: DESC } }) {
         nodes {
-          id, title, slug, date, excerpt
-          featuredImage { node { sourceUrl } }
-          categories { nodes { name, slug } }
-          author { node { name, avatar { url } } }
+          id
+          title
+          slug
+          date
+          excerpt
+          featuredImage {
+            node { sourceUrl }
+          }
+          categories {
+            nodes { name, slug }
+          }
+          author {
+            node {
+              name
+              avatar { url }
+            }
+          }
         }
       }
     }
-  `, {}, undefined, ['page-home', 'products', 'posts', 'categories']);
+  `);
 
   const settings = data?.page?.homeSettings;
   const acfData = settings || {};
@@ -788,7 +784,9 @@ export const getHomeData = async (): Promise<HomeSettings> => {
       products: mapAcfProducts(tab.products?.nodes || []),
     }));
   };
-  const accProductsRaw = acfData.accessoryProducts?.nodes ? acfData.accessoryProducts.nodes : acfData.accessoryProducts;
+  const accProductsRaw = acfData.accessoryProducts?.nodes
+    ? acfData.accessoryProducts.nodes
+    : acfData.accessoryProducts;
 
   const mapQualityLarge = (data: any): QualityLargeCard => ({
     title: data?.title || "Cấu Trúc 5 Lớp Siêu Bền",
@@ -797,11 +795,12 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     image: getImg(data?.image),
     tags: data?.tags ? data.tags.map((t: any) => ({ text: t.text })) : [],
   });
-  
   const mapQualitySmall = (list: any[]): QualitySmallCard[] => {
     if (!list) return [];
     return list.map((item) => ({
-      title: item.title || "", description: item.description || "", icon: getImg(item.icon),
+      title: item.title || "",
+      description: item.description || "",
+      icon: getImg(item.icon),
     }));
   };
 
@@ -813,7 +812,8 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     catalogueText: acfData.catalogueText || "Catalogue 2024",
     enableCategoryNofollow: acfData.enableCatNofollow || false,
     signatureHeadingNormal: acfData.signatureHeadingNormal || "Signature",
-    signatureHeadingHighlight: acfData.signatureHeadingHighlight || "Collection",
+    signatureHeadingHighlight:
+      acfData.signatureHeadingHighlight || "Collection",
     signatureDesc: acfData.signatureDesc || "",
     signatureTabs: mapSignatureTabs(acfData.signatureTabs),
     shopLookHeading: acfData.shopLookHeading || "Shop The Look",
@@ -822,7 +822,9 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     shopLookItems: mapShopLookItems(acfData.shopLookItems),
     headNormal: acfData.headNormal || "Chi Tiết.",
     headHighlight: acfData.headHighlight || "Định Hình Đẳng Cấp.",
-    phuKienSub: acfData.phuKienSub || " Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.",
+    phuKienSub:
+      acfData.phuKienSub ||
+      " Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.",
     accHighlights: mapAccHighlights(acfData.accessoryHighlights),
     accViewAll: {
       text: acfData.accViewAll?.viewAllText || "Xem Tất Cả Phụ Kiện",
@@ -842,79 +844,132 @@ export const getHomeData = async (): Promise<HomeSettings> => {
 const mapHotspots = (acfHotspots: any[]): Hotspot[] => {
   if (!acfHotspots) return [];
   return acfHotspots.map((h) => ({
-    x: h.xPos || 50, y: h.yPos || 50, label: h.label || "", description: h.desc || "", iconType: h.iconType || "default",
+    x: h.xPos || 50,
+    y: h.yPos || 50,
+    label: h.label || "",
+    description: h.desc || "",
+    iconType: h.iconType || "default",
   }));
 };
 
 const mapStats = (acfStats: any[]): Stat[] => {
   if (!acfStats) return [];
-  return acfStats.map((s) => ({ label: s.statLabel || "", value: s.statValue || "" }));
+  return acfStats.map((s) => ({
+    label: s.statLabel || "",
+    value: s.statValue || "",
+  }));
 };
-
 const mapRenovationFeatures = (list: any[]): RenovationFeature[] => {
   if (!list) return [];
-  return list.map((item) => ({ icon: item.iconType || "star", title: item.title || "", desc: item.desc || "" }));
+  return list.map((item) => ({
+    icon: item.iconType || "star",
+    title: item.title || "",
+    desc: item.desc || "",
+  }));
 };
 
-export const getApplicationsPageData = async (): Promise<ApplicationPageData> => {
-  const data = await fetchAPI(`
+export const getApplicationsPageData =
+  async (): Promise<ApplicationPageData> => {
+    const data = await fetchAPI(`
     query GetApplicationOptions {
       applicationOptions {
         appData {
-          heroTitle, heroDesc
+          heroTitle
+          heroDesc
           spaces {
-            name, subtitle, description, image { node { sourceUrl } }
-            hotspots { xPos, yPos, label, desc, iconType }
-            stats { statLabel, statValue }
+            name
+            subtitle
+            description
+            image { node { sourceUrl } }
+            hotspots {
+              xPos, yPos, label, desc, iconType
+            }
+            stats {
+              statLabel, statValue
+            }
           }
-          renovationHeading, renovationDesc
+          renovationHeading
+          renovationDesc
           beforeImage { node { sourceUrl } }
           afterImage { node { sourceUrl } }
-          renovationFeatures { iconType, title, desc }
-          commHeading, commDesc, commLinkText, commLinkUrl 
-          commItems { title, desc, image { node { sourceUrl } } }
-          ctaHeading, ctaDesc, ctaBtnPrimary, ctaBtnSecondary
+          renovationFeatures {
+             iconType, title, desc
+          }
+          commHeading
+          commDesc
+          commLinkText
+          commLinkUrl 
+          commItems {
+            title, desc, image { node { sourceUrl } }
+          }
+          ctaHeading
+          ctaDesc
+          ctaBtnPrimary
+          ctaBtnSecondary
         }
       }
     }
-  `, {}, undefined, ['page-applications', 'options']);
+  `);
 
-  const acf = data?.applicationOptions?.appData || {};
-  const rawSpaces = acf.spaces || [];
+    const acf = data?.applicationOptions?.appData || {};
+    const rawSpaces = acf.spaces || [];
 
-  const spaces: ApplicationSpace[] = rawSpaces.map((item: any, index: number) => ({
-      id: `space-${index}`, name: item.name || "", title: item.subtitle || "", description: item.description || "",
-      image: item.image?.node?.sourceUrl || "", hotspots: mapHotspots(item.hotspots), stats: mapStats(item.stats),
-  }));
+    const spaces: ApplicationSpace[] = rawSpaces.map(
+      (item: any, index: number) => ({
+        id: `space-${index}`,
+        name: item.name || "",
+        title: item.subtitle || "",
+        description: item.description || "",
+        image: item.image?.node?.sourceUrl || "",
+        hotspots: mapHotspots(item.hotspots),
+        stats: mapStats(item.stats),
+      }),
+    );
 
-  return {
-    heroTitle: acf.heroTitle || "Nghệ Thuật Biến Hóa Không Gian",
-    heroDesc: acf.heroDesc || "", spaces,
-    renovationHeading: acf.renovationHeading || "Cải Tạo Thần Tốc",
-    renovationDesc: acf.renovationDesc || "Chứng kiến sự lột xác ngoạn mục...",
-    beforeImage: acf.beforeImage?.node?.sourceUrl || "",
-    afterImage: acf.afterImage?.node?.sourceUrl || "",
-    renovationFeatures: mapRenovationFeatures(acf.renovationFeatures),
-    commHeading: acf.commHeading || "Không Gian Thương Mại",
-    commDesc: acf.commDesc || "",
-    commLinkText: acf.commLinkText || "Xem dự án thực tế",
-    commLinkUrl: acf.commLinkUrl || "/du-an",
-    commItems: acf.commItems?.map((item: any) => ({
-        title: item.title || "", desc: item.desc || "", image: item.image?.node?.sourceUrl || "",
-    })) || [],
-    ctaHeading: acf.ctaHeading || "Bạn Đã Có Ý Tưởng?",
-    ctaDesc: acf.ctaDesc || "",
-    ctaBtnPrimary: acf.ctaBtnPrimary || "Đăng Ký Tư Vấn",
-    ctaBtnSecondary: acf.ctaBtnSecondary || "Xem Catalog",
+    return {
+      heroTitle: acf.heroTitle || "Nghệ Thuật Biến Hóa Không Gian",
+      heroDesc: acf.heroDesc || "",
+      spaces,
+      renovationHeading: acf.renovationHeading || "Cải Tạo Thần Tốc",
+      renovationDesc:
+        acf.renovationDesc || "Chứng kiến sự lột xác ngoạn mục...",
+      beforeImage: acf.beforeImage?.node?.sourceUrl || "",
+      afterImage: acf.afterImage?.node?.sourceUrl || "",
+      renovationFeatures: mapRenovationFeatures(acf.renovationFeatures),
+      commHeading: acf.commHeading || "Không Gian Thương Mại",
+      commDesc: acf.commDesc || "",
+      commLinkText: acf.commLinkText || "Xem dự án thực tế",
+      commLinkUrl: acf.commLinkUrl || "/du-an",
+      commItems:
+        acf.commItems?.map((item: any) => ({
+          title: item.title || "",
+          desc: item.desc || "",
+          image: item.image?.node?.sourceUrl || "",
+        })) || [],
+      ctaHeading: acf.ctaHeading || "Bạn Đã Có Ý Tưởng?",
+      ctaDesc: acf.ctaDesc || "",
+      ctaBtnPrimary: acf.ctaBtnPrimary || "Đăng Ký Tư Vấn",
+      ctaBtnSecondary: acf.ctaBtnSecondary || "Xem Catalog",
+    };
   };
-};
 
 const mapProductToItem = (node: any): any => {
   if (!node) return null;
-  const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, "")) : 0;
-  const formattedPrice = rawPrice > 0 ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(rawPrice) : "Liên hệ";
+  const rawPrice = node.price
+    ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
+    : 0;
+  const formattedPrice =
+    rawPrice > 0
+      ? new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(rawPrice)
+      : "Liên hệ";
   return {
-    name: node.name || "", price: formattedPrice, unit: "", link: `/product/${node.slug}`,
+    name: node.name || "",
+    price: formattedPrice,
+    unit: "",
+    link: `/product/${node.slug}`,
     image: node.image?.sourceUrl || "https://via.placeholder.com/300",
   };
 };
@@ -924,27 +979,39 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
     query GetPricingOptions {
       pricingOptions {
         pricingData {
-          heroTitle, heroDesc
+          heroTitle
+          heroDesc
           calculatorProduct {
             nodes {
               ... on Product {
-                id, name, slug, sku, image { sourceUrl }
+                id, name, slug, sku
+                image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
-                productSpecifications { length, width, thickness }
+                productSpecifications {
+                   length, width, thickness
+                }
               }
             }
           }
-          basePriceTurnkey, pkgHeading, pkgDesc
-          turnkeyPackages { name, price, unit, description, isPopular, styleType, features { text } }
+          basePriceTurnkey
+          pkgHeading, pkgDesc
+          turnkeyPackages {
+            name, price, unit, description, isPopular, styleType, features { text }
+          }
           stepsHeading, stepsDesc
-          constructionSteps { stepNumber, title, desc, icon }
-          commitments { icon, title, desc }
+          constructionSteps {
+            stepNumber, title, desc, icon
+          }
+          commitments {
+            icon, title, desc
+          }
           materialsHeading, materialsDesc
           materialProducts {
             nodes {
               ... on Product {
-                id, name, slug, image { sourceUrl }
+                id, name, slug
+                image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
               }
@@ -954,7 +1021,8 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
           accessoryItems {
             nodes {
               ... on Product {
-                id, name, slug, image { sourceUrl }
+                id, name, slug
+                image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
               }
@@ -965,20 +1033,40 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
         }
       }
     }
-  `, {}, undefined, ['page-pricing', 'products', 'options']);
+  `);
 
   const acf = data?.pricingOptions?.pricingData || {};
-  const mapFeatures = (list: any[]) => list?.map((item: any) => item.text || "") || [];
+  const mapFeatures = (list: any[]) =>
+    list?.map((item: any) => item.text || "") || [];
 
   const mapCalcProduct = (node: any): Product | null => {
     if (!node) return null;
-    const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, "")) : 0;
+    const rawPrice = node.price
+      ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
+      : 0;
     return {
-      id: node.id, databaseId: 0, slug: node.slug, name: node.name,
+      id: node.id,
+      databaseId: 0,
+      slug: node.slug,
+      name: node.name,
       image: { sourceUrl: node.image?.sourceUrl || "", altText: node.name },
       price: { amount: rawPrice, formatted: "" },
-      dimensions: { length: Number(node.productSpecifications?.length) || 0, width: Number(node.productSpecifications?.width) || 0, thickness: Number(node.productSpecifications?.thickness) || 0, area: 0 },
-      brand: "", origin: "", surface: "", warranty: "", description: "", shortDescription: "", galleryImages: [], stockStatus: "IN_STOCK", sku: node.sku || "", categories: [],
+      dimensions: {
+        length: Number(node.productSpecifications?.length) || 0,
+        width: Number(node.productSpecifications?.width) || 0,
+        thickness: Number(node.productSpecifications?.thickness) || 0,
+        area: 0,
+      },
+      brand: "",
+      origin: "",
+      surface: "",
+      warranty: "",
+      description: "",
+      shortDescription: "",
+      galleryImages: [],
+      stockStatus: "IN_STOCK",
+      sku: node.sku || "",
+      categories: [],
     };
   };
 
@@ -986,26 +1074,50 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
 
   return {
     heroTitle: acf.heroTitle || "Bảng Giá Niêm Yết 2024",
-    heroDesc: acf.heroDesc || "Công cụ tính toán giúp bạn hình dung chi phí sơ bộ...",
+    heroDesc:
+      acf.heroDesc || "Công cụ tính toán giúp bạn hình dung chi phí sơ bộ...",
     calculatorProduct: mapCalcProduct(calcProductNode),
     basePriceTurnkey: Number(acf.basePriceTurnkey) || 550000,
     pkgHeading: acf.pkgHeading || "1. Báo Giá Thi Công Trọn Gói",
     pkgDesc: acf.pkgDesc || "Giải pháp tối ưu nhất cho khách hàng bận rộn...",
-    turnkeyPackages: acf.turnkeyPackages?.map((pkg: any, idx: number) => ({
-        id: idx, name: pkg.name || "", price: pkg.price || "", unit: pkg.unit || "đ/m2", description: pkg.description || "",
-        isPopular: pkg.isPopular || false, styleType: pkg.styleType || "standard", features: mapFeatures(pkg.features),
+    turnkeyPackages:
+      acf.turnkeyPackages?.map((pkg: any, idx: number) => ({
+        id: idx,
+        name: pkg.name || "",
+        price: pkg.price || "",
+        unit: pkg.unit || "đ/m2",
+        description: pkg.description || "",
+        isPopular: pkg.isPopular || false,
+        styleType: pkg.styleType || "standard",
+        features: mapFeatures(pkg.features),
       })) || [],
     stepsHeading: acf.stepsHeading || "Quy Trình Thi Công",
     stepsDesc: acf.stepsDesc || "Sự chuyên nghiệp tạo nên chất lượng...",
-    constructionSteps: acf.constructionSteps?.map((step: any) => ({ step: step.stepNumber || `0${step + 1}`, title: step.title || "", desc: step.desc || "", icon: step.icon || "default" })) || [],
-    commitments: acf.commitments?.map((cm: any) => ({ icon: cm.icon || "thumbsup", title: cm.title || "", desc: cm.desc || "" })) || [],
+    constructionSteps:
+      acf.constructionSteps?.map((step: any) => ({
+        step: step.stepNumber || `0${step + 1}`,
+        title: step.title || "",
+        desc: step.desc || "",
+        icon: step.icon || "default",
+      })) || [],
+    commitments:
+      acf.commitments?.map((cm: any) => ({
+        icon: cm.icon || "thumbsup",
+        title: cm.title || "",
+        desc: cm.desc || "",
+      })) || [],
     materialsHeading: acf.materialsHeading || "2. Báo Giá Vật Tư Lẻ",
-    materialsDesc: acf.materialsDesc || "Mua vật liệu chính hãng giá tại kho...",
+    materialsDesc:
+      acf.materialsDesc || "Mua vật liệu chính hãng giá tại kho...",
     materialItems: acf.materialProducts?.nodes?.map(mapProductToItem) || [],
     accHeading: acf.accHeading || "3. Phụ Kiện Thi Công",
     accDesc: acf.accDesc || "Các vật tư phụ cần thiết...",
     accessoryItems: acf.accessoryItems?.nodes?.map(mapProductToItem) || [],
-    faqs: acf.faqs?.map((f: any) => ({ question: f.question || "", answer: f.answer || "" })) || [],
+    faqs:
+      acf.faqs?.map((f: any) => ({
+        question: f.question || "",
+        answer: f.answer || "",
+      })) || [],
     ctaHeading: acf.ctaHeading || "Bạn Vẫn Còn Phân Vân?",
     ctaDesc: acf.ctaDesc || "Đừng lo lắng. Hãy để chuyên gia kỹ thuật hỗ trợ.",
   };
@@ -1026,7 +1138,7 @@ export const getContactPageData = async (): Promise<ContactPageData> => {
         }
       }
     }
-  `, {}, undefined, ['page-contact', 'options']);
+  `);
 
   const acf = data?.contactOptions?.contactData || {};
 
@@ -1034,119 +1146,62 @@ export const getContactPageData = async (): Promise<ContactPageData> => {
     heroTitle: acf.heroTitle || 'Liên Hệ Với Chúng Tôi',
     heroDesc: acf.heroDesc || 'Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn.',
     heroImage: acf.heroImage?.node?.sourceUrl || 'https://via.placeholder.com/1920x600',
+    
     info: {
-      address: acf.address || 'Đang cập nhật địa chỉ...', hotline: acf.hotline || '0912.345.678', email: acf.email || 'info@domain.com',
-      workingHours: acf.workingHours || 'Thứ 2 - Thứ 7: 8:00 - 17:30', zaloUrl: acf.zaloUrl || '#', facebookUrl: acf.facebookUrl || '#'
+      address: acf.address || 'Đang cập nhật địa chỉ...',
+      hotline: acf.hotline || '0912.345.678',
+      email: acf.email || 'info@domain.com',
+      workingHours: acf.workingHours || 'Thứ 2 - Thứ 7: 8:00 - 17:30',
+      zaloUrl: acf.zaloUrl || '#',
+      facebookUrl: acf.facebookUrl || '#'
     },
+    
     mapUrl: acf.mapEmbedUrl || '',
-    form: { heading: acf.formHeading || 'Gửi Tin Nhắn', desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.' },
-    formConfig: {
-        heading: acf.formHeading || 'Gửi Tin Nhắn', desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.',
-        namePlaceholder: acf.namePlaceholder || 'Nguyễn Văn A', phonePlaceholder: acf.phonePlaceholder || '0912 xxx xxx', emailPlaceholder: acf.emailPlaceholder || 'example@gmail.com', messagePlaceholder: acf.messagePlaceholder || 'Nội dung cần tư vấn...',
-        btnText: acf.btnText || 'Gửi Yêu Cầu', successTitle: acf.successTitle || 'Gửi thành công!', successMessage: acf.successMessage || 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.',
-        topics: acf.topics?.map((t: any) => ({ value: t.value || 'general', label: t.label || 'Tư vấn chung' })) || [{ value: 'advice', label: 'Tư vấn sản phẩm' }]
-      },
-    faqsContact: acf.faqsContact?.map((item: any) => ({ question: item.question || '', answer: item.answer || '' })) || []
-  };
-};
 
-export const getHeaderData = async (): Promise<HeaderData> => {
-  const data = await fetchAPI(`
-    query GetHeaderOptions {
-      headerFooterOptions {
-        headerData {
-          logo { node { sourceUrl } }
-          topBarText, hotline
-          navItems { title, link }
-          megaMenu {
-            col1Title
-            col1Items { categoryLink { nodes { name, slug } }, customTitle, desc, icon, color }
-            col2Title
-            col2Items { categoryLink { nodes { name, slug } }, customTitle, desc, icon, color }
-            quickLinks { title, link }
-            banner { image { node { sourceUrl } }, badgeText, title, desc, linkText, linkUrl }
-          }
-        }
-      }
-    }
-  `, {}, undefined, ['header', 'global-options']);
-
-  const acf = data?.headerFooterOptions?.headerData || {};
-  const megaMenu = acf.megaMenu || {};
-
-  const mapItems = (items: any[]) => {
-    if (!items) return [];
-    return items.map((item: any) => {
-      const catNode = item.categoryLink?.nodes?.[0];
-      return {
-        title: item.customTitle || catNode?.name || "Đang cập nhật...", slug: catNode?.slug || "",
-        desc: item.desc || "", icon: item.icon || "Box", color: item.color || "text-slate-600 bg-slate-50"
-      };
-    });
-  };
-
-  return {
-    logo: acf.logo?.node?.sourceUrl || "/images/default-logo.png",
-    topBarText: acf.topBarText || "", hotline: acf.hotline || "0909.xxx.xxx",
-    navItems: acf.navItems?.map((item: any) => ({ title: item.title || "", link: item.link || "/" })) || [],
-    megaMenu: {
-      col1: { title: megaMenu.col1Title || "Vật Liệu Chính", items: mapItems(megaMenu.col1Items) },
-      col2: { title: megaMenu.col2Title || "Phụ Kiện & Khác", items: mapItems(megaMenu.col2Items) },
-      quickLinks: megaMenu.quickLinks?.map((item: any) => ({ title: item.title || "", link: item.link || "#" })) || [],
-      banner: {
-        image: megaMenu.banner?.image?.node?.sourceUrl || "https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=800&auto=format&fit=crop",
-        badge: megaMenu.banner?.badgeText || "New Collection", title: megaMenu.banner?.title || "Vẻ Đẹp Vượt Thời Gian",
-        desc: megaMenu.banner?.desc || "Khám phá bộ sưu tập mới nhất.", linkText: megaMenu.banner?.linkText || "Xem Ngay", linkUrl: megaMenu.banner?.linkUrl || "/shop"
-      }
-    }
-  };
-};
-
-export const getFooterData = async (): Promise<FooterData> => {
-  const data = await fetchAPI(`
-    query GetFooterOptions {
-      headerFooterOptions {
-        footerSettings {
-          footerData {
-            trustBadges { icon, title, desc }
-            companyInfo { logoText, desc, address, phone, email }
-            shopCategories { title, links { title, url, badge, badgeColor } }
-            customerService { title, links { title, url } }
-            socialLinks { facebook, instagram, youtube }
-            bottomBar { copyright, links { title, url } }
-          }
-        }
-      }
-    }
-  `, {}, undefined, ['footer', 'global-options']);
-
-  const acf = data?.headerFooterOptions?.footerSettings?.footerData || {};
-
-  return {
-    trustBadges: acf.trustBadges || [
-      { icon: 'Truck', title: 'Giao hàng toàn quốc', desc: 'Hỗ trợ vận chuyển tận nơi' },
-      { icon: 'ShieldCheck', title: 'Bảo hành 15 năm', desc: 'Cam kết chất lượng vật liệu' },
-      { icon: 'CreditCard', title: 'Thanh toán linh hoạt', desc: 'Đa dạng phương thức' },
-      { icon: 'Headphones', title: 'Hỗ trợ 24/7', desc: 'Tư vấn kỹ thuật thi công' }
-    ],
-    companyInfo: {
-      logoText: acf.companyInfo?.logoText || 'ĐẠI NAM WALL', desc: acf.companyInfo?.desc || 'Tổng kho phân phối vật liệu ốp tường cao cấp...', address: acf.companyInfo?.address || '123 Đ. Nguyễn Văn Linh, Q. Long Biên, Hà Nội', phone: acf.companyInfo?.phone || '0912.345.678', email: acf.companyInfo?.email || 'sale@dainamwall.com',
+    // [FIX LỖI] Thêm thuộc tính 'form' còn thiếu
+    form: {
+      heading: acf.formHeading || 'Gửi Tin Nhắn',
+      desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.',
     },
-    shopCategories: { title: acf.shopCategories?.title || 'Danh mục mua sắm', links: acf.shopCategories?.links || [] },
-    customerService: { title: acf.customerService?.title || 'Hỗ trợ dịch vụ', links: acf.customerService?.links || [] },
-    socialLinks: { facebook: acf.socialLinks?.facebook || '#', instagram: acf.socialLinks?.instagram || '#', youtube: acf.socialLinks?.youtube || '#' },
-    bottomBar: { copyright: acf.bottomBar?.copyright || 'Công ty TNHH Đại Nam Wall.', links: acf.bottomBar?.links || [] }
+
+    formConfig: {
+        heading: acf.formHeading || 'Gửi Tin Nhắn',
+        desc: acf.formDesc || 'Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại ngay.',
+        namePlaceholder: acf.namePlaceholder || 'Nguyễn Văn A',
+        phonePlaceholder: acf.phonePlaceholder || '0912 xxx xxx',
+        emailPlaceholder: acf.emailPlaceholder || 'example@gmail.com',
+        messagePlaceholder: acf.messagePlaceholder || 'Nội dung cần tư vấn...',
+        btnText: acf.btnText || 'Gửi Yêu Cầu',
+        successTitle: acf.successTitle || 'Gửi thành công!',
+        successMessage: acf.successMessage || 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.',
+        topics: acf.topics?.map((t: any) => ({
+            value: t.value || 'general',
+            label: t.label || 'Tư vấn chung'
+        })) || [
+            { value: 'advice', label: 'Tư vấn sản phẩm' }
+        ]
+      },
+
+    faqsContact: acf.faqsContact?.map((item: any) => ({
+        question: item.question || '',
+        answer: item.answer || ''
+    })) || []
   };
 };
 
-
-// --- 6. MUTATIONS & CART ---
-
-export const submitContactForm = async (formData: { name: string; phone: string; email: string; topic: string; message: string; }) => {
+export const submitContactForm = async (formData: {
+  name: string;
+  phone: string;
+  email: string;
+  topic: string;
+  message: string;
+}) => {
   const restBaseUrl = API_URL.replace("/graphql", "/wp-json/dainam/v1/contact");
   try {
     const res = await fetch(restBaseUrl, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || "Lỗi khi gửi form");
@@ -1163,8 +1218,14 @@ mutation AddToCart($productId: Int!, $quantity: Int!) {
     cart {
       contents {
         nodes {
-          key, quantity
-          product { node { name, databaseId } }
+          key
+          quantity
+          product {
+            node {
+              name
+              databaseId
+            }
+          }
         }
       }
     }
@@ -1175,39 +1236,62 @@ mutation AddToCart($productId: Int!, $quantity: Int!) {
 const CHECKOUT_MUTATION = `
 mutation Checkout($input: CheckoutInput!) {
   checkout(input: $input) {
-    result, redirect
-    order { databaseId, orderNumber, status, total }
+    result
+    redirect
+    order {
+      databaseId
+      orderNumber
+      status
+      total
+    }
   }
 }
 `;
 
-const getSession = () => { if (typeof window !== 'undefined') return localStorage.getItem('woo-session'); return null; };
-const setSession = (token: string) => { if (typeof window !== 'undefined' && token) localStorage.setItem('woo-session', token); };
+// --- QUẢN LÝ SESSION ---
+const getSession = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('woo-session');
+  }
+  return null;
+};
 
+const setSession = (token: string) => {
+  if (typeof window !== 'undefined' && token) {
+    localStorage.setItem('woo-session', token);
+  }
+};
+
+// --- HÀM GỌI API CHO CART/CHECKOUT ---
 const fetchGraphQL = async (query: string, variables: any = {}) => {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { 
+    "Content-Type": "application/json" 
+  };
+  
+  // 1. Gửi Session Token đi (nếu đã có)
   const session = getSession();
-  if (session) headers['woocommerce-session'] = `Session ${session}`;
+  if (session) {
+    headers['woocommerce-session'] = `Session ${session}`;
+  }
 
   const res = await fetch(API_URL, {
-    method: "POST", headers, body: JSON.stringify({ query, variables }),
-    credentials: "include", cache: "no-store", 
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query, variables }),
+    credentials: "include", // Quan trọng để xử lý cookie nếu server dùng cookie
+    cache: "no-store",
   });
 
+  // 2. Lấy Session Token mới từ Server trả về (nếu có) và lưu lại
+  // Lưu ý: Tên header có thể là 'woocommerce-session' hoặc 'x-woocommerce-session' tùy server
   const newSession = res.headers.get('woocommerce-session') || res.headers.get('x-woocommerce-session');
-  if (newSession) setSession(newSession);
+  
+  if (newSession) {
+    setSession(newSession);
+  }
 
   return res.json();
 };
-
-// Thêm mutation này vào phần khai báo đầu file hoặc ngay trên createOrder
-const EMPTY_CART_MUTATION = `
-mutation EmptyCart {
-  emptyCart(input: { clearPersistentCart: true }) {
-    cart { isEmpty }
-  }
-}
-`;
 
 export const createOrder = async (
   formData: {
@@ -1229,31 +1313,21 @@ export const createOrder = async (
       firstName = fullName.substring(0, lastSpaceIndex);
       lastName = fullName.substring(lastSpaceIndex + 1);
     }
-    console.log("🛒 Bắt đầu quá trình đồng bộ giỏ hàng...");
+    console.log("🛒 Bắt đầu thêm vào giỏ hàng...");
 
-    // 1. [QUAN TRỌNG] Xóa sạch giỏ hàng trên Server WP trước để tránh rác từ phiên cũ
-    await fetchGraphQL(EMPTY_CART_MUTATION);
-
-    // 2. [FIX RACE CONDITION] Thêm sản phẩm TUẦN TỰ (Dùng for...of thay vì Promise.all)
     for (const item of cartItems) {
       const pId = Number(item.databaseId);
       if (!pId || isNaN(pId)) continue;
-      
-      console.log(`Đang thêm sản phẩm ID: ${pId} - SL: ${item.quantity}`);
-      
       const res = await fetchGraphQL(ADD_TO_CART_MUTATION, {
         productId: pId,
         quantity: item.quantity,
       });
-
-      // Nếu có lỗi ở 1 sản phẩm, báo ra ngay
-      if (res && res.errors) {
-        console.error("❌ AddToCart Error:", res.errors);
+      if (res.errors) {
+        console.error("AddToCart Error:", res.errors);
         return { success: false, message: res.errors[0].message };
       }
     }
 
-    // 3. Chuẩn bị dữ liệu Checkout
     const checkoutInput = {
       clientMutationId: `order_${Date.now()}`,
       paymentMethod: formData.paymentMethod || "cod",
@@ -1277,8 +1351,6 @@ export const createOrder = async (
       customerNote: formData.note,
     };
 
-    // 4. Tiến hành Checkout
-    console.log("💳 Bắt đầu thanh toán...");
     const data = await fetchGraphQL(CHECKOUT_MUTATION, {
       input: checkoutInput,
     });
@@ -1301,4 +1373,164 @@ export const createOrder = async (
         (error instanceof Error ? error.message : String(error)),
     };
   }
+};
+
+
+//header
+import { HeaderData, NavItem } from "../types";
+
+export const getHeaderData = async (): Promise<HeaderData> => {
+  const data = await fetchAPI(`
+    query GetHeaderOptions {
+      headerFooterOptions {
+        headerData {
+          logo { node { sourceUrl } }
+          topBarText
+          hotline
+          navItems { title, link }
+          
+          # Tất cả được bọc trong group megaMenu
+          megaMenu {
+            col1Title
+            col1Items {
+              categoryLink { nodes { name, slug } }
+              customTitle, desc, icon, color
+            }
+            
+            col2Title
+            col2Items {
+              categoryLink { nodes { name, slug } }
+              customTitle, desc, icon, color
+            }
+            
+            quickLinks { title, link }
+            
+            banner {
+              image { node { sourceUrl } }
+              badgeText, title, desc, linkText, linkUrl
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  const acf = data?.headerFooterOptions?.headerData || {};
+  const megaMenu = acf.megaMenu || {}; // Lấy ra group megaMenu
+
+  const mapItems = (items: any[]) => {
+    if (!items) return [];
+    return items.map((item: any) => {
+      const catNode = item.categoryLink?.nodes?.[0];
+      return {
+        title: item.customTitle || catNode?.name || "Đang cập nhật...",
+        slug: catNode?.slug || "",
+        desc: item.desc || "",
+        icon: item.icon || "Box",
+        color: item.color || "text-slate-600 bg-slate-50"
+      };
+    });
+  };
+
+  return {
+    logo: acf.logo?.node?.sourceUrl || "/images/default-logo.png",
+    topBarText: acf.topBarText || "",
+    hotline: acf.hotline || "0909.xxx.xxx",
+    navItems: acf.navItems?.map((item: any) => ({
+      title: item.title || "",
+      link: item.link || "/",
+    })) || [],
+    
+    // Gộp tất cả vào megaMenu
+    megaMenu: {
+      col1: {
+        title: megaMenu.col1Title || "Vật Liệu Chính",
+        items: mapItems(megaMenu.col1Items)
+      },
+      col2: {
+        title: megaMenu.col2Title || "Phụ Kiện & Khác",
+        items: mapItems(megaMenu.col2Items)
+      },
+      quickLinks: megaMenu.quickLinks?.map((item: any) => ({
+        title: item.title || "",
+        link: item.link || "#"
+      })) || [],
+      banner: {
+        image: megaMenu.banner?.image?.node?.sourceUrl || "https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=800&auto=format&fit=crop",
+        badge: megaMenu.banner?.badgeText || "New Collection",
+        title: megaMenu.banner?.title || "Vẻ Đẹp Vượt Thời Gian",
+        desc: megaMenu.banner?.desc || "Khám phá bộ sưu tập mới nhất.",
+        linkText: megaMenu.banner?.linkText || "Xem Ngay",
+        linkUrl: megaMenu.banner?.linkUrl || "/shop"
+      }
+    }
+  };
+};
+
+import { FooterData } from "../types";
+
+// Cập nhật hàm getFooterData trong src/services/wpService.ts
+export const getFooterData = async (): Promise<FooterData> => {
+  const data = await fetchAPI(`
+    query GetFooterOptions {
+      headerFooterOptions {
+        # Thêm lớp bọc footerSettings (Tên của Field Group)
+        footerSettings {
+          footerData {
+            trustBadges { icon, title, desc }
+            companyInfo { logoText, desc, address, phone, email }
+            shopCategories {
+              title
+              links { title, url, badge, badgeColor }
+            }
+            customerService {
+              title
+              links { title, url }
+            }
+            socialLinks { facebook, instagram, youtube }
+            bottomBar {
+              copyright
+              links { title, url }
+            }
+          }
+        }
+      }
+    }
+  `);
+
+  // Truy cập sâu thêm một tầng vào footerSettings
+  const acf = data?.headerFooterOptions?.footerSettings?.footerData || {};
+
+  return {
+    trustBadges: acf.trustBadges || [
+      { icon: 'Truck', title: 'Giao hàng toàn quốc', desc: 'Hỗ trợ vận chuyển tận nơi' },
+      { icon: 'ShieldCheck', title: 'Bảo hành 15 năm', desc: 'Cam kết chất lượng vật liệu' },
+      { icon: 'CreditCard', title: 'Thanh toán linh hoạt', desc: 'Đa dạng phương thức' },
+      { icon: 'Headphones', title: 'Hỗ trợ 24/7', desc: 'Tư vấn kỹ thuật thi công' }
+    ],
+    companyInfo: {
+      logoText: acf.companyInfo?.logoText || 'ĐẠI NAM WALL',
+      desc: acf.companyInfo?.desc || 'Tổng kho phân phối vật liệu ốp tường cao cấp...',
+      address: acf.companyInfo?.address || '123 Đ. Nguyễn Văn Linh, Q. Long Biên, Hà Nội',
+      phone: acf.companyInfo?.phone || '0912.345.678',
+      email: acf.companyInfo?.email || 'sale@dainamwall.com',
+    },
+    shopCategories: {
+      title: acf.shopCategories?.title || 'Danh mục mua sắm',
+      links: acf.shopCategories?.links || []
+    },
+    customerService: {
+      title: acf.customerService?.title || 'Hỗ trợ dịch vụ',
+      links: acf.customerService?.links || []
+    },
+    socialLinks: {
+      facebook: acf.socialLinks?.facebook || '#',
+      instagram: acf.socialLinks?.instagram || '#',
+      youtube: acf.socialLinks?.youtube || '#',
+    },
+    bottomBar: {
+      copyright: acf.bottomBar?.copyright || 'Công ty TNHH Đại Nam Wall.',
+      links: acf.bottomBar?.links || []
+    }
+  };
 };

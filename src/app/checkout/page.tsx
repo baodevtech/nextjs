@@ -1,15 +1,15 @@
+// src/app/checkout/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Trash2, Send, CheckCircle, ShieldCheck, Phone, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Send, CheckCircle, ShieldCheck, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/common/UI';
-import { createOrder } from '@/services/wpService'; // Import service
+import { createOrder } from '@/services/wpService';
 
 export default function CheckoutPage() {
-    // Lấy thêm clearCart
-    const { cart, cartTotal, removeFromCart, clearCart } = useCart();
+    const { cart, cartTotal, removeFromCart, clearCart, isMounted } = useCart();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [orderInfo, setOrderInfo] = useState<{ id: string, total: string } | null>(null);
@@ -23,7 +23,16 @@ export default function CheckoutPage() {
         note: ''
     });
 
-    // Nếu giỏ hàng trống và chưa đặt thành công -> Hiện màn hình trống
+    // 1. [TỐI ƯU] Tránh lỗi chớp màn hình khi Server Render (Hydration Mismatch)
+    if (!isMounted) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+            </div>
+        );
+    }
+
+    // 2. Nếu giỏ hàng trống và chưa đặt thành công -> Hiện màn hình trống
     if (cart.length === 0 && !isSuccess) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-center px-4">
@@ -41,10 +50,17 @@ export default function CheckoutPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Kiểm tra an toàn lỡ khách sửa HTML bypass giỏ hàng trống
+        if (cart.length === 0) {
+            setErrorMsg('Giỏ hàng của bạn đang trống.');
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMsg('');
 
-        // Gọi hàm tạo đơn hàng thật
+        // Gọi hàm tạo đơn hàng đã được tối ưu Promise.all từ bước trước
         const result = await createOrder(formData, cart);
 
         setIsSubmitting(false);
@@ -55,7 +71,7 @@ export default function CheckoutPage() {
                 total: result.order.total
             });
             setIsSuccess(true);
-            clearCart(); // Xóa giỏ hàng sau khi thành công
+            clearCart(); 
         } else {
             setErrorMsg(result.message || 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.');
         }
@@ -81,7 +97,7 @@ export default function CheckoutPage() {
                     Nhân viên kinh doanh sẽ liên hệ qua số <strong>{formData.phone}</strong> để xác nhận đơn hàng và lịch giao hàng.
                 </p>
                 
-                <div className="flex gap-4">
+                <div className="flex gap-4 justify-center">
                     <Link href="/">
                         <Button variant="outline">Về Trang Chủ</Button>
                     </Link>
@@ -114,8 +130,9 @@ export default function CheckoutPage() {
                             </h2>
                             
                             {errorMsg && (
-                                <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
-                                    <AlertCircle size={16}/> {errorMsg}
+                                <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100 animate-fade-in">
+                                    <AlertCircle size={16} className="shrink-0"/> 
+                                    <span>{errorMsg}</span>
                                 </div>
                             )}
 
@@ -217,6 +234,7 @@ export default function CheckoutPage() {
                                                     : 'Liên hệ'}
                                             </p>
                                             <button 
+                                                type="button"
                                                 onClick={() => removeFromCart(item.id)}
                                                 className="text-xs text-red-500 hover:text-red-700 mt-1 font-medium"
                                             >
@@ -243,13 +261,22 @@ export default function CheckoutPage() {
                                 <p className="text-xs text-slate-400 italic text-right">Giá đã bao gồm VAT (nếu có)</p>
                             </div>
 
+                            {/* [TỐI ƯU] Trỏ thẳng tới form thay vì dùng dispatchEvent */}
                             <Button 
-                                fullWidth 
-                                onClick={() => document.getElementById('checkout-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
+                                type="submit"
+                                form="checkout-form"
                                 disabled={isSubmitting}
-                                className="mt-8 h-14 text-base shadow-lg shadow-brand-500/20"
+                                className="w-full mt-8 h-14 text-base shadow-lg shadow-brand-500/20"
                             >
-                                {isSubmitting ? 'Đang xử lý...' : <span className="flex items-center gap-2">Đặt Hàng Ngay <Send size={18}/></span>}
+                                {isSubmitting ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="animate-spin" size={18} /> Đang xử lý...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        Đặt Hàng Ngay <Send size={18}/>
+                                    </span>
+                                )}
                             </Button>
 
                             <div className="mt-6 pt-6 border-t border-gray-100 text-center">

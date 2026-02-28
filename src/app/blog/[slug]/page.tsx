@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, Facebook, Twitter, Linkedin, Share2, Tag, ChevronRight } from 'lucide-react';
-import { getPostBySlug, getAllPosts } from '@/services/wpService';
+import { getPostBySlug, getAllPosts, getRelatedPosts } from '@/services/wpService';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 
 interface Props {
@@ -55,10 +55,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
   if (!post) notFound();
 
-  const allPosts = await getAllPosts();
-  const relatedPosts = allPosts
-    .filter(p => p.id !== post.id && p.category === post.category)
-    .slice(0, 2);
+  const relatedPosts = await getRelatedPosts(post.category, post.id, 2);
 
   const { processedContent, toc } = processContentWithTOC(post.content);
 
