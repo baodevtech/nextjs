@@ -6,6 +6,10 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'via.placeholder.com' },
       { protocol: 'https', hostname: 'portal.khopanel.com' },
+       {
+    protocol: 'https',
+    hostname: 'images.unsplash.com',
+  },
     ],
     minimumCacheTTL: 60,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
