@@ -1,3 +1,4 @@
+// src/components/home/sections/HeroSection.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -8,7 +9,6 @@ import { Button } from '@/components/common/UI';
 import { LuxuryHotspotV2 } from './LuxuryHotspotV2';
 import { HeroSlide } from '@/types';
 
-// Dữ liệu mẫu (Fallback)
 const DEFAULT_SLIDES: HeroSlide[] = [
     {
         id: 1,
@@ -29,25 +29,20 @@ interface HeroSectionProps {
 export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
     const dataToRender = slides.length > 0 ? slides : DEFAULT_SLIDES;
 
-    // --- STATE ---
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
     
-    // State Mobile
     const [showInfo, setShowInfo] = useState(false); 
     const [activeHotspotIndex, setActiveHotspotIndex] = useState<number | null>(null);
 
-    // Swipe Logic
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const minSwipeDistance = 50;
 
-    // Refs
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const parallaxRef = useRef<HTMLDivElement>(null);
     const requestRef = useRef<number | null>(null);
 
-    // --- ACTIONS ---
     const nextSlide = useCallback(() => {
         if (isAnimating) return;
         setIsAnimating(true);
@@ -69,8 +64,6 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
         setTimeout(() => setIsAnimating(false), 1000);
     };
 
-    // --- EFFECTS ---
-    // 1. Parallax (Desktop Only)
     useEffect(() => {
         if (window.innerWidth < 768) return;
 
@@ -93,7 +86,6 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
         };
     }, []);
 
-    // 2. Auto Slide
     useEffect(() => {
         setActiveHotspotIndex(null); 
         setShowInfo(false);
@@ -108,7 +100,6 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
         };
     }, [currentSlide, nextSlide]);
 
-    // --- SWIPE HANDLERS ---
     const onTouchStart = (e: React.TouchEvent) => {
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
@@ -135,10 +126,8 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
         >
-            {/* ==============================================
-                MOBILE LAYOUT
-               ============================================== */}
-            <div className="md:hidden w-full px-3 pt-3 pb-0">
+            {/* MOBILE LAYOUT */}
+            <div className="md:hidden w-full px-3 pt-3 pb-0" aria-hidden="true">
                 <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md shadow-amber-900/5 ring-1 ring-slate-900/5 bg-slate-900">
                     
                     {dataToRender.map((slide, idx) => (
@@ -146,13 +135,10 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                             key={`mobile-${slide.id}`}
                             className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                         >
-                            {/* TỐI ƯU LCP MOBILE: 
-                                - sizes: Chỉ load ảnh này nếu màn hình < 768px.
-                                - priority: Chỉ preload ảnh đầu tiên.
-                            */}
+                            {/* TỐI ƯU SEO: Fix thuộc tính alt loại bỏ khoảng trắng dư thừa do \n */}
                             <Image 
                                 src={slide.image} 
-                                alt={slide.title} 
+                                alt={slide.title.replace(/\n/g, ' ')} 
                                 fill
                                 className="object-cover object-center" 
                                 sizes="(max-width: 768px) 100vw, 1px"
@@ -161,21 +147,14 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                             
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-95"></div>
 
-                            {/* Mobile Hotspots */}
                             <div className={`absolute inset-0 z-20 transition-opacity duration-300 ${showInfo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                                {currentSlide === idx && slide.hotspots?.map((hotspot, hIdx) => (
-                                    <LuxuryHotspotV2
-                                        key={hIdx}
-                                        data={hotspot}
-                                        isVisible={true}
-                                        delayIndex={hIdx}
-                                    />
+                                    <LuxuryHotspotV2 key={hIdx} data={hotspot} isVisible={true} delayIndex={hIdx} />
                                 ))}
                             </div>
                         </div>
                     ))}
 
-                    {/* Controls Mobile (Giữ nguyên) */}
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-16 z-30 flex flex-col items-center justify-between py-1.5 bg-black/20 backdrop-blur-sm border border-white/10 rounded-full shadow-sm">
                         <span className="text-[7px] font-bold text-white font-mono leading-none">0{currentSlide + 1}</span>
                         <div className="w-[1px] h-full bg-gradient-to-b from-transparent via-white/40 to-transparent my-1"></div>
@@ -183,7 +162,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                     </div>
 
                     <div className="absolute top-2.5 right-2.5 z-30">
-                        <Link href="/projects">
+                        <Link href="/projects" aria-label="Xem dự án">
                             <button className="w-7 h-7 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:bg-white hover:text-black transition-all active:scale-95 shadow-sm">
                                 <PlayCircle size={12} strokeWidth={1.5} />
                             </button>
@@ -202,7 +181,8 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                                         </div>
                                         <span className="text-amber-400 text-[7px] font-bold uppercase tracking-widest mb-0.5 opacity-90">{slide.subtitle}</span>
                                         <div className="flex items-center gap-1.5">
-                                            <h1 className="text-sm font-bold text-white leading-none drop-shadow-sm truncate">{slide.title.replace('\n', ' ')}</h1>
+                                            {/* TỐI ƯU SEO: Đổi thẻ H1 thành div để tránh vi phạm cấu trúc Heading của trang */}
+                                            <div className="text-sm font-bold text-white leading-none drop-shadow-sm truncate">{slide.title.replace(/\n/g, ' ')}</div>
                                             <button onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }} className={`shrink-0 w-4 h-4 rounded-full border border-white/30 flex items-center justify-center transition-all ${showInfo ? 'bg-white text-black border-white' : 'bg-transparent text-white/80 hover:bg-white/20'}`}>
                                                 {showInfo ? <X size={8} /> : <Info size={8} />}
                                             </button>
@@ -213,7 +193,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                            <Link href={dataToRender[currentSlide].ctaLink || '/shop'}>
+                            <Link href={dataToRender[currentSlide].ctaLink || '/shop'} aria-label="Vào cửa hàng">
                                 <button className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition-transform relative group">
                                     <ShoppingBag size={12} strokeWidth={2} />
                                 </button>
@@ -232,19 +212,17 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                 </div>
             </div>
 
-            {/* ==============================================
-                DESKTOP LAYOUT
-               ============================================== */}
+            {/* DESKTOP LAYOUT */}
             <div className="hidden md:block absolute inset-0 w-full h-full">
                 <div ref={parallaxRef} className="absolute -top-[10%] left-0 w-full h-[120%] pointer-events-none z-0 will-change-transform">
                     {dataToRender.map((slide, idx) => (
                         <div key={`desktop-${slide.id}`} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
                             <div className={`absolute inset-0 transform transition-transform duration-[10000ms] ease-linear ${currentSlide === idx ? 'scale-110' : 'scale-100'}`}>
-                                {/* TỐI ƯU LCP DESKTOP:
-                                    - sizes: Ngược lại với mobile. Nếu màn hình < 768px (Mobile), ảnh này coi như 1px (ko tải).
-                                */}
+                                {/* TỐI ƯU SEO: Fix Alt Text */}
                                 <Image
-                                    src={slide.image} alt={slide.title} fill 
+                                    src={slide.image} 
+                                    alt={slide.title.replace(/\n/g, ' ')} 
+                                    fill 
                                     sizes="(min-width: 768px) 100vw, 1px"
                                     priority={idx === 0}
                                     className="object-cover"
@@ -258,7 +236,6 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                     ))}
                 </div>
 
-                {/* Content Overlay */}
                 <div className="absolute inset-0 z-20 flex items-center px-6 sm:px-12 lg:px-20 pointer-events-none">
                     <div className="max-w-4xl w-full pointer-events-auto">
                         {dataToRender.map((slide, idx) => (
@@ -267,7 +244,10 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                                     <span className="w-12 h-[2px] bg-amber-400 inline-block"></span>
                                     <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-sm animate-slide-in-right">{slide.subtitle}</span>
                                 </div>
-                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight whitespace-pre-line drop-shadow-2xl">{slide.title}</h1>
+                                {/* TỐI ƯU SEO: Đổi thẻ H1 thành div (tránh duplicate H1 trên trang) */}
+                                <div className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight whitespace-pre-line drop-shadow-2xl">
+                                    {slide.title}
+                                </div>
                                 <p className="text-slate-200 text-lg font-light max-w-lg mb-10 leading-relaxed opacity-90 border-l border-white/20 pl-6">{slide.description}</p>
                                 <div className="flex items-center gap-6">
                                     <Link href={slide.ctaLink}>
@@ -295,24 +275,22 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                         </div>
                         <div className="flex gap-3">
                             {dataToRender.map((_, idx) => (
-                                <button key={idx} onClick={() => goToSlide(idx)} className={`h-1 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-16 bg-amber-400' : 'w-4 bg-white/20 hover:bg-white/50'}`}/>
+                                <button key={idx} aria-label={`Chuyển đến slide ${idx + 1}`} onClick={() => goToSlide(idx)} className={`h-1 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-16 bg-amber-400' : 'w-4 bg-white/20 hover:bg-white/50'}`}/>
                             ))}
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-6">
-                        <button onClick={prevSlide} className="w-14 h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all"><ChevronLeft size={24}/></button>
+                        <button aria-label="Slide trước" onClick={prevSlide} className="w-14 h-14 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all"><ChevronLeft size={24}/></button>
                         
-                        {/* Next Slide Preview - TỐI ƯU HÓA */}
                         <div onClick={nextSlide} className="group relative w-48 h-32 rounded-xl overflow-hidden cursor-pointer border border-white/20 hover:border-amber-400 transition-colors">
                             {dataToRender[nextSlideIndex] && (
                                 <>
-                                   {/* Dùng Next Image thay vì img thường để Lazy Load */}
                                    <div className="relative w-full h-full">
                                        <Image 
                                             src={dataToRender[nextSlideIndex].image} 
                                             alt="Next slide"
                                             fill
-                                            sizes="200px" // Chỉ tải bản nhỏ
+                                            sizes="200px" 
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"
                                        />
                                    </div>

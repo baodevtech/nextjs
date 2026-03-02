@@ -4,10 +4,7 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'picsum.photos' },
-      { protocol: 'https', hostname: 'ui-avatars.com' },
-      { protocol: 'https', hostname: 'www.transparenttextures.com' },
+      { protocol: 'https', hostname: 'via.placeholder.com' },
       { protocol: 'https', hostname: 'portal.khopanel.com' },
     ],
     minimumCacheTTL: 60,
