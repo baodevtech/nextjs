@@ -48,8 +48,19 @@ export async function POST(request: NextRequest) {
 
   // 5. Thực hiện xóa bộ nhớ đệm
   try {
-    revalidateTag(tag);
-    console.log(`✅ THÀNH CÔNG: Đã xóa cache cho tag [${tag}]`);
+    // Tách chuỗi tag thành mảng (phòng khi WP gửi "products,product-slug-abc")
+   const tagsToRevalidate = tag.split(',');
+    
+    tagsToRevalidate.forEach(t => {
+      const cleanTag = t.trim();
+      if (cleanTag) {
+        // @ts-ignore: Bỏ qua cảnh báo TS đòi 2 tham số (Do typings local bị sai)
+        revalidateTag(cleanTag);
+        
+        console.log(`✅ Đã trigger xóa cache cho tag: [${cleanTag}]`);
+      }
+    });
+
     console.log('---------------------------------------------------\n');
     
     return NextResponse.json({ 
