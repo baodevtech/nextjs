@@ -1,15 +1,11 @@
+// src/app/shop/ShopClient.tsx
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  getProducts,
-  getCategories,
-  getShopSettings,
-  type ShopSettings,
-} from "@/services/wpService";
 import { Product, Category } from "@/types";
+import { type ShopSettings } from "@/services/wpService";
 import { ProductCard } from "@/components/product/ProductComponents";
 import { useCart } from "@/context/CartContext";
 import {
@@ -27,13 +23,12 @@ import {
   HelpCircle,
   RefreshCcw,
   SlidersHorizontal,
-  ArrowDown, // Thêm icon ArrowDown
+  ArrowDown,
 } from "lucide-react";
 import { Button } from "@/components/common/UI";
 
 // --- 1. COMPONENT BREADCRUMB ---
 const Breadcrumb: React.FC<{ categoryName?: string }> = ({ categoryName }) => (
-  // Thêm pr-24 trên mobile để tránh đè lên nút "Xem SP" ở góc phải
   <nav className="flex text-[10px] md:text-xs text-slate-300 mb-2 md:mb-4 z-10 relative whitespace-nowrap overflow-hidden text-ellipsis pr-24 md:pr-0">
     <Link href="/" className="hover:text-white transition-colors">
       Trang chủ
@@ -81,9 +76,7 @@ const ShopHeader: React.FC<{
     }
   };
 
-  // CASE 1: Shop All (Giữ nguyên)
   if (!category) {
-    // ... (Code giữ nguyên như cũ)
     const desc = shopSettings?.description || "Khám phá bộ sưu tập vật liệu ốp tường cao cấp.";
     const b1 = shopSettings?.benefits?.warranty;
     const b2 = shopSettings?.benefits?.shipping;
@@ -92,7 +85,6 @@ const ShopHeader: React.FC<{
     return (
       <div className="mb-6 md:mb-10 bg-gradient-to-br from-brand-50 via-white to-brand-50 rounded-xl md:rounded-2xl p-5 md:p-12 border border-brand-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
         <div className="relative z-10 max-w-2xl flex-1 w-full">
-          {/* Breadcrumb cho trang shop all */}
           <nav className="flex text-[10px] md:text-xs text-slate-500 mb-3 md:mb-4 z-10 relative">
             <Link href="/" className="hover:text-brand-600 transition-colors">Trang chủ</Link>
             <span className="mx-1.5 text-slate-300">/</span>
@@ -139,7 +131,6 @@ const ShopHeader: React.FC<{
     );
   }
 
-  // CASE 2: Category Detail
   return (
     <div className="mb-6 md:mb-10 rounded-xl md:rounded-2xl overflow-hidden relative min-h-[220px] md:min-h-[280px] flex flex-col md:flex-row items-center group">
       <div className="absolute inset-0">
@@ -149,16 +140,12 @@ const ShopHeader: React.FC<{
 
       <div className="relative z-10 p-5 md:p-12 w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
         <div className="max-w-2xl w-full relative">
-          
-          {/* --- [NEW] MOBILE BUTTON (COMPACT TOP-RIGHT) --- */}
-          {/* Nằm tuyệt đối ở góc phải trên của container, thẳng hàng với breadcrumb */}
           <button
             onClick={scrollToProducts}
             className="md:hidden absolute top-0 right-0 z-30 bg-amber-400 text-dark text-[7px] font-bold px-3 py-1.5 rounded-full shadow-lg shadow-brand-900/20 flex items-center gap-1 active:scale-95 transition-transform hover:bg-brand-500"
           >
             Xem {productCount} SP <ArrowDown size={12} strokeWidth={3} />
           </button>
-          {/* ----------------------------------------------- */}
 
           <Breadcrumb categoryName={category.name} />
 
@@ -169,7 +156,6 @@ const ShopHeader: React.FC<{
             {category.description}
           </p>
 
-          {/* Nút PC (Giữ nguyên) */}
           <div className="hidden md:flex items-center gap-4">
             <Button variant="primary" className="py-2 px-4 text-xs bg-brand-500 text-white hover:bg-slate-100 border-none" onClick={scrollToProducts}>
               Xem {productCount} Sản phẩm
@@ -177,7 +163,6 @@ const ShopHeader: React.FC<{
           </div>
         </div>
 
-        {/* Phần Stats */}
         <div className="grid grid-cols-2 md:flex md:flex-col gap-3 w-full md:w-auto min-w-[200px]">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 md:p-4 rounded-xl text-white">
             <p className="text-[10px] md:text-xs text-brand-200 font-bold uppercase tracking-wider mb-1">
@@ -210,7 +195,7 @@ const ShopHeader: React.FC<{
   );
 };
 
-// ... (Giữ nguyên FilterSection)
+// --- 4. COMPONENT FILTER SECTION ---
 const FilterSection: React.FC<{
   title: string;
   isOpen?: boolean;
@@ -228,12 +213,23 @@ const FilterSection: React.FC<{
   );
 };
 
-// --- 5. MAIN CONTENT ---
-function ShopContent() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
-  const [inStockCount, setInStockCount] = useState(0);
+// --- 5. MAIN CONTENT (SHOP CLIENT) ---
+interface ShopClientProps {
+  initialProducts: Product[];
+  initialCategories: Category[];
+  initialShopSettings: ShopSettings | null;
+}
+
+export default function ShopClient({
+  initialProducts,
+  initialCategories,
+  initialShopSettings,
+}: ShopClientProps) {
+  // Dữ liệu được truyền trực tiếp từ Server
+  const products = initialProducts;
+  const categories = initialCategories;
+  const shopSettings = initialShopSettings;
+  const inStockCount = products.filter((p) => p.stockStatus === "IN_STOCK").length;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
@@ -241,28 +237,11 @@ function ShopContent() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isPromotion, setIsPromotion] = useState(false);
 
-  const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      const [prods, cats, settings] = await Promise.all([
-        getProducts(),
-        getCategories(),
-        getShopSettings(),
-      ]);
-      setProducts(prods);
-      setCategories(cats);
-      setShopSettings(settings);
-      setInStockCount(prods.filter((p) => p.stockStatus === "IN_STOCK").length);
-      setLoading(false);
-    };
-    init();
-  }, []);
-
+  // Chỉ thiết lập bộ lọc khi params thay đổi
   useEffect(() => {
     const cat = searchParams.get("cat");
     setFilter(cat || "all");
@@ -335,7 +314,6 @@ function ShopContent() {
                  <Search size={16} className="absolute left-3 top-3 text-gray-400" />
               </div>
 
-              {/* Filter Logic (Giữ nguyên) */}
               <FilterSection title="Danh Mục">
                  <div className="space-y-1">
                     <div onClick={() => setFilter("all")} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${filter === "all" ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
@@ -419,25 +397,13 @@ function ShopContent() {
 
             {/* PRODUCT GRID */}
             <div id="product-grid-section" className="scroll-mt-24">
-                {loading ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div key={i} className="space-y-2 md:space-y-3">
-                        <div className="aspect-square bg-gray-100 rounded-xl animate-pulse"></div>
-                        <div className="h-3 md:h-4 w-2/3 bg-gray-100 rounded animate-pulse"></div>
-                        <div className="h-3 md:h-4 w-1/3 bg-gray-100 rounded animate-pulse"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
+                {filteredProducts.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10">
                     {filteredProducts.map((product) => (
                       <ProductCard key={product.id} product={product} onQuickAdd={() => addToCart(product)} />
                     ))}
                   </div>
-                )}
-
-                {!loading && filteredProducts.length === 0 && (
+                ) : (
                   <div className="text-center py-20 md:py-32 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                     <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">
                       <Search size={24} className="md:w-8 md:h-8" />
@@ -481,13 +447,5 @@ function ShopContent() {
         )}
       </div>
     </div>
-  );
-}
-
-export default function ShopPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-500">Đang tải sản phẩm...</div>}>
-      <ShopContent />
-    </Suspense>
   );
 }

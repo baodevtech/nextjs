@@ -34,8 +34,8 @@ const API_URL =
 async function fetchAPI(
   query: string,
   { variables }: { variables?: any } = {},
-  customRevalidate?: number,
-  tags: string[] = [] // Thêm tham số tags để Next.js On-demand Revalidation hoạt động
+  customRevalidate?: number, // Vẫn giữ tham số này để không bị lỗi các hàm gọi cũ
+  tags: string[] = [] 
 ) {
   const headers = { "Content-Type": "application/json" };
 
@@ -44,9 +44,9 @@ async function fetchAPI(
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
+      cache: 'force-cache', // Bắt buộc lưu cache vô thời hạn (cho đến khi có webhook)
       next: { 
-        revalidate: customRevalidate ?? 3600,
-        tags: tags 
+        tags: tags // Cung cấp tags để Webhook gọi hàm revalidateTag(tag)
       }, 
     });
 

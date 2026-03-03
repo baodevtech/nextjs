@@ -84,7 +84,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
               </button>
               
              <Link href="/" className="flex items-center gap-3 group">
-                <img src={headerData.logo || "https://tamnhuagiada.com/wp-content/uploads/2024/11/logo-1374-hinh.png"} alt="Logo Đại Nam Wall" className="w-20 h-auto md:w-18 md:h-auto"/>
+                <img src={headerData.logo || "https://tamnhuagiada.com/wp-content/uploads/2024/11/logo-1374-hinh.png"} alt="Logo Đại Nam Wall" className="w-32 h-auto md:w-18 md:h-auto"/>
               </Link>
             </div>
 
