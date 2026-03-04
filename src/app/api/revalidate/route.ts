@@ -1,19 +1,17 @@
 // src/app/api/revalidate/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, revalidatePath } from 'next/cache'; // Thêm revalidatePath
 import fs from 'fs';
 import path from 'path';
 
 export const runtime = 'nodejs'; // BẮT BUỘC để dùng fs
 
-// Hàm ghi log lỗi
 async function logErrorToFile(error: unknown) {
   try {
     const logDir = path.join(process.cwd(), 'logs');
     const logFile = path.join(logDir, 'revalidate-errors.log');
 
-    // Tạo thư mục nếu chưa tồn tại
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir);
     }
@@ -32,6 +30,7 @@ async function logErrorToFile(error: unknown) {
 export async function POST(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret');
   const tag = request.nextUrl.searchParams.get('tag');
+  const pathParam = request.nextUrl.searchParams.get('path'); // Đọc thêm biến path từ WP
 
   try {
     await request.clone().text();
@@ -39,48 +38,52 @@ export async function POST(request: NextRequest) {
     await logErrorToFile(err);
   }
 
-  if (secret !== process.env.REVALIDATION_SECRET) {
+  if (secret !== process.env.REVALIDATION_SECRET) { // Lưu ý: process.env.REVALIDATION_SECRET của bạn phải là '123' cho khớp với PHP nhé
     const error = new Error('Secret Key không hợp lệ');
     await logErrorToFile(error);
-
-    return NextResponse.json(
-      { message: 'Lỗi: Secret Key không hợp lệ!' },
-      { status: 401 }
-    );
+    return NextResponse.json({ message: 'Lỗi: Secret Key không hợp lệ!' }, { status: 401 });
   }
 
-  if (!tag) {
-    const error = new Error('Thiếu Tag revalidate');
+  if (!tag && !pathParam) {
+    const error = new Error('Thiếu Tag hoặc Path revalidate');
     await logErrorToFile(error);
-
-    return NextResponse.json(
-      { message: 'Lỗi: Bị thiếu Tag!' },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: 'Lỗi: Bị thiếu Tag hoặc Path!' }, { status: 400 });
   }
 
   try {
-    const tagsToRevalidate = tag.split(',');
+    // 1. Xóa cache theo Tags
+    if (tag) {
+      const tagsToRevalidate = tag.split(',');
+      tagsToRevalidate.forEach((t) => {
+        const cleanTag = t.trim();
+        if (cleanTag) {
+          // Bỏ qua cảnh báo báo đỏ của TypeScript
+          // @ts-ignore
+          revalidateTag(cleanTag);
+        }
+      });
+    }
 
-    tagsToRevalidate.forEach((t) => {
-      const cleanTag = t.trim();
-      if (cleanTag) {
-        // @ts-ignore
-        revalidateTag(cleanTag);
-      }
-    });
+    // 2. Xóa cache theo Path
+    if (pathParam) {
+      const pathsToRevalidate = pathParam.split(',');
+      pathsToRevalidate.forEach((p) => {
+        const cleanPath = p.trim();
+        if (cleanPath) {
+          // Bỏ qua cảnh báo báo đỏ của TypeScript
+          // @ts-ignore
+          revalidatePath(cleanPath, 'page'); 
+        }
+      });
+    }
 
     return NextResponse.json({
       revalidated: true,
       now: Date.now(),
-      message: `Đã xóa cache thành công cho tag: ${tag}`,
+      message: `Đã xóa cache thành công cho tag: [${tag}] và path: [${pathParam}]`,
     });
   } catch (err) {
     await logErrorToFile(err);
-
-    return NextResponse.json(
-      { message: 'Lỗi hệ thống khi revalidate' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Lỗi hệ thống khi revalidate' }, { status: 500 });
   }
 }
