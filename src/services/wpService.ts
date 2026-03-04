@@ -20,7 +20,9 @@ import {
   ContactPageData,
   HeaderData,
   NavItem,
-  FooterData
+  FooterData,
+  AboutPageData,
+  UniversalNode
 } from "../types";
 
 const API_URL =
@@ -898,7 +900,7 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
     commHeading: acf.commHeading || "Không Gian Thương Mại",
     commDesc: acf.commDesc || "",
     commLinkText: acf.commLinkText || "Xem dự án thực tế",
-    commLinkUrl: acf.commLinkUrl || "/du-an",
+    commLinkUrl: acf.commLinkUrl || "/projects",
     commItems: acf.commItems?.map((item: any) => ({
         title: item.title || "", desc: item.desc || "", image: item.image?.node?.sourceUrl || "",
     })) || [],
@@ -1301,4 +1303,248 @@ export const createOrder = async (
         (error instanceof Error ? error.message : String(error)),
     };
   }
+};
+
+// --- 7. ABOUT PAGE QUERIES ---
+export const getAboutPageData = async (): Promise<AboutPageData> => {
+  const data = await fetchAPI(`
+    query GetAboutOptions {
+      aboutOptions {
+        aboutData {
+          heroSince
+          heroTitleNormal
+          heroTitleHighlight
+          heroDesc
+          heroBtnText
+          heroBtnLink
+          heroBgImage { node { sourceUrl } }
+          
+          awardBadge
+          awardTitleNormal
+          awardTitleHighlight
+          awardDesc
+          awardStats { label, value }
+          
+          qualityTitle
+          qualityDesc1
+          qualityDesc2
+          founderName
+          founderRole
+          founderAvatar { node { sourceUrl } }
+          qualityImg1 { node { sourceUrl } }
+          qualityImg2 { node { sourceUrl } }
+          qualityStatValue
+          qualityStatLabel
+          qualityQuote
+          
+          coreSub
+          coreTitle
+          coreValues { icon, title, desc }
+          
+          timelineTitle
+          timelines { year, title, desc }
+          
+          ctaTitle
+          ctaDesc
+          ctaBtn1Text
+          ctaBtn1Link
+          ctaBtn2Text
+          ctaBtn2Link
+        }
+      }
+    }
+  `, {}, undefined, ['page-about', 'options']);
+
+  // Lấy dữ liệu qua 2 cấp: aboutOptions -> aboutData
+  const acf = data?.aboutOptions?.aboutData || {};
+
+  return {
+    heroSince: acf.heroSince || "Since 2014",
+    heroTitleNormal: acf.heroTitleNormal || "KIẾN TẠO",
+    heroTitleHighlight: acf.heroTitleHighlight || "DI SẢN SỐNG",
+    heroDesc: acf.heroDesc || "Đại Nam Wall không chỉ cung cấp vật liệu. Chúng tôi mang đến giải pháp nghệ thuật để biến những bức tường vô tri thành kiệt tác.",
+    heroBtnText: acf.heroBtnText || "Xem Hồ Sơ Năng Lực",
+    heroBtnLink: acf.heroBtnLink || "/projects",
+    heroBgImage: acf.heroBgImage?.node?.sourceUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop",
+
+    awardBadge: acf.awardBadge || "Giải Thưởng Danh Giá",
+    awardTitleNormal: acf.awardTitleNormal || "SAO VÀNG",
+    awardTitleHighlight: acf.awardTitleHighlight || "ĐẤT VIỆT 2025",
+    awardDesc: acf.awardDesc || "Vượt qua hơn 5000 doanh nghiệp, Đại Nam Wall vinh dự nhận giải thưởng Sao Vàng Đất Việt 2025 - Biểu tượng cho niềm tự hào thương hiệu Quốc gia về chất lượng và sự đổi mới sáng tạo trong ngành vật liệu xây dựng.",
+    awardStats: acf.awardStats?.map((s: any) => ({ label: s.label || "", value: s.value || "" })) || [
+      { value: "Top 10", label: "Thương hiệu xuất sắc" },
+      { value: "100%", label: "Tiêu chí chất lượng" }
+    ],
+
+    qualityTitle: acf.qualityTitle || "CHẤT LƯỢNG LÀ DANH DỰ",
+    qualityDesc1: acf.qualityDesc1 || "Được thành lập từ năm 2014, Đại Nam Wall khởi đầu với niềm đam mê mãnh liệt về các vật liệu nội thất thế hệ mới.",
+    qualityDesc2: acf.qualityDesc2 || "Chúng tôi không bán mét vuông nhựa ốp tường. Chúng tôi bán sự an tâm, sự sang trọng và niềm tự hào cho gia chủ mỗi khi trở về nhà.",
+    founderName: acf.founderName || "Nguyễn Văn Nam",
+    founderRole: acf.founderRole || "Founder & CEO",
+    founderAvatar: acf.founderAvatar?.node?.sourceUrl || "https://ui-avatars.com/api/?name=Nam+Nguyen&background=0f172a&color=fff",
+    qualityImg1: acf.qualityImg1?.node?.sourceUrl || "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=600&auto=format&fit=crop",
+    qualityImg2: acf.qualityImg2?.node?.sourceUrl || "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=600&auto=format&fit=crop",
+    qualityStatValue: acf.qualityStatValue || "5K+",
+    qualityStatLabel: acf.qualityStatLabel || "Dự án hoàn thiện trên toàn quốc",
+    qualityQuote: acf.qualityQuote || "Sự tinh tế trong từng chi tiết tạo nên đẳng cấp khác biệt.",
+
+    coreSub: acf.coreSub || "Core Values",
+    coreTitle: acf.coreTitle || "TIÊU CHUẨN ĐẠI NAM",
+    coreValues: acf.coreValues?.map((v: any) => ({ icon: v.icon || "CheckCircle2", title: v.title || "", desc: v.desc || "" })) || [
+      { icon: "CheckCircle2", title: "Chất Lượng Thượng Thừa", desc: "Cam kết sử dụng cốt nhựa nguyên sinh, an toàn tuyệt đối cho sức khỏe (Formaldehyde Free) và độ bền trên 20 năm." },
+      { icon: "PenTool", title: "Thẩm Mỹ Tinh Tế", desc: "Cập nhật liên tục các xu hướng vân đá, vân gỗ từ Ý và Hàn Quốc. Đảm bảo độ chân thực 99% so với vật liệu tự nhiên." },
+      { icon: "Users", title: "Tận Tâm Phục Vụ", desc: "Đội ngũ kỹ thuật viên được đào tạo bài bản, thi công tỉ mỉ từng đường keo, mối nối. Bảo hành điện tử chính hãng." }
+    ],
+
+    timelineTitle: acf.timelineTitle || "DÒNG CHẢY LỊCH SỬ",
+    timelines: acf.timelines?.map((t: any) => ({ year: t.year || "", title: t.title || "", desc: t.desc || "" })) || [
+       { year: "2014", title: "Khởi Nguyên", desc: "Thành lập xưởng sản xuất nhỏ tại Hà Nội với niềm đam mê vật liệu mới." },
+       { year: "2018", title: "Mở Rộng Quy Mô", desc: "Khánh thành nhà máy 5000m2, nhập khẩu dây chuyền công nghệ Đức." },
+       { year: "2020", title: "Chinh Phục Thị Trường", desc: "Trở thành đối tác chiến lược của VinGroup, SunGroup trong các dự án căn hộ cao cấp." },
+       { year: "2025", title: "Sao Vàng Đất Việt", desc: "Vinh dự nhận giải thưởng Sao Vàng Đất Việt, khẳng định vị thế thương hiệu quốc gia." }
+    ],
+
+    ctaTitle: acf.ctaTitle || "ĐẲNG CẤP KHÔNG GIAN SỐNG",
+    ctaDesc: acf.ctaDesc || "Hãy để Đại Nam Wall đồng hành cùng bạn tạo nên những công trình để đời.",
+    ctaBtn1Text: acf.ctaBtn1Text || "Liên Hệ Tư Vấn",
+    ctaBtn1Link: acf.ctaBtn1Link || "/contact",
+    ctaBtn2Text: acf.ctaBtn2Text || "Xem Bộ Sưu Tập",
+    ctaBtn2Link: acf.ctaBtn2Link || "/shop",
+  };
+};
+
+const SEO_FIELDS_FRAGMENT = `
+  fragment SeoFields on RankMathSeo {
+    title
+    description
+    canonicalUrl
+    focusKeywords
+    fullHead
+    
+    # Hỗ trợ điểm SEO cho Bài viết / Trang
+    ... on RankMathContentNodeSeo {
+      isPillarContent
+      seoScore { score }
+    }
+
+    # Hỗ trợ điểm SEO cho Sản phẩm WooCommerce
+    ... on RankMathProductObjectSeo {
+      isPillarContent
+      seoScore { score }
+    }
+    
+    jsonLd { raw __typename }
+    robots
+    openGraph {
+      title
+      description
+      type
+      siteName
+      url
+      image { secureUrl type }
+      locale
+      slackEnhancedData { data label }
+      updatedTime
+    }
+    breadcrumbTitle
+  }
+`;
+
+// Tìm đến hàm này trong src/services/wpService.ts và sửa lại
+
+const replaceSeoDomain = (seo: any) => {
+  if (!seo) return seo;
+
+  const replaceUrl = (str: string) => {
+    if (!str) return str;
+    return str.replace(/https?:\/\/portal\.khopanel\.com/g, 'https://khopanel.com');
+  };
+
+  const formattedSeo = { ...seo };
+
+  if (formattedSeo.canonicalUrl) {
+    formattedSeo.canonicalUrl = replaceUrl(formattedSeo.canonicalUrl);
+  }
+
+  if (formattedSeo.openGraph) {
+    formattedSeo.openGraph = { ...formattedSeo.openGraph };
+    if (formattedSeo.openGraph.url) {
+      formattedSeo.openGraph.url = replaceUrl(formattedSeo.openGraph.url);
+    }
+  }
+
+  if (formattedSeo.jsonLd && formattedSeo.jsonLd.raw) {
+    formattedSeo.jsonLd = { ...formattedSeo.jsonLd };
+    
+    // 1. Replace domain Backend thành Frontend
+    let rawString = replaceUrl(formattedSeo.jsonLd.raw);
+    
+    // 2. Cắt bỏ thẻ <script> dư thừa do RankMath trả về
+    rawString = rawString.replace(/<script[^>]*>/gi, '').replace(/<\/script>/gi, '');
+    
+    // 3. [FIX LỖI MỚI]: Đổi "sanpham" thành chuẩn "Product" cho Google hiểu
+    rawString = rawString.replace(/"@type"\s*:\s*"sanpham"/gi, '"@type":"Product"');
+    
+    formattedSeo.jsonLd.raw = rawString;
+  }
+
+  return formattedSeo;
+};
+// Cập nhật lại hàm getUniversalSEO
+export const getUniversalSEO = async (uri: string): Promise<any | null> => {
+  const query = `
+    ${SEO_FIELDS_FRAGMENT}
+    query GetUniversalSEO($uri: String!) {
+      nodeByUri(uri: $uri) {
+        __typename
+        
+        ... on Page { title, slug, content, seo { ...SeoFields } }
+        ... on Post { title, slug, content, seo { ...SeoFields } }
+        ... on Category { name, slug, seo { ...SeoFields } }
+        ... on Product { name, slug, description, seo { ...SeoFields } }
+        ... on ProductCategory { name, slug, description, seo { ...SeoFields } }
+        ... on Project { title, slug, seo { ...SeoFields } }
+      }
+    }
+  `;
+
+  const data = await fetchAPI(query, { variables: { uri } }, undefined, ['seo', `seo-${uri}`]);
+  
+  const node = data?.nodeByUri || null;
+
+  // TRỌNG TÂM: Áp dụng replace domain trước khi trả dữ liệu về cho các page
+  if (node && node.seo) {
+    node.seo = replaceSeoDomain(node.seo);
+  }
+
+  return node;
+};
+
+export interface TrackingScripts {
+  headerScripts: string;
+  bodyTopScripts: string;
+  footerScripts: string;
+}
+
+export const getTrackingScripts = async (): Promise<TrackingScripts | null> => {
+  const data = await fetchAPI(`
+    query GetTrackingScripts {
+      trackingScriptsOptions {
+        trackingScripts {
+          headerScripts
+          bodyTopScripts
+          footerScripts
+        }
+      }
+    }
+  `, {}, undefined, ['global-options', 'tracking-scripts']);
+
+  const scripts = data?.options?.trackingScripts;
+  if (!scripts) return null;
+
+  return {
+    headerScripts: scripts.headerScripts || "",
+    bodyTopScripts: scripts.bodyTopScripts || "",
+    footerScripts: scripts.footerScripts || "",
+  };
 };

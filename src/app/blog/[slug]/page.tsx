@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, Facebook, Twitter, Linkedin, Share2, Tag, ChevronRight } from 'lucide-react';
-import { getPostBySlug, getAllPosts, getRelatedPosts } from '@/services/wpService';
+import { getPostBySlug, getAllPosts, getRelatedPosts, getUniversalSEO } from '@/services/wpService';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 
 interface Props {
@@ -36,49 +36,59 @@ const processContentWithTOC = (htmlContent: string) => {
 
   return { processedContent, toc };
 };
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
-  if (!post) return { title: 'Không tìm thấy bài viết' };
-  
+  // Giả định URI bài viết trong WP của bạn là /slug/ (hoặc /blog/slug/, tùy cấu hình WP)
+  const seoData = await getUniversalSEO(`/${slug}/`); 
+  const seo = seoData?.seo;
+
+  if (!seo) {
+    // Dự phòng gọi post data nếu mất kết nối SEO
+    const post = await getPostBySlug(slug);
+    if(!post) return { title: 'Không tìm thấy bài viết' };
+    return { title: `${post.title} | Đại Nam Wall`, description: post.excerpt };
+  }
+
   return {
-    title: `${post.title} | Đại Nam Wall`,
-    description: post.excerpt,
-    openGraph: { images: [post.image] },
+    title: seo.title,
+    description: seo.description,
+    alternates: { canonical: seo.canonicalUrl },
+    openGraph: {
+      title: seo.openGraph?.title,
+      description: seo.openGraph?.description,
+      url: seo.openGraph?.url,
+      siteName: seo.openGraph?.siteName,
+      type: (seo.openGraph?.type as any) || 'article',
+      locale: seo.openGraph?.locale || 'vi_VN',
+      images: seo.openGraph?.image?.secureUrl ? [{ url: seo.openGraph.image.secureUrl }] : [],
+    },
+    robots: { index: seo.robots?.includes('index'), follow: seo.robots?.includes('follow') }
   };
 }
 
-export default async function BlogDetailPage({ params }: Props) {
+export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  
+  // Bạn có thể fetch SEO ở đây để lấy JSON-LD
+  const seoNode = await getUniversalSEO(`/${slug}/`);
   const post = await getPostBySlug(slug);
 
   if (!post) notFound();
 
   const relatedPosts = await getRelatedPosts(post.category, post.id, 2);
-
   const { processedContent, toc } = processContentWithTOC(post.content);
 
   const wordCount = post.content.split(/\s+/g).length;
   const readTime = `${Math.ceil(wordCount / 200)} phút đọc`;
 
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "image": [post.image],
-    "datePublished": post.date,
-    "author": [{ "@type": "Person", "name": post.author.name }],
-    "description": post.excerpt,
-  };
+  const schemaRaw = seoNode?.seo?.jsonLd?.raw || null;
 
   return (
     <div className="bg-white min-h-screen font-sans pb-16 md:pb-20 animate-fade-in scroll-smooth">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-
-      {/* =========================================
-          1. HEADER HERO (Tối ưu Mobile gọn gàng)
-      ========================================= */}
+      {/* Schema động từ Rankmath */}
+      {schemaRaw && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaRaw }} />
+      )}
       <div className="bg-slate-50 pt-24 md:pt-32 pb-8 md:pb-12 border-b border-gray-100 px-4 sm:px-6 lg:px-8">
            <div className="max-w-7xl mx-auto">
                <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-slate-500 mb-4 md:mb-6 uppercase tracking-wider font-medium">

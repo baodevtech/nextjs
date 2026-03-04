@@ -476,3 +476,102 @@ export interface FooterData {
   socialLinks: SocialLinks;
   bottomBar: BottomBar;
 }
+
+// --- ABOUT PAGE TYPES ---
+export interface AboutStat {
+  label: string;
+  value: string;
+}
+
+export interface AboutCoreValue {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface AboutTimeline {
+  year: string;
+  title: string;
+  desc: string;
+}
+
+export interface AboutPageData {
+  // Hero Section
+  heroSince: string;
+  heroTitleNormal: string;
+  heroTitleHighlight: string;
+  heroDesc: string;
+  heroBtnText: string;
+  heroBtnLink: string;
+  heroBgImage: string;
+
+  // Award Section
+  awardBadge: string;
+  awardTitleNormal: string;
+  awardTitleHighlight: string;
+  awardDesc: string;
+  awardStats: AboutStat[];
+
+  // Quality Section
+  qualityTitle: string;
+  qualityDesc1: string;
+  qualityDesc2: string;
+  founderName: string;
+  founderRole: string;
+  founderAvatar: string;
+  qualityImg1: string;
+  qualityImg2: string;
+  qualityStatValue: string;
+  qualityStatLabel: string;
+  qualityQuote: string;
+
+  // Core Values Section
+  coreSub: string;
+  coreTitle: string;
+  coreValues: AboutCoreValue[];
+
+  // Timeline Section
+  timelineTitle: string;
+  timelines: AboutTimeline[];
+
+  // CTA Section
+  ctaTitle: string;
+  ctaDesc: string;
+  ctaBtn1Text: string;
+  ctaBtn1Link: string;
+  ctaBtn2Text: string;
+  ctaBtn2Link: string;
+}
+
+export interface RankMathSEO {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  focusKeywords: string;
+  fullHead: string;
+  isPillarContent: boolean;
+  seoScore: { score: number };
+  robots: string[];
+  openGraph: {
+    title: string;
+    description: string;
+    type: string;
+    siteName: string;
+    url: string;
+    image: { secureUrl: string; type: string };
+    locale: string;
+    slackEnhancedData: { data: string; label: string };
+    updatedTime: string;
+  };
+  jsonLd: { raw: string; __typename: string };
+  breadcrumbTitle: string;
+}
+
+export interface UniversalNode {
+  __typename: 'Page' | 'Post' | 'Category';
+  title?: string;
+  name?: string; // Dành cho Category
+  slug: string;
+  content?: string;
+  seo: RankMathSEO;
+}

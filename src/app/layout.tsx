@@ -7,12 +7,15 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { FloatingContact } from "@/components/layout/FloatingContact";
+import { getTrackingScripts } from '@/services/wpService';
 
-// TỐI ƯU FONT: Thêm display: 'swap' để chữ hiện ngay lập tức
+// 👇 1. Import hàm parse của thư viện
+import parse from 'html-react-parser'; 
+
 const inter = Inter({ 
   subsets: ["latin", "vietnamese"], 
   variable: '--font-inter',
-  display: 'swap', // <--- QUAN TRỌNG
+  display: 'swap',
 });
 
 const merriweather = Merriweather({ 
@@ -20,29 +23,39 @@ const merriweather = Merriweather({
   subsets: ["latin", "vietnamese"], 
   style: ['normal', 'italic'],
   variable: '--font-merriweather',
-  display: 'swap', // <--- QUAN TRỌNG
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Đại Nam Wall | Tấm Ốp Tường Cao Cấp",
-  description: "Đại Nam Wall chuyên cung cấp giải pháp tấm ốp tường, lam sóng, PVC vân đá chất lượng cao. Bảo hành 15 năm.",
-  // Thêm metadataBase để chuẩn SEO nếu share link
-  metadataBase: new URL('https://tamnhuagiada.com'), 
+  title: "Kho Panel | Tổng Kho Panel Cách Nhiệt",
+  description: "Kho Panel chuyên cung cấp giải pháp tấm panel cách nhiệt, cách âm chất lượng cao. Bảo hành 15 năm.",
+  metadataBase: new URL('https://khopanel.com'), 
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const trackingScripts = await getTrackingScripts();
+
   return (
-    <html lang="vi" className="scroll-smooth">
+    <html lang="vi" className="scroll-smooth" suppressHydrationWarning>
       <head>
-        {/* Preconnect tới server ảnh để giảm thời gian DNS Lookup */}
         <link rel="preconnect" href="https://portal.khopanel.com" />
         <link rel="dns-prefetch" href="https://portal.khopanel.com" />
+        
+        {/* 👇 2. Dùng hàm parse() để biến chuỗi String thành Component React thực thụ */}
+        {trackingScripts?.headerScripts && parse(trackingScripts.headerScripts)}
       </head>
-      <body className={`${inter.variable} ${merriweather.variable} font-sans bg-white text-slate-900 selection:bg-brand-100 selection:text-brand-900 antialiased`}>
+
+      <body 
+        suppressHydrationWarning
+        className={`${inter.variable} ${merriweather.variable} font-sans bg-white text-slate-900 selection:bg-brand-100 selection:text-brand-900 antialiased`}
+      >
+        {/* THÊM BODY TOP SCRIPTS */}
+        {trackingScripts?.bodyTopScripts && parse(trackingScripts.bodyTopScripts)}
+
         <Providers>
           <Header />
           <CartDrawerWrapper />
@@ -52,6 +65,9 @@ export default function RootLayout({
           <FloatingContact />
           <Footer />
         </Providers>
+
+        {/* THÊM FOOTER SCRIPTS */}
+        {trackingScripts?.footerScripts && parse(trackingScripts.footerScripts)}
       </body>
     </html>
   );

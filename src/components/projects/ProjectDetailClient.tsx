@@ -105,7 +105,7 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
                 </div>
 
                 <div className="absolute top-8 left-8 z-20">
-                     <Link href="/du-an" className="flex items-center gap-2 text-white/70 hover:text-amber-400 transition-colors uppercase text-xs font-bold tracking-widest group">
+                     <Link href="/projects" className="flex items-center gap-2 text-white/70 hover:text-amber-400 transition-colors uppercase text-xs font-bold tracking-widest group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Works
                      </Link>
                 </div>
@@ -253,7 +253,7 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
             </section>
 
             {/* NEXT PROJECT (Có thể truyền prop hoặc để tĩnh) */}
-            <section className="py-32 bg-slate-900 relative overflow-hidden group cursor-pointer" onClick={() => router.push('/du-an/')}>
+            <section className="py-32 bg-slate-900 relative overflow-hidden group cursor-pointer" onClick={() => router.push('/projects/')}>
                  <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700 scale-105 group-hover:scale-100 transform transition-transform">
 
                     <img

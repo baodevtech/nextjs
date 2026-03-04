@@ -111,7 +111,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                       {megaMenu.col1?.items?.map((item) => {
                                           const DynamicIcon = IconMap[item.icon] || IconMap['Box'];
                                           return (
-                                              <Link key={item.title} href={`/shop?cat=${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                              <Link key={item.title} href={`/shop/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color} group-hover/item:scale-110 transition-transform`}>
                                                       <DynamicIcon size={20} />
                                                   </div>
@@ -133,7 +133,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                       {megaMenu.col2?.items?.map((item) => {
                                           const DynamicIcon = IconMap[item.icon] || IconMap['Box'];
                                           return (
-                                              <Link key={item.title} href={`/shop?cat=${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                              <Link key={item.title} href={`/shop/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color} group-hover/item:scale-110 transition-transform`}>
                                                       <DynamicIcon size={20} />
                                                   </div>

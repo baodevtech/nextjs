@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // Thêm useRouter
 import Link from "next/link";
 import { Product, Category } from "@/types";
 import { type ShopSettings } from "@/services/wpService";
@@ -214,42 +214,64 @@ const FilterSection: React.FC<{
 };
 
 // --- 5. MAIN CONTENT (SHOP CLIENT) ---
+
+// [SỬA ĐỔI]: Bổ sung thêm categorySlug vào interface
 interface ShopClientProps {
   initialProducts: Product[];
   initialCategories: Category[];
   initialShopSettings: ShopSettings | null;
+  categorySlug?: string; 
 }
 
 export default function ShopClient({
   initialProducts,
   initialCategories,
   initialShopSettings,
+  categorySlug,
 }: ShopClientProps) {
-  // Dữ liệu được truyền trực tiếp từ Server
   const products = initialProducts;
   const categories = initialCategories;
   const shopSettings = initialShopSettings;
   const inStockCount = products.filter((p) => p.stockStatus === "IN_STOCK").length;
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState("all");
+  // [SỬA ĐỔI]: Lấy categorySlug làm giá trị mặc định nếu có
+  const [filter, setFilter] = useState(categorySlug || "all");
   const [brandFilter, setBrandFilter] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isPromotion, setIsPromotion] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
   const searchParams = useSearchParams();
+  const router = useRouter(); // [SỬA ĐỔI]: Khởi tạo router để điều hướng
   const { addToCart } = useCart();
 
-  // Chỉ thiết lập bộ lọc khi params thay đổi
+  // [SỬA ĐỔI]: Lắng nghe sự thay đổi của categorySlug (từ Route) hoặc searchParams
   useEffect(() => {
-    const cat = searchParams.get("cat");
-    setFilter(cat || "all");
+    if (categorySlug) {
+      setFilter(categorySlug);
+    } else {
+      const cat = searchParams.get("cat");
+      setFilter(cat || "all");
+    }
+    
+    // Đặt lại các bộ lọc khác khi chuyển danh mục
     setBrandFilter("all");
     setInStockOnly(false);
     setIsPromotion(false);
     setSearchQuery("");
-  }, [searchParams]);
+  }, [categorySlug, searchParams]);
+
+  // [SỬA ĐỔI]: Hàm xử lý khi người dùng click vào một danh mục trong Sidebar
+  const handleCategoryChange = (slug: string) => {
+    if (slug === "all") {
+      router.push('/shop'); // Chuyển về trang cửa hàng chung
+    } else {
+      // Chú ý: Thay '/shop/' bằng tiền tố mà bạn dùng để tạo folder route ở bước trước
+      router.push(`/shop/${slug}`); 
+    }
+  };
 
   const filteredProducts = products.filter((p) => {
     const matchCategory = filter === "all" || p.categories.includes(filter);
@@ -264,10 +286,10 @@ export default function ShopClient({
   const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
   const getCategoryCount = (slug: string) => products.filter((p) => slug === "all" || p.categories.includes(slug)).length;
   const getBrandCount = (brand: string) => products.filter((p) => p.brand === brand).length;
-  const hasActiveFilters = filter !== "all" || brandFilter !== "all" || inStockOnly || isPromotion || searchQuery;
+  
+  const hasActiveFilters = brandFilter !== "all" || inStockOnly || isPromotion || searchQuery;
 
   const resetFilters = () => {
-    setFilter("all");
     setBrandFilter("all");
     setInStockOnly(false);
     setIsPromotion(false);
@@ -316,7 +338,8 @@ export default function ShopClient({
 
               <FilterSection title="Danh Mục">
                  <div className="space-y-1">
-                    <div onClick={() => setFilter("all")} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${filter === "all" ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
+                    {/* [SỬA ĐỔI]: Dùng handleCategoryChange thay vì setFilter */}
+                    <div onClick={() => handleCategoryChange("all")} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${filter === "all" ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
                         <span className={`text-sm ${filter === "all" ? "font-bold text-brand-700" : "font-medium text-slate-600"}`}>Tất cả</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${filter === "all" ? "bg-white text-brand-700 font-bold shadow-sm" : "bg-gray-100 text-gray-500"}`}>{getCategoryCount("all")}</span>
                     </div>
@@ -324,7 +347,8 @@ export default function ShopClient({
                        const count = getCategoryCount(cat.slug);
                        const isActive = filter === cat.slug;
                        return (
-                         <div key={cat.id} onClick={() => setFilter(cat.slug)} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${isActive ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
+                         // [SỬA ĐỔI]: Dùng handleCategoryChange
+                         <div key={cat.id} onClick={() => handleCategoryChange(cat.slug)} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${isActive ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
                             <span className={`text-sm ${isActive ? "font-bold text-brand-700" : "font-medium text-slate-600"}`}>{cat.name}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? "bg-white text-brand-700 font-bold shadow-sm" : "bg-gray-100 text-gray-500"}`}>{count}</span>
                          </div>

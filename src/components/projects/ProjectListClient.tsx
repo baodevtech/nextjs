@@ -89,7 +89,7 @@ export default function ProjectListClient({ initialProjects }: ProjectListClient
                                     {index + 1 < 10 ? `0${index + 1}` : index + 1}
                                 </span>
 
-                                <Link href={`/du-an/${project.slug}`} className="relative z-10 block overflow-hidden rounded-md cursor-pointer">
+                                <Link href={`/projects/${project.slug}`} className="relative z-10 block overflow-hidden rounded-md cursor-pointer">
                                     {/* Chỉnh aspect ratio thống nhất hơn trên mobile */}
                                     <div className={`overflow-hidden relative aspect-[4/3] ${index % 3 === 0 ? 'md:aspect-[21/9]' : 'md:aspect-[4/3]'} bg-slate-900 rounded-lg`}>
                                         <img 
