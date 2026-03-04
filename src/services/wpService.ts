@@ -36,7 +36,7 @@ const API_URL =
 async function fetchAPI(
   query: string,
   { variables }: { variables?: any } = {},
-  customRevalidate?: number, // Vẫn giữ tham số này để không bị lỗi các hàm gọi cũ
+  customRevalidate?: number, // Giữ biến này để không lỗi code cũ, nhưng ta không xài nó cho cache nữa
   tags: string[] = [] 
 ) {
   const headers = { "Content-Type": "application/json" };
@@ -46,9 +46,9 @@ async function fetchAPI(
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables }),
-      cache: 'force-cache', // Bắt buộc lưu cache vô thời hạn (cho đến khi có webhook)
+      cache: 'force-cache', // Chỉ định lưu cache tĩnh
       next: { 
-        tags: tags // Cung cấp tags để Webhook gọi hàm revalidateTag(tag)
+        tags: tags // Dùng mảng tags để Webhook xóa cache khi cần (Cách 2)
       }, 
     });
 
