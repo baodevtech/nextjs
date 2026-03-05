@@ -136,13 +136,15 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                             className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                         >
                             {/* TỐI ƯU SEO: Fix thuộc tính alt loại bỏ khoảng trắng dư thừa do \n */}
-                            <Image 
+                           <Image 
                                 src={slide.image} 
                                 alt={slide.title.replace(/\n/g, ' ')} 
                                 fill
                                 className="object-cover object-center" 
                                 sizes="(max-width: 768px) 100vw, 1px"
                                 priority={idx === 0}
+                                fetchPriority={idx === 0 ? 'high' : 'low'} /* Giảm độ ưu tiên tải của các slide ẩn xuống mức thấp nhất */
+                                loading={idx === 0 ? 'eager' : 'lazy'}     /* Ép các slide sau phải tải chậm (lazy load) */
                             />
                             
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-95"></div>
@@ -218,13 +220,15 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                     {dataToRender.map((slide, idx) => (
                         <div key={`desktop-${slide.id}`} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === idx ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
                             <div className={`absolute inset-0 transform transition-transform duration-[10000ms] ease-linear ${currentSlide === idx ? 'scale-110' : 'scale-100'}`}>
-                                {/* TỐI ƯU SEO: Fix Alt Text */}
-                                <Image
+                               {/* DESKTOP LAYOUT Image */}
+                               <Image
                                     src={slide.image} 
                                     alt={slide.title.replace(/\n/g, ' ')} 
                                     fill 
                                     sizes="(min-width: 768px) 100vw, 1px"
                                     priority={idx === 0}
+                                    fetchPriority={idx === 0 ? 'high' : 'low'} 
+                                    loading={idx === 0 ? 'eager' : 'lazy'} 
                                     className="object-cover"
                                 />
                             </div>
