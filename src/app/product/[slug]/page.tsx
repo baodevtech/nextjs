@@ -12,51 +12,49 @@ import ProductDetailClient from '@/components/product/ProductDetailClient';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   
-  // Tùy theo cấu hình permalink của bạn trên WP, URI có thể là `/product/${slug}/` hoặc `/san-pham/${slug}/`
-  const seoData = await getUniversalSEO(`/product/${slug}/`);
+  const [product, seoData] = await Promise.all([
+    getProductBySlug(slug),
+    getUniversalSEO(`/product/${slug}/`)
+  ]);
+
+  if (!product) return { title: 'Không tìm thấy sản phẩm' };
+
   const seo = seoData?.seo;
+  const fallbackDesc = product.shortDescription || product.description?.replace(/<[^>]*>?/gm, '').substring(0, 160) || `Mua ${product.name} chính hãng.`;
 
-  // Fallback an toàn: Nếu API SEO lỗi hoặc sản phẩm chưa có SEO, tự động render theo data gốc
   if (!seo) {
-    const product = await getProductBySlug(slug);
-    if (!product) {
-      return {
-        title: 'Sản phẩm không tìm thấy | Kho Panel',
-        description: 'Xin lỗi, sản phẩm bạn đang tìm kiếm không tồn tại.',
-      };
-    }
-
-    const description = product.shortDescription || 
-                        product.description?.replace(/<[^>]*>?/gm, '').substring(0, 160) || 
-                        `Mua ${product.name} chính hãng tại Kho Panel.`;
-
-   return {
-      title: `${product.name} | Kho Panel`,
-      description: description,
-      openGraph: {
-        title: product.name,
-        description: description,
-        images: [{ url: product.image?.sourceUrl }],
-        type: 'website', 
-      },
-    };
+   return { title: `${product.name} | Kho Panel`, description: fallbackDesc };
   }
 
-  // Trả về dữ liệu SEO chuẩn xác của RankMath
   return {
-    title: seo.title,
-    description: seo.description,
+    title: seo.title || product.name,
+    description: seo.description || fallbackDesc,
+    keywords: seo.focusKeywords || [product.name, 'Kho Panel'], // 👈 BỔ SUNG TỪ KHÓA
     alternates: { canonical: seo.canonicalUrl },
     openGraph: {
-      title: seo.openGraph?.title || seo.title,
-      description: seo.openGraph?.description || seo.description,
-      url: seo.openGraph?.url,
-      siteName: seo.openGraph?.siteName,
-      type: 'website',// Khai báo chuẩn đây là sản phẩm
+      title: seo.openGraph?.title || seo.title || product.name,
+      description: seo.openGraph?.description || seo.description || fallbackDesc,
+      url: seo.openGraph?.url || seo.canonicalUrl,
+      siteName: seo.openGraph?.siteName || 'Kho Panel',
+      type: 'article' as const, // Dùng article để google bắt được updatedTime
       locale: seo.openGraph?.locale || 'vi_VN',
-      images: seo.openGraph?.image?.secureUrl ? [{ url: seo.openGraph.image.secureUrl }] : [],
+      publishedTime: seo.openGraph?.updatedTime, // 👈 BỔ SUNG THỜI GIAN
+      modifiedTime: seo.openGraph?.updatedTime,
+      images: seo.openGraph?.image?.secureUrl ? [{ 
+        url: seo.openGraph.image.secureUrl,
+        type: seo.openGraph.image.type || 'image/jpeg', 
+      }] : [],
     },
-    robots: { index: seo.robots?.includes('index'), follow: seo.robots?.includes('follow') }
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.openGraph?.title || seo.title || product.name,
+      description: seo.openGraph?.description || seo.description || fallbackDesc,
+      images: seo.openGraph?.image?.secureUrl ? [seo.openGraph.image.secureUrl] : [],
+    },
+    robots: { 
+      index: seo.robots ? seo.robots.includes('index') : true, 
+      follow: seo.robots ? seo.robots.includes('follow') : true 
+    }
   };
 }
 

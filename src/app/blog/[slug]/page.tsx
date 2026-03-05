@@ -52,6 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: seo.title,
     description: seo.description,
+    keywords: seo.focusKeywords,
     alternates: { canonical: seo.canonicalUrl },
     openGraph: {
       title: seo.openGraph?.title,
@@ -60,7 +61,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       siteName: seo.openGraph?.siteName,
       type: (seo.openGraph?.type as any) || 'article',
       locale: seo.openGraph?.locale || 'vi_VN',
+      publishedTime: seo.openGraph?.updatedTime, // 👈 BỔ SUNG THỜI GIAN
+      modifiedTime: seo.openGraph?.updatedTime,
       images: seo.openGraph?.image?.secureUrl ? [{ url: seo.openGraph.image.secureUrl }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.openGraph?.title || seo.title,
+      description: seo.openGraph?.description || seo.description,
+      images: seo.openGraph?.image?.secureUrl ? [seo.openGraph.image.secureUrl] : [],
     },
     robots: { index: seo.robots?.includes('index'), follow: seo.robots?.includes('follow') }
   };

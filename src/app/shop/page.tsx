@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: seo.title,
     description: seo.description,
+    keywords: seo.focusKeywords,
     alternates: {
       canonical: seo.canonicalUrl, // URL đã được wpService fix tự động sang domain frontend
     },
@@ -33,6 +34,12 @@ export async function generateMetadata(): Promise<Metadata> {
       type: (seo.openGraph?.type as any) || 'website',
       locale: seo.openGraph?.locale || 'vi_VN',
       images: seo.openGraph?.image?.secureUrl ? [{ url: seo.openGraph.image.secureUrl }] : [],
+    },
+    twitter: { // 👈 BỔ SUNG TWITTER
+      card: 'summary_large_image',
+      title: seo.openGraph?.title || seo.title,
+      description: seo.openGraph?.description || seo.description,
+      images: seo.openGraph?.image?.secureUrl ? [seo.openGraph.image.secureUrl] : [],
     },
     robots: {
       index: seo.robots?.includes('index'),
