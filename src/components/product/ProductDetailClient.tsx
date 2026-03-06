@@ -10,7 +10,7 @@ import { Product } from '@/types';
 import { Button } from '@/components/common/UI';
 import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
-
+import Image from 'next/image';
 interface ProductDetailClientProps {
   product: Product;
 }
@@ -33,26 +33,36 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       <div className="order-1 lg:col-span-7 lg:col-start-1 lg:row-start-1">
         <div className="space-y-4">
             <div className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in">
-                <img 
-                    src={allImages[activeImage]?.sourceUrl} 
-                    alt={allImages[activeImage]?.altText} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                {/* SỬA <img> THÀNH <Image> VÀ THÊM priority */}
+                <Image 
+                    src={allImages[activeImage]?.sourceUrl || '/placeholder.jpg'} 
+                    alt={allImages[activeImage]?.altText || product.name} 
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    priority // RẤT QUAN TRỌNG: Báo trình duyệt tải ngay lập tức
+                    className="object-cover transition-transform duration-500 group-hover:scale-105" 
                 />
                 {product.price.amount > 0 && (
-                     <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                         -10% Giảm giá
-                     </div>
+                    </div>
                 )}
             </div>
             
-            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+         <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                 {allImages.map((img, i) => (
                     <button 
                         key={i} 
                         onClick={() => setActiveImage(i)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${activeImage === i ? 'border-brand-600 ring-2 ring-brand-100 opacity-100' : 'border-transparent opacity-60 hover:opacity-100 hover:border-gray-200'}`}
+                        className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ...`}
                     >
-                        <img src={img.sourceUrl} alt={img.altText} className="w-full h-full object-cover" />
+                        <Image 
+                            src={img.sourceUrl || '/placeholder.jpg'} 
+                            alt={img.altText || 'Thumbnail'} 
+                            fill
+                            sizes="80px"
+                            className="object-cover" 
+                        />
                     </button>
                 ))}
             </div>

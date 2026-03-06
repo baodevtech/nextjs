@@ -3,7 +3,6 @@ import React from 'react';
 import { Metadata } from 'next';
 import { getProducts, getCategories, getHomeData, getUniversalSEO } from '@/services/wpService';
 import HomePageClient from '@/components/home/HomePageClient';
-
 // 1. TỐI ƯU SEO: Gọi API lấy dữ liệu Meta từ RankMath cho trang chủ (URI là "/")
 export async function generateMetadata(): Promise<Metadata> {
   const seoData = await getUniversalSEO('/'); 
@@ -54,7 +53,6 @@ export default async function HomePage() {
     getHomeData(),
     getUniversalSEO('/') // Lấy data SEO cho Schema
   ]);
-
   // Lấy chuỗi JSON-LD thô (Raw) từ RankMath
   const schemaRaw = seoNode?.seo?.jsonLd?.raw || null;
 

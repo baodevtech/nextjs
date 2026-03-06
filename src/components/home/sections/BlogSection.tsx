@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { BlogPost } from '@/types';
-
+import Image from 'next/image';
 interface BlogSectionProps {
   posts: BlogPost[];
 }
@@ -39,55 +39,53 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
               {/* GRID CONTENT */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   
-                  {/* --- 1. FEATURED POST (Cột Lớn) --- */}
+                  {/* FEATURED POST */}
                   <Link href={`/blog/${featuredPost.slug}`} className="lg:col-span-2 group cursor-pointer block">
-                      {/* Image Ratio: Mobile 3/2, PC 16/9 */}
-                      <div className="aspect-[3/2] md:aspect-[16/9] overflow-hidden rounded-xl md:rounded-3xl mb-3 md:mb-6 relative">
-                          <img 
+                      <div className="relative aspect-[3/2] md:aspect-[16/9] overflow-hidden rounded-xl md:rounded-3xl mb-3 md:mb-6">
+                          <Image 
                             src={featuredPost.image} 
                             alt={featuredPost.title} 
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 66vw"
+                            className="object-cover transition-transform duration-1000 group-hover:scale-105" 
                           />
-                          <div className="absolute top-3 left-3 md:top-6 md:left-6">
+                          <div className="absolute top-3 left-3 md:top-6 md:left-6 z-10">
                               <span className="bg-white/90 backdrop-blur text-slate-900 text-[10px] md:text-xs font-bold px-2 py-1 md:px-4 md:py-2 rounded-full uppercase tracking-wider shadow-sm">
                                   Nổi bật
                               </span>
                           </div>
                       </div>
                       
-                      {/* Meta info */}
                       <div className="flex items-center gap-2 md:gap-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400 mb-1 md:mb-3">
                           <span className="text-amber-600">{featuredPost.category}</span>
                           <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                           <span>{featuredPost.date}</span>
                       </div>
                       
-                      {/* Title: Mobile text-xl (vừa vặn), PC text-4xl */}
                       <h3 className="text-xl md:text-4xl font-bold text-slate-900 mb-2 md:mb-4 leading-tight group-hover:text-amber-600 transition-colors">
                           {featuredPost.title}
                       </h3>
                       
-                      {/* Excerpt: Mobile text-xs (nhỏ), line-clamp-2 (ngắn gọn) */}
                       <p className="text-slate-500 text-xs md:text-lg leading-relaxed max-w-2xl line-clamp-2 md:line-clamp-3">
                           {featuredPost.excerpt}
                       </p>
                   </Link>
 
-                  {/* --- 2. SIDE LIST (Cột Phải) --- */}
+                 {/* SIDE LIST */}
                   <div className="flex flex-col gap-5 md:gap-10 border-t border-slate-100 pt-6 md:pt-0 md:border-0">
                       {sidePosts.map((post) => (
                           <Link href={`/blog/${post.slug}`} key={post.id} className="group cursor-pointer flex md:block gap-3 md:gap-0 items-start">
                               
-                              {/* Image Wrapper: Mobile w-20 (80px - rất gọn) */}
-                              <div className="w-20 h-20 md:w-full md:h-auto aspect-square md:aspect-[3/2] overflow-hidden rounded-lg md:rounded-2xl md:mb-4 shrink-0 bg-slate-100">
-                                  <img 
+                              <div className="relative w-20 h-20 md:w-full md:h-auto aspect-square md:aspect-[3/2] overflow-hidden rounded-lg md:rounded-2xl md:mb-4 shrink-0 bg-slate-100">
+                                  <Image 
                                     src={post.image} 
                                     alt={post.title} 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                    fill
+                                    sizes="(max-width: 768px) 80px, 33vw"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105" 
                                   />
                               </div>
                               
-                              {/* Content Wrapper */}
                               <div className="flex flex-col justify-center min-w-0">
                                   <div className="flex items-center gap-2 md:gap-3 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 md:mb-2">
                                       <span className="text-amber-600 truncate max-w-[80px]">{post.category}</span>
@@ -95,7 +93,6 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
                                       <span className="hidden md:inline">{post.date}</span> 
                                   </div>
                                   
-                                  {/* Title: Mobile text-sm (chuẩn list) */}
                                   <h4 className="text-sm md:text-xl font-bold text-slate-900 leading-snug group-hover:text-amber-600 transition-colors line-clamp-2 md:line-clamp-2">
                                       {post.title}
                                   </h4>
@@ -105,16 +102,15 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
                           </Link>
                       ))}
                   </div>
-
               </div>
 
-              {/* 3. MOBILE FOOTER LINK */}
-              <div className="mt-6 md:hidden text-center">
+              {/* TỐI ƯU DOM: Chỉ 1 nút duy nhất. Trên PC nó bám góc phải trên cùng (nhờ md:absolute), trên Mobile nó nằm dưới cùng */}
+              <div className="mt-6 md:mt-0 text-center md:absolute md:top-0 md:right-8 md:text-right">
                    <Link 
                     href="/blog" 
-                    className="inline-flex items-center gap-2 text-xs font-bold text-slate-900 border-b border-slate-200 hover:border-slate-900 pb-1 transition-all"
+                    className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 border-b-2 border-slate-200 md:border-transparent hover:border-slate-900 pb-1 transition-all"
                   >
-                      Đọc tất cả bài viết <ArrowRight size={14} />
+                      Đọc tất cả bài viết <ArrowRight size={14} className="md:w-4 md:h-4" />
                   </Link>
               </div>
 

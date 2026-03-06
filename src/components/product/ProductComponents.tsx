@@ -6,16 +6,18 @@ import { ArrowRight, Calculator, Sparkles, Ruler, Star, ShoppingCart, Eye, Tag, 
 import { Product } from '@/types';
 import { Button } from '../common/UI';
 import { askProductQuestion } from '@/services/geminiService';
-
+import Image from 'next/image';
 export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }> = ({ product, onQuickAdd }) => {
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-brand-200 flex flex-col h-full">
       <div className="relative aspect-[4/4] overflow-hidden bg-gray-50 flex-shrink-0">
-        <Link href={`/product/${product.slug}`}>
-            <img 
-            src={product.image.sourceUrl} 
-            alt={product.image.altText} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+       <Link href={`/product/${product.slug}`}>
+            <Image 
+                src={product.image.sourceUrl || '/placeholder.jpg'} 
+                alt={product.image.altText || product.name} 
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
         </Link>
         

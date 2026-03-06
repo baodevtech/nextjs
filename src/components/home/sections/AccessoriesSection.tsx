@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Scissors } from 'lucide-react';
 import { Product, AccessoryHighlight } from '@/types';
 import { ProductCard } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
-
 interface AccessoriesSectionProps {
   settings?: {
     headNormal?: string;
@@ -41,14 +41,14 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
         
         {/* 1. HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-4">
-            <div className="max-w-2xl">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 mb-3 md:mb-4">
-                    {headNormal} <span className="text-slate-400 block sm:inline">{headHighlight}</span>
-                </h2>
-                <p className="text-sm md:text-xl text-slate-500 font-medium leading-relaxed max-w-xl text-left">
-                    {phuKienSub}
-                </p>
-            </div>
+            <div className="mb-8 md:mb-12 max-w-2xl">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 mb-3 md:mb-4">
+                {headNormal} <span className="text-slate-400 block sm:inline">{headHighlight}</span>
+            </h2>
+            <p className="text-sm md:text-xl text-slate-500 font-medium leading-relaxed max-w-xl text-left">
+                {phuKienSub}
+            </p>
+        </div>
             {/* Link Header: Chỉ hiện trên PC (hidden md:flex) */}
             <Link 
                 href={viewAll.link} 
@@ -63,10 +63,12 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
             
             {/* [A] Card Lớn: Mobile h-[240px] */}
             <Link href={cardLarge.link} className="col-span-2 group relative h-[240px] md:h-[400px] bg-slate-50 rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 block">
-                <img 
+                <Image 
                     src={cardLarge.image || 'https://via.placeholder.com/800x600'} 
                     alt={cardLarge.title} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 66vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 text-white">
@@ -82,12 +84,14 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
             </Link>
 
             {/* [B] Card Nhỏ 1: Mobile h-[180px] */}
-            <Link href={cardSmall1.link} className="group relative h-[180px] md:h-[400px] bg-white rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 block">
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                    <img 
+           <Link href={cardSmall1.link} className="group relative h-[180px] md:h-[400px] bg-white rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 block">
+                <div className="absolute inset-0 bg-gray-50 z-0">
+                    <Image 
                         src={cardSmall1.image || 'https://via.placeholder.com/400x600'} 
-                        className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-700" 
                         alt={cardSmall1.title}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover opacity-90 group-hover:scale-110 transition-transform duration-700" 
                     />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -97,13 +101,15 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
                 </div>
             </Link>
             
-            {/* [C] Card Nhỏ 2: Mobile h-[180px] */}
+            {/* Card Nhỏ 2 */}
             <Link href={cardSmall2.link} className="group relative h-[180px] md:h-[300px] bg-slate-900 rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 block">
-                <div className="absolute inset-0 opacity-60 group-hover:opacity-80 transition-opacity">
-                    <img 
+                <div className="absolute inset-0 opacity-60 group-hover:opacity-80 transition-opacity z-0">
+                    <Image 
                         src={cardSmall2.image || 'https://via.placeholder.com/400x300'} 
-                        className="w-full h-full object-cover" 
                         alt={cardSmall2.title}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover" 
                     />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
@@ -166,7 +172,7 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
             THAY ĐỔI QUAN TRỌNG: Chỉ hiện trên mobile (md:hidden)
             Nằm dưới cùng danh sách sản phẩm
         */}
-        <div className="mt-8 text-center md:hidden">
+       <div className="mt-8 text-center md:absolute md:top-0 md:right-8 md:text-right">
             <Link 
                 href={viewAll.link} 
                 className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-200 hover:border-slate-900 pb-1 transition-all"

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/common/UI';
 import { ShopLookItem } from '@/types';
-
+import Image from 'next/image';
 // --- SUB-COMPONENT 1: Pin (Giữ nguyên) ---
 interface PinProps {
     x: number; y: number; label: string; onClick?: () => void; isActive?: boolean;
@@ -43,15 +43,17 @@ const ProductRow = React.forwardRef<HTMLDivElement, ProductRowProps>(({ item, is
     return (
         <div 
             ref={ref} onClick={onClick}
-            className={`
-                flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 scroll-mt-24
-                ${isActive 
-                    ? 'border-brand-500 bg-brand-50/50 shadow-md ring-1 ring-brand-200' 
-                    : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'}
-            `}
+            className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 scroll-mt-24 ${isActive ? 'border-brand-500 bg-brand-50/50 shadow-md ring-1 ring-brand-200' : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'}`}
         >
-            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
-                <img src={product.image?.sourceUrl} className="w-full h-full object-cover" alt={product.name} loading="lazy"/>
+            {/* THÊM relative VÀO ĐÂY */}
+            <div className="relative w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
+                <Image 
+                    src={product.image?.sourceUrl || '/placeholder.jpg'} 
+                    alt={product.name} 
+                    fill
+                    sizes="64px"
+                    className="object-cover" 
+                />
             </div>
             
             <div className="flex-1 min-w-0">
@@ -145,16 +147,21 @@ export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
               <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-12 md:gap-8 lg:gap-10">
                   
                   {/* LEFT: IMAGE */}
-                  <div className="relative shrink-0 md:col-span-8 lg:col-span-8 bg-slate-200 overflow-hidden select-none
-                                  h-[40%] md:h-full w-full
-                                  md:rounded-3xl shadow-sm group"> 
-                      <img src={bgImage} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt={heading} />
-                      <div className="absolute inset-0 bg-black/10 transition-colors duration-500"></div>
+                  <div className="relative shrink-0 md:col-span-8 lg:col-span-8 bg-slate-200 overflow-hidden select-none h-[40%] md:h-full w-full md:rounded-3xl shadow-sm group"> 
+                      <Image 
+                          src={bgImage} 
+                          alt={heading} 
+                          fill
+                          sizes="(max-width: 768px) 100vw, 66vw"
+                          className="object-cover transition-transform duration-1000 group-hover:scale-105" 
+                      />
+                      <div className="absolute inset-0 bg-black/10 transition-colors duration-500 z-0"></div>
 
                       <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-xl shadow-lg md:hidden z-10 border border-white/50">
                           <span className="text-sm font-bold text-slate-900 uppercase tracking-wide">{heading}</span>
                       </div>
 
+                      {/* Các chấm hotspot */}
                       {items.map((item, idx) => (
                           <ShopTheLookPin 
                             key={idx} x={item.x} y={item.y} 

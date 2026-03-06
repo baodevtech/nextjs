@@ -95,7 +95,7 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
   const blogPosts = initialHomeData.blogPosts || [];
 
   return (
-    <div className="animate-fade-in bg-white font-sans selection:bg-brand-900 selection:text-white">
+    <div className="bg-white font-sans selection:bg-brand-900 selection:text-white">
       
       {/* 1. HERO SECTION - Critical LCP Element */}
       <HeroSection slides={initialHomeData.heroSlides} />

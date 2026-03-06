@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
+import Script from 'next/script';
 import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -60,18 +61,30 @@ export default async function RootLayout({
           <Footer />
         </Providers>
 
-        {/* TỐI ƯU LCP: Toàn bộ Scripts theo dõi được dời xuống ĐÁY cùng, 
-            trình duyệt sẽ chạy chúng sau khi đã vẽ xong ảnh cho người dùng thấy */}
+    {/* TỐI ƯU TBT/LCP: Chuyển tất cả script tracking sang lazyOnload 
+          để không chặn luồng chính của trình duyệt di động */}
         {trackingScripts?.headerScripts && (
-          <div dangerouslySetInnerHTML={{ __html: trackingScripts.headerScripts }} style={{ display: 'none' }} />
+          <Script 
+            id="wp-header-scripts"
+            strategy="lazyOnload"
+            dangerouslySetInnerHTML={{ __html: trackingScripts.headerScripts }} 
+          />
         )}
         
         {trackingScripts?.bodyTopScripts && (
-          <div dangerouslySetInnerHTML={{ __html: trackingScripts.bodyTopScripts }} style={{ display: 'none' }} />
+          <Script 
+            id="wp-body-top-scripts"
+            strategy="lazyOnload"
+            dangerouslySetInnerHTML={{ __html: trackingScripts.bodyTopScripts }} 
+          />
         )}
 
         {trackingScripts?.footerScripts && (
-          <div dangerouslySetInnerHTML={{ __html: trackingScripts.footerScripts }} style={{ display: 'none' }} />
+          <Script 
+            id="wp-footer-scripts"
+            strategy="lazyOnload"
+            dangerouslySetInnerHTML={{ __html: trackingScripts.footerScripts }} 
+          />
         )}
       </body>
     </html>

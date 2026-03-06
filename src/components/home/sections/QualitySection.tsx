@@ -3,7 +3,7 @@
 import React from 'react';
 import { Layers, Droplets, Leaf } from 'lucide-react';
 import { HomeSettings } from '@/types';
-
+import Image from 'next/image';
 interface QualitySectionProps {
   settings?: {
     heading: string;
@@ -53,9 +53,9 @@ export const QualitySection: React.FC<QualitySectionProps> = ({ settings }) => {
                       <div className="relative z-10 h-full flex flex-col justify-between">
                           <div className="md:w-3/5"> {/* Giới hạn chiều rộng text trên PC */}
                               {/* Icon */}
-                              <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm mb-3 md:mb-6 text-blue-600">
+                              <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm mb-3 md:mb-6 text-blue-600 relative overflow-hidden p-2">
                                   {largeCard.icon ? (
-                                      <img src={largeCard.icon} alt="Icon" className="w-5 h-5 md:w-6 md:h-6 object-contain" />
+                                      <Image src={largeCard.icon} alt="Icon" fill className="object-contain p-2" />
                                   ) : (
                                       <Layers className="w-5 h-5 md:w-6 md:h-6" />
                                   )}
@@ -70,11 +70,17 @@ export const QualitySection: React.FC<QualitySectionProps> = ({ settings }) => {
                           
                           {/* Tags */}
                           <div className="mt-4 md:mt-8 flex flex-wrap gap-2">
-                              {largeCard.tags.map((tag, idx) => (
-                                  <span key={idx} className="px-2.5 py-1 md:px-4 md:py-2 bg-white rounded-full text-[10px] md:text-xs font-bold text-slate-700 shadow-sm border border-slate-100">
-                                      {tag.text}
-                                  </span>
-                              ))}
+                             {largeCard.image && (
+                                <div className="absolute bottom-0 right-0 w-[120px] md:w-1/2 h-3/4 md:h-2/3 translate-x-4 translate-y-4 md:translate-x-12 md:translate-y-12 transition-transform duration-700 z-0">
+                                    <Image 
+                                        src={largeCard.image} 
+                                        alt="Structure Layer" 
+                                        fill
+                                        sizes="(max-width: 768px) 120px, 50vw"
+                                        className="object-contain object-bottom" 
+                                    />
+                                </div>
+                            )}
                           </div>
                       </div>
 
@@ -91,11 +97,11 @@ export const QualitySection: React.FC<QualitySectionProps> = ({ settings }) => {
                   {/* --- CARD NHỎ 1 (Chiếm 1 cột - Nửa màn hình mobile) --- */}
                   {smallCards[0] && (
                       <div className="col-span-1 bg-slate-50 rounded-2xl md:rounded-3xl p-4 md:p-8 relative overflow-hidden group hover:bg-blue-50 transition-colors duration-300 flex flex-col justify-center min-h-[140px] md:min-h-0">
-                          <div className="mb-2 md:mb-4">
+                          <div className="relative w-8 h-8 md:w-10 md:h-10 mb-2 md:mb-4">
                               {smallCards[0].icon ? (
-                                  <img src={smallCards[0].icon} alt="Icon" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
+                                  <Image src={smallCards[0].icon} alt="Icon" fill className="object-contain" />
                               ) : (
-                                  <Droplets className="text-blue-500 w-6 h-6 md:w-10 md:h-10" />
+                                  <Droplets className="text-blue-500 w-full h-full" />
                               )}
                           </div>
                           <h3 className="text-sm md:text-xl font-bold text-slate-900 mb-1 line-clamp-1">{smallCards[0].title}</h3>

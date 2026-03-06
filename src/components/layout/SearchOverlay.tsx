@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, X, ArrowRight, Tag, FileText, ShoppingBag } from 'lucide-react';
 import { Product, BlogPost } from '@/types';
 import { getProducts } from '@/services/wpService';
-
+import Image from 'next/image';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -18,9 +18,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
   const [results, setResults] = useState<{ products: Product[], blogs: BlogPost[] }>({ products: [], blogs: [] });
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    getProducts().then(setProducts);
-  }, []);
+useEffect(() => {
+    if (isOpen && products.length === 0) {
+      // Có thể thêm loading state ở đây
+      getProducts().then(setProducts);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -103,7 +106,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                 {results.products.map(p => (
                                     <Link key={p.id} href={`/product/${p.slug}`} onClick={onClose} className="flex gap-4 group p-3 rounded-xl hover:bg-gray-50 transition-colors">
                                         <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                                            <img src={p.image.sourceUrl} alt={p.name} className="w-full h-full object-cover" />
+                                            <Image 
+                                                src={p.image.sourceUrl || '/placeholder.jpg'} 
+                                                alt={p.name} 
+                                                fill
+                                                sizes="64px"
+                                                className="object-cover" 
+                                            />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">{p.name}</h4>
