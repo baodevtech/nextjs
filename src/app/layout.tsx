@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { FloatingContact } from "@/components/layout/FloatingContact";
 import { getTrackingScripts } from '@/services/wpService';
-
+import { Suspense } from "react";
 const inter = Inter({ 
   subsets: ["latin", "vietnamese"], 
   variable: '--font-inter',
@@ -52,13 +52,17 @@ export default async function RootLayout({
       >
         {/* Phần giao diện người dùng được đưa lên ĐẦU TIÊN để vẽ ngay lập tức */}
         <Providers>
-          <Header />
+          <Suspense fallback={<div className="h-20 bg-slate-100 animate-pulse w-full"></div>}>
+            <Header />
+          </Suspense>
           <CartDrawerWrapper />
           <main className="flex-grow min-h-screen relative z-0">
             {children}
           </main>
           <FloatingContact />
-          <Footer />
+          <Suspense fallback={<div className="h-40 bg-[#0B1727] animate-pulse w-full"></div>}>
+            <Footer />
+          </Suspense>
         </Providers>
 
     {/* TỐI ƯU TBT/LCP: Chuyển tất cả script tracking sang lazyOnload 

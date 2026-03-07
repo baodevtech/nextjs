@@ -333,7 +333,7 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
   return acfData.heroSlides.map((slide: any, index: number) => ({
     id: index + 1,
     subtitle: slide.subtitle || "",
-    title: slide.title || "",
+    title: slide.title?.replace(/\\n/g, '\n') || "",
     description: slide.description || "",
     image: slide.image?.node?.sourceUrl ?? "",
     ctaLink: slide.ctaLink || "/shop",
@@ -712,6 +712,14 @@ export const getHomeData = async (): Promise<HomeSettings> => {
             image { node { sourceUrl } }
             hotspots { x, y, name, price, position, link, isNofollow }
           }
+          
+          # [MỚI THÊM] Truy vấn dữ liệu Feature Bar
+          featureBar {
+            icon
+            title
+            description
+          }
+
           categoryHeadingNormal
           categoryHeadingHighlight
           categorySubheading
@@ -790,6 +798,7 @@ export const getHomeData = async (): Promise<HomeSettings> => {
       products: mapAcfProducts(tab.products?.nodes || []),
     }));
   };
+  
   const accProductsRaw = acfData.accessoryProducts?.nodes ? acfData.accessoryProducts.nodes : acfData.accessoryProducts;
 
   const mapQualityLarge = (data: any): QualityLargeCard => ({
@@ -809,19 +818,30 @@ export const getHomeData = async (): Promise<HomeSettings> => {
 
   return {
     heroSlides: settings ? mapHeroSlides(settings) : [],
+    
+    // [MỚI THÊM] Map dữ liệu Feature Bar
+    featureBar: acfData.featureBar?.map((item: any) => ({
+        icon: item.icon || "Star",
+        title: item.title || "",
+        description: item.description || ""
+    })) || [],
+
     categoryHeadingNormal: acfData.categoryHeadingNormal || "Danh Mục",
     categoryHeadingHighlight: acfData.categoryHeadingHighlight || "Sản Phẩm",
     categorySubheading: acfData.categorySubheading || "",
     catalogueText: acfData.catalogueText || "Catalogue 2024",
     enableCategoryNofollow: acfData.enableCatNofollow || false,
+    
     signatureHeadingNormal: acfData.signatureHeadingNormal || "Signature",
     signatureHeadingHighlight: acfData.signatureHeadingHighlight || "Collection",
     signatureDesc: acfData.signatureDesc || "",
     signatureTabs: mapSignatureTabs(acfData.signatureTabs),
+    
     shopLookHeading: acfData.shopLookHeading || "Shop The Look",
     shopLookSubheading: acfData.shopLookSubheading || "",
     shopLookImage: getSingleImage(acfData.shopLookImage),
     shopLookItems: mapShopLookItems(acfData.shopLookItems),
+    
     headNormal: acfData.headNormal || "Chi Tiết.",
     headHighlight: acfData.headHighlight || "Định Hình Đẳng Cấp.",
     phuKienSub: acfData.phuKienSub || " Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng được thiết kế đồng bộ để tạo nên sự hoàn hảo cho từng góc cạnh.",
@@ -833,10 +853,12 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     },
     accProdHeading: acfData.accProdHeading || "SẢN PHẨM PHỔ BIẾN",
     accProducts: mapAcfProducts(accProductsRaw || []),
+    
     qualityHeading: acfData.qualityHeading || "Tiêu Chuẩn Đại Nam Wall",
     qualitySubheading: acfData.qualitySubheading || "",
     qualityLarge: mapQualityLarge(acfData.qualityLarge),
     qualitySmall: mapQualitySmall(acfData.qualitySmall),
+    
     blogPosts: mapBlogPosts(postsData),
   };
 };

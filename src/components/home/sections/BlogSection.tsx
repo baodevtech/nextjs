@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { BlogPost } from '@/types';
 import Image from 'next/image';
+
 interface BlogSectionProps {
   posts: BlogPost[];
 }
@@ -16,18 +17,16 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
   const sidePosts = posts.slice(1, 3);
 
   return (
-      // 1. SPACING: Giảm py-10 cho mobile (gọn hơn), giữ py-32 cho PC
       <section className="py-10 md:py-32 bg-white border-t border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               
               {/* HEADER */}
               <div className="flex justify-between items-end mb-6 md:mb-16">
-                  {/* Typography: Mobile text-2xl (nhỏ gọn), PC text-5xl */}
                   <h2 className="text-2xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
                       Câu Chuyện <span className="inline md:block text-slate-400 md:text-slate-900">Của Chúng Tôi.</span>
                   </h2>
                   
-                  {/* Link PC */}
+                  {/* Link PC: Chỉ hiện trên Desktop */}
                   <Link 
                     href="/blog" 
                     className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-900 transition-all pb-1"
@@ -104,13 +103,13 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
                   </div>
               </div>
 
-              {/* TỐI ƯU DOM: Chỉ 1 nút duy nhất. Trên PC nó bám góc phải trên cùng (nhờ md:absolute), trên Mobile nó nằm dưới cùng */}
-              <div className="mt-6 md:mt-0 text-center md:absolute md:top-0 md:right-8 md:text-right">
+              {/* MOBILE VIEW ALL LINK: Chỉ hiện trên mobile (md:hidden) */}
+              <div className="mt-8 text-center flex justify-center md:hidden">
                    <Link 
                     href="/blog" 
-                    className="inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-900 border-b-2 border-slate-200 md:border-transparent hover:border-slate-900 pb-1 transition-all"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-200 hover:border-slate-900 pb-1 transition-all"
                   >
-                      Đọc tất cả bài viết <ArrowRight size={14} className="md:w-4 md:h-4" />
+                      Đọc tất cả bài viết <ArrowRight size={16} />
                   </Link>
               </div>
 

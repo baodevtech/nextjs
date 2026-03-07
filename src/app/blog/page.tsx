@@ -3,7 +3,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { getPaginatedPosts, getBlogCategoriesList, getBlogTagsList, getUniversalSEO } from '@/services/wpService';
 import { BlogListClient } from '@/components/blog/BlogListClient'; 
-
+export const dynamic = 'force-static';
 // 1. TỐI ƯU SEO: Sinh Metadata ĐỘNG từ RankMath 
 export async function generateMetadata(): Promise<Metadata> {
   // LƯU Ý: Thay '/blog/' bằng URI thực tế của trang blog trên WP của bạn (vd: '/tin-tuc/')

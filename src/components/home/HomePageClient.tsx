@@ -58,7 +58,8 @@ export default function HomePageClient({ initialProducts, initialCategories, ini
     headingHighlight: initialHomeData.categoryHeadingHighlight,
     subheading: initialHomeData.categorySubheading,
     catalogueText: initialHomeData.catalogueText,
-    enableNofollow: initialHomeData.enableCategoryNofollow
+    enableNofollow: initialHomeData.enableCategoryNofollow,
+    featureBar: initialHomeData.featureBar
   };
 
   const signatureSettings = {

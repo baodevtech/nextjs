@@ -159,7 +159,11 @@ export interface AccessoryHighlight {
   image: string;
   link: string;
 }
-
+export interface FeatureItem {
+  icon: string;
+  title: string;
+  description: string;
+}
 export interface HomeSettings {
   heroSlides: HeroSlide[];
   categoryHeadingNormal?: string;
@@ -191,6 +195,7 @@ export interface HomeSettings {
   qualityLarge: QualityLargeCard;
   qualitySmall: QualitySmallCard[];
   blogPosts: BlogPost[]; 
+  featureBar?: FeatureItem[];
 }
 
 export interface Project {

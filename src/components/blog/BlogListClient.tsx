@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Calendar, Clock, ArrowRight, Search, ChevronRight, Hash, Loader2, Filter } from 'lucide-react';
 import { BlogPost } from '@/types';
 import { fetchMorePostsAction } from '@/actions/blogActions';
-
+import Image from 'next/image';
 interface BlogListClientProps {
   initialPosts: BlogPost[];
   initialPageInfo: { hasNextPage: boolean; endCursor: string };
@@ -70,7 +70,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
   };
 
   return (
-    <div className="animate-fade-in">
+    <div >
         {/* MOBILE UX: THANH ĐIỀU HƯỚNG */}
         <div className="lg:hidden mb-6 flex flex-col gap-3">
             <div className="relative">
@@ -133,10 +133,17 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
                     </div>
                 ) : posts.length > 0 ? (
                     <div className="space-y-10 md:space-y-12">
-                        {posts.map(post => (
+                        {posts.map((post, index) => (
                             <article key={post.id} className="flex flex-col group border-b border-gray-100 pb-10 md:pb-12 last:border-0 last:pb-0">
-                                <Link href={`/blog/${post.slug}`} className="block overflow-hidden rounded-2xl aspect-[16/9] mb-5 md:mb-6 shadow-sm relative">
-                                    <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                              <Link href={`/blog/${post.slug}`} className="block overflow-hidden rounded-2xl aspect-[16/9] mb-5 md:mb-6 shadow-sm relative">
+                                    <Image 
+                                        src={post.image} 
+                                        alt={post.title} 
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 66vw"
+                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                        priority={index === 0} // <--- CHÌA KHÓA Ở ĐÂY: Chỉ tải ưu tiên bài đầu tiên
+                                    />
                                 </Link>
                                 
                                 <div className="flex flex-wrap items-center gap-3 text-[10px] md:text-xs font-bold uppercase text-slate-400 mb-3">

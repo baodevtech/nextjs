@@ -7,6 +7,7 @@ import { ArrowRight, Scissors } from 'lucide-react';
 import { Product, AccessoryHighlight } from '@/types';
 import { ProductCard } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
+
 interface AccessoriesSectionProps {
   settings?: {
     headNormal?: string;
@@ -42,13 +43,13 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
         {/* 1. HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-4">
             <div className="mb-8 md:mb-12 max-w-2xl">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 mb-3 md:mb-4">
-                {headNormal} <span className="text-slate-400 block sm:inline">{headHighlight}</span>
-            </h2>
-            <p className="text-sm md:text-xl text-slate-500 font-medium leading-relaxed max-w-xl text-left">
-                {phuKienSub}
-            </p>
-        </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 mb-3 md:mb-4">
+                    {headNormal} <span className="text-slate-400 block sm:inline">{headHighlight}</span>
+                </h2>
+                <p className="text-sm md:text-xl text-slate-500 font-medium leading-relaxed max-w-xl text-left">
+                    {phuKienSub}
+                </p>
+            </div>
             {/* Link Header: Chỉ hiện trên PC (hidden md:flex) */}
             <Link 
                 href={viewAll.link} 
@@ -122,10 +123,7 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
                 </div>
             </Link>
 
-            {/* [D] Card Xem Tất Cả: 
-                THAY ĐỔI QUAN TRỌNG: thêm class 'hidden md:flex' 
-                -> Ẩn hoàn toàn trên mobile, chỉ hiện flex trên PC 
-            */}
+            {/* [D] Card Xem Tất Cả: Chỉ hiện flex trên PC */}
             <Link 
                 href={viewAll.link} 
                 className="hidden md:flex col-span-2 md:col-span-2 group relative h-[300px] bg-white border border-slate-200 rounded-3xl overflow-hidden cursor-pointer flex-col items-center justify-center hover:border-brand-400 transition-all duration-500 hover:shadow-xl text-center p-4"
@@ -168,11 +166,8 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
              </div>
         )}
 
-        {/* 4. MOBILE VIEW ALL LINK 
-            THAY ĐỔI QUAN TRỌNG: Chỉ hiện trên mobile (md:hidden)
-            Nằm dưới cùng danh sách sản phẩm
-        */}
-       <div className="mt-8 text-center md:absolute md:top-0 md:right-8 md:text-right">
+        {/* 4. MOBILE VIEW ALL LINK: Chỉ hiện trên mobile (md:hidden) */}
+       <div className="mt-8 text-center flex justify-center md:hidden">
             <Link 
                 href={viewAll.link} 
                 className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-200 hover:border-slate-900 pb-1 transition-all"

@@ -149,6 +149,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                                     className="object-cover object-center" 
                                     sizes="100vw"
                                     priority={idx === 0} // Chỉ cần giữ lại priority cho ảnh đầu tiên là đủ
+                                    fetchPriority="high"
                                 />
                             </div>
                             
@@ -233,9 +234,9 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                                 <span className="w-12 h-[2px] bg-amber-400 inline-block"></span>
                                 <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-sm animate-slide-in-right">{slide.subtitle}</span>
                             </div>
-                            <div className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight whitespace-pre-line drop-shadow-2xl">
+                            <h1 className="text-3xl md:text-4xl lg:text-6xl font-serif font-bold text-white mb-8 !leading-[1.25] tracking-tight whitespace-pre-line drop-shadow-2xl">
                                 {slide.title}
-                            </div>
+                            </h1>
                             <p className="text-slate-200 text-lg font-light max-w-lg mb-10 leading-relaxed opacity-90 border-l border-white/20 pl-6">{slide.description}</p>
                             <div className="flex items-center gap-6">
                                 <Link href={slide.ctaLink}>
