@@ -213,7 +213,7 @@ export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps
                   height={140}
                   className="
                     object-contain 
-                    w-[55%] h-[55%] 
+                    w-[70%] h-[80%] 
                     mix-blend-multiply 
                     opacity-85 group-hover:opacity-100 
                     transition-all duration-500
