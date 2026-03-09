@@ -194,7 +194,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
                 <div className="grid grid-cols-2 gap-3">
                     <a 
-                        href="https://zalo.me/0912345678" 
+                        href="https://zalo.me/0938692111" 
                         target="_blank" 
                         rel="noreferrer"
                         className="flex flex-col items-center justify-center h-12 rounded-lg border border-blue-200 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all group"
@@ -205,12 +205,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                        </div>
                     </a>
                     <a 
-                        href="tel:0912345678"
+                        href="tel:0938692111"
                         className="flex flex-col items-center justify-center h-12 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 transition-all group"
                     >
                        <div className="flex items-center gap-1.5 md:gap-2">
                             <Phone size={18} className="group-hover:rotate-12 transition-transform"/> 
-                            <span className="font-bold text-xs md:text-sm">0912.345.678</span>
+                            <span className="font-bold text-xs md:text-sm">0938.692.111</span>
                        </div>
                     </a>
                 </div>

@@ -281,8 +281,8 @@ export default function CheckoutPage() {
 
                             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                                 <p className="text-xs text-slate-500 mb-2">Cần hỗ trợ gấp?</p>
-                                <a href="tel:0912345678" className="inline-flex items-center gap-2 font-bold text-slate-900 hover:text-brand-600">
-                                    <Phone size={16} /> 0912.345.678
+                                <a href="tel:0938692111" className="inline-flex items-center gap-2 font-bold text-slate-900 hover:text-brand-600">
+                                    <Phone size={16} /> 0938.692.111
                                 </a>
                             </div>
                         </div>

@@ -37,10 +37,10 @@ export const CTABanner = () => {
 
                   {/* Secondary Button */}
                   <a 
-                    href="tel:0912345678" 
+                    href="tel:0938692111" 
                     className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 flex items-center justify-center rounded-full border border-slate-700 text-white text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-slate-800 hover:border-slate-600 transition-colors"
                   >
-                      Hotline: 0912.345.678
+                      Hotline: 0938.692.111
                   </a>
               </div>
           </div>

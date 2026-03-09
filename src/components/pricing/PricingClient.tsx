@@ -322,7 +322,7 @@ export default function PricingClient({ data }: PricingClientProps) {
                                                     <p className="text-xs md:text-sm font-bold text-brand-800">Cần tư vấn kỹ thuật?</p>
                                                     <p className="text-[10px] md:text-xs text-brand-600 mt-0.5">Gửi kích thước để nhận bản vẽ miễn phí</p>
                                                 </div>
-                                                <a href="https://zalo.me/0912345678" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                                <a href="https://zalo.me/093869211" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
                                                     <Button className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white text-xs gap-2 px-4 py-2">
                                                         <MessageCircle size={14}/> Chat Zalo
                                                     </Button>
@@ -626,7 +626,7 @@ export default function PricingClient({ data }: PricingClientProps) {
                                 Đặt Lịch Khảo Sát
                             </Button>
                         </Link>
-                        <a href="https://zalo.me/0912345678" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                        <a href="https://zalo.me/093869211" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
                             <Button variant="outline" className="w-full h-12 md:h-14 px-8 md:px-10 text-xs md:text-sm font-bold uppercase tracking-widest border-slate-700 text-white hover:bg-slate-800 hover:text-white hover:border-white">
                                 Chat Zalo Tư Vấn
                             </Button>

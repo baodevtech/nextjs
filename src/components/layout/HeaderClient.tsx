@@ -54,8 +54,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
             {headerData.topBarText || "Premium Wall Solutions Since 2014"}
           </p>
           <div className="flex gap-8">
-            <a href={`tel:${headerData.hotline?.replace(/\D/g, '') || '0912345678'}`} className="hover:text-white transition-colors">
-                Hotline: {headerData.hotline || "0912.345.678"}
+            <a href={`tel:${headerData.hotline?.replace(/\D/g, '') || '0938692111'}`} className="hover:text-white transition-colors">
+                Hotline: {headerData.hotline || "0938.692.111"}
             </a>
             <span>Showroom: Quận 12, Hồ Chí Minh</span>
           </div>

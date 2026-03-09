@@ -1059,7 +1059,7 @@ export const getContactPageData = async (): Promise<ContactPageData> => {
     heroDesc: acf.heroDesc || 'Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn.',
     heroImage: acf.heroImage?.node?.sourceUrl || 'https://via.placeholder.com/1920x600',
     info: {
-      address: acf.address || 'Đang cập nhật địa chỉ...', hotline: acf.hotline || '0912.345.678', email: acf.email || 'info@domain.com',
+      address: acf.address || 'Đang cập nhật địa chỉ...', hotline: acf.hotline || '0938.692.111', email: acf.email || 'info@domain.com',
       workingHours: acf.workingHours || 'Thứ 2 - Thứ 7: 8:00 - 17:30', zaloUrl: acf.zaloUrl || '#', facebookUrl: acf.facebookUrl || '#'
     },
     mapUrl: acf.mapEmbedUrl || '',
@@ -1154,7 +1154,7 @@ export const getFooterData = async (): Promise<FooterData> => {
       { icon: 'Headphones', title: 'Hỗ trợ 24/7', desc: 'Tư vấn kỹ thuật thi công' }
     ],
     companyInfo: {
-      logoText: acf.companyInfo?.logoText || 'ĐẠI NAM WALL', desc: acf.companyInfo?.desc || 'Tổng kho phân phối vật liệu ốp tường cao cấp...', address: acf.companyInfo?.address || '123 Đ. Nguyễn Văn Linh, Q. Long Biên, Hà Nội', phone: acf.companyInfo?.phone || '0912.345.678', email: acf.companyInfo?.email || 'sale@dainamwall.com',
+      logoText: acf.companyInfo?.logoText || 'ĐẠI NAM WALL', desc: acf.companyInfo?.desc || 'Tổng kho phân phối vật liệu ốp tường cao cấp...', address: acf.companyInfo?.address || '123 Đ. Nguyễn Văn Linh, Q. Long Biên, Hà Nội', phone: acf.companyInfo?.phone || '0938.692.111', email: acf.companyInfo?.email || 'sale@dainamwall.com',
     },
     shopCategories: { title: acf.shopCategories?.title || 'Danh mục mua sắm', links: acf.shopCategories?.links || [] },
     customerService: { title: acf.customerService?.title || 'Hỗ trợ dịch vụ', links: acf.customerService?.links || [] },
