@@ -1,4 +1,3 @@
-// src/components/product/ProductDetailClient.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -11,6 +10,7 @@ import { Button } from '@/components/common/UI';
 import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
+
 interface ProductDetailClientProps {
   product: Product;
 }
@@ -27,24 +27,32 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       setQuantity(prev => Math.max(1, prev + delta));
   };
 
+  // Tính toán % giảm giá
+  const currentPrice = product.price.amount;
+  const originalPrice = product.regularPrice?.amount || (currentPrice > 0 ? currentPrice * 1.1 : 0);
+  
+  const isDiscounted = originalPrice > currentPrice && currentPrice > 0;
+  const discountPercent = isDiscounted 
+      ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) 
+      : 0;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:gap-y-12">
       
       <div className="order-1 lg:col-span-7 lg:col-start-1 lg:row-start-1">
         <div className="space-y-4">
             <div className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in">
-                {/* SỬA <img> THÀNH <Image> VÀ THÊM priority */}
                 <Image 
                     src={allImages[activeImage]?.sourceUrl || '/placeholder.jpg'} 
                     alt={allImages[activeImage]?.altText || product.name} 
                     fill
                     sizes="(max-width: 1024px) 100vw, 60vw"
-                    priority // RẤT QUAN TRỌNG: Báo trình duyệt tải ngay lập tức
+                    priority 
                     className="object-cover transition-transform duration-500 group-hover:scale-105" 
                 />
-                {product.price.amount > 0 && (
+                {isDiscounted && (
                     <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                        -10% Giảm giá
+                        -{discountPercent}% Giảm giá
                     </div>
                 )}
             </div>
@@ -54,7 +62,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <button 
                         key={i} 
                         onClick={() => setActiveImage(i)}
-                        className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ...`}
+                        className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${activeImage === i ? 'border-brand-500 shadow-md' : 'border-transparent hover:border-brand-200'}`}
                     >
                         <Image 
                             src={img.sourceUrl || '/placeholder.jpg'} 
@@ -69,11 +77,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         </div>
       </div>
 
-      {/* =======================================================
-          2. GIÁ & MUA HÀNG (THÔNG TIN CHÍNH)
-          - Mobile: Nằm giữa (order-2) - Đẩy thẳng lên dưới ảnh
-          - Desktop: Nằm cột phải, vắt ngang 2 hàng (row-span-2)
-      ======================================================= */}
       <div className="order-2 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 relative">
          <div className="lg:sticky lg:top-24 space-y-6">
             
@@ -105,11 +108,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <span className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
                         {product.price.formatted}
                     </span>
-                    <span className="text-sm text-slate-400 line-through">
-                        {(product.price.amount * 1.1).toLocaleString('vi-VN')}₫
-                    </span>
-                    {product.price.amount > 0 && (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-10%</span>
+                    {isDiscounted && (
+                        <>
+                            <span className="text-sm text-slate-400 line-through">
+                                {product.regularPrice?.formatted || `${originalPrice.toLocaleString('vi-VN')}₫`}
+                            </span>
+                            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">
+                                -{discountPercent}%
+                            </span>
+                        </>
                     )}
                 </div>
             </div>
@@ -225,11 +232,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
          </div>
       </div>
 
-      {/* =======================================================
-          3. MÔ TẢ & THÔNG SỐ KỸ THUẬT
-          - Mobile: Bị đẩy xuống dưới cùng (order-3)
-          - Desktop: Nằm cột trái, hàng 2 (col-span-7, row-start-2)
-      ======================================================= */}
       <div className="order-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 space-y-10">
         
         {/* MÔ TẢ CHI TIẾT */}

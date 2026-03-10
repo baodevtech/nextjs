@@ -122,9 +122,15 @@ const PRODUCT_FIELDS = `
 const mapProduct = (node: any): Product => {
   if (!node) return {} as Product;
 
+  // Lấy và format giá bán (price)
   const rawPrice = node.price
     ? parseFloat(node.price.replace(/[^0-9.]/g, ""))
     : 0;
+
+  // THÊM MỚI: Lấy và format giá gốc (regularPrice)
+  const rawRegularPrice = node.regularPrice
+    ? parseFloat(node.regularPrice.replace(/[^0-9.]/g, ""))
+    : undefined;
 
   const brandName =
     node.productBrands?.nodes && node.productBrands.nodes.length > 0
@@ -160,6 +166,14 @@ const mapProduct = (node: any): Product => {
         currency: "VND",
       }).format(rawPrice),
     },
+    // THÊM MỚI: Trả về trường regularPrice cho Giao diện sử dụng
+    regularPrice: rawRegularPrice !== undefined ? {
+      amount: rawRegularPrice,
+      formatted: new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(rawRegularPrice),
+    } : undefined,
     stockStatus: node.stockStatus === "IN_STOCK" ? "IN_STOCK" : "OUT_OF_STOCK",
     sku: node.sku || "",
     categories: node.productCategories?.nodes?.map((c: any) => c.slug) || [],
@@ -1568,5 +1582,24 @@ export const getTrackingScripts = async (): Promise<TrackingScripts | null> => {
     headerScripts: scripts.headerScripts || "",
     bodyTopScripts: scripts.bodyTopScripts || "",
     footerScripts: scripts.footerScripts || "",
+  };
+};export interface SiteMetadata {
+  title: string;
+  description: string;
+}
+
+export const getSiteMetadata = async (): Promise<SiteMetadata> => {
+  const data = await fetchAPI(`
+    query GetSiteSettings {
+      generalSettings {
+        title
+        description
+      }
+    }
+  `, {}, undefined, ['general-settings']);
+
+  return {
+    title: data?.generalSettings?.title || "Đại Nam Wall",
+    description: data?.generalSettings?.description || "Tổng kho phân phối vật liệu ốp tường cao cấp",
   };
 };

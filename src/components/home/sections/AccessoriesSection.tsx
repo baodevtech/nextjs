@@ -74,7 +74,7 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 text-white">
                     <span className="bg-amber-400 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide mb-2 inline-block shadow-sm">Luxury</span>
-                    <h3 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2 font-serif">{cardLarge.title}</h3>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{cardLarge.title}</h3>
                     <p className="text-slate-200 mb-3 opacity-90 max-w-sm text-xs md:text-sm leading-relaxed line-clamp-2">
                         {cardLarge.subtitle}
                     </p>

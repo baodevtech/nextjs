@@ -8,8 +8,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { FloatingContact } from "@/components/layout/FloatingContact";
-import { getTrackingScripts } from '@/services/wpService';
+import { getTrackingScripts, getSiteMetadata } from '@/services/wpService';
 import { Suspense } from "react";
+
 const inter = Inter({ 
   subsets: ["latin", "vietnamese"], 
   variable: '--font-inter',
@@ -26,11 +27,23 @@ const merriweather = Merriweather({
   preload: true, 
 });
 
-export const metadata: Metadata = {
-  title: "Kho Panel | Tổng Kho Panel Cách Nhiệt",
-  description: "Kho Panel chuyên cung cấp giải pháp tấm panel cách nhiệt, cách âm chất lượng cao. Bảo hành 15 năm.",
-  metadataBase: new URL('https://khopanel.com'), 
-};
+// THÊM HÀM NÀY ĐỂ LẤY METADATA ĐỘNG TỪ WORDPRESS
+export async function generateMetadata(): Promise<Metadata> {
+  const siteData = await getSiteMetadata();
+
+  return {
+    title: {
+      default: siteData.title, // Lấy tên site từ WP (VD: Kho Panel)
+      template: `%s | ${siteData.title}`, // Template cho các trang con
+    },
+    description: siteData.description, // Lấy mô tả từ WP
+    metadataBase: new URL('https://khopanel.com'), 
+    icons: {
+      icon: '/icon.png', // Trỏ tới file icon mới của bạn
+      shortcut: '/favicon.ico',
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -50,7 +63,6 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${inter.variable} ${merriweather.variable} font-sans bg-white text-slate-900 selection:bg-brand-100 selection:text-brand-900 antialiased`}
       >
-        {/* Phần giao diện người dùng được đưa lên ĐẦU TIÊN để vẽ ngay lập tức */}
         <Providers>
           <Suspense fallback={<div className="h-20 bg-slate-100 animate-pulse w-full"></div>}>
             <Header />
@@ -65,8 +77,6 @@ export default async function RootLayout({
           </Suspense>
         </Providers>
 
-    {/* TỐI ƯU TBT/LCP: Chuyển tất cả script tracking sang lazyOnload 
-          để không chặn luồng chính của trình duyệt di động */}
         {trackingScripts?.headerScripts && (
           <Script 
             id="wp-header-scripts"
