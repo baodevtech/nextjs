@@ -8,15 +8,15 @@ import {
   getShopSettings,
   getUniversalSEO,
 } from "@/services/wpService";
-import ShopClient from "@/app/shop/ShopClient"; // Import lại Client Component từ trang Shop
+import ShopClient from "@/app/c/ShopClient"; // Import lại Client Component từ trang Shop
 
 // 1. TỐI ƯU SEO: Sinh Meta Tag động cho TỪNG DANH MỤC
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   
-  // LƯU Ý: Thay '/shop/' bằng URL Base danh mục sản phẩm trên WordPress của bạn
+  // LƯU Ý: Thay '/c/' bằng URL Base danh mục sản phẩm trên WordPress của bạn
   // Ví dụ WP của bạn là: portal.khopanel.com/shop/panel-pu/ thì để là `/shop/${slug}/`
-  const seoData = await getUniversalSEO(`/shop/${slug}/`); 
+  const seoData = await getUniversalSEO(`/c/${slug}/`); 
   const seo = seoData?.seo;
 
   if (!seo) {
@@ -52,7 +52,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     getProducts(),
     getCategories(),
     getShopSettings(),
-    getUniversalSEO(`/shop/${slug}/`) // Lấy schema của danh mục
+    getUniversalSEO(`/c/${slug}/`) // Lấy schema của danh mục
   ]);
 
   // Kiểm tra xem slug danh mục có tồn tại không, nếu không -> 404

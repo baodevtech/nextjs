@@ -95,7 +95,7 @@ export default function MobileMenu({ isOpen, onClose, headerData, isActive, safe
                         return (
                           <Link 
                             key={item.title} 
-                            href={`/shop?cat=${item.slug}`} 
+                            href={`/c/${item.slug}`} 
                             onClick={onClose} 
                             className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors"
                           >

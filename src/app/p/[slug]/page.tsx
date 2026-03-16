@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   const [product, seoData] = await Promise.all([
     getProductBySlug(slug),
-    getUniversalSEO(`/product/${slug}/`)
+    getUniversalSEO(`/p/${slug}/`)
   ]);
 
   if (!product) return { title: 'Không tìm thấy sản phẩm' };
@@ -65,7 +65,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   // Fetch dữ liệu song song (Lấy Sản phẩm + SEO Schema cùng lúc để tiết kiệm thời gian)
   const [product, seoNode] = await Promise.all([
     getProductBySlug(slug),
-    getUniversalSEO(`/product/${slug}/`)
+    getUniversalSEO(`/p/${slug}/`)
   ]);
 
   // Nếu không có sản phẩm, chuyển hướng sang trang 404
@@ -89,7 +89,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="max-w-7xl mx-auto px-4 py-3 text-xs text-slate-500 flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
              <Link href="/" className="hover:text-brand-600 transition-colors">Trang chủ</Link>
              <ChevronRight size={12} className="text-slate-300" />
-             <Link href="/shop" className="hover:text-brand-600 transition-colors">Sản phẩm</Link>
+             <Link href="/c" className="hover:text-brand-600 transition-colors">Sản phẩm</Link>
              <ChevronRight size={12} className="text-slate-300" />
              {/* Bạn có thể bổ sung danh mục (Category) vào Breadcrumb nếu muốn */}
              <span className="text-slate-900 font-medium truncate">{product.name}</span>

@@ -29,7 +29,7 @@ export const LuxuryHotspotV2: React.FC<HotspotProps> = ({ data, isVisible, delay
     const xVal = parseFloat(String(data.x)); 
     const yVal = parseFloat(String(data.y));
     const productName = data.title || data.name || '';
-    const productLink = data.link || (data.productHandle ? `/products/${data.productHandle}` : '#');
+    const productLink = data.link || (data.productHandle ? `/p/${data.productHandle}` : '#');
     const positionRaw = data.position ? String(data.position).trim().toLowerCase() : '';
     let showContentOnLeft = xVal > 50; 
     if (positionRaw === 'left') showContentOnLeft = true;

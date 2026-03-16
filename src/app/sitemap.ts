@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/contact',
     '/pricing',
     '/ung-dung',
-    '/shop',
+    '/c',
     '/blog',
     '/projects',
   ].map((route) => ({
@@ -62,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Các trang Sản phẩm
   const productRoutes = products.map((product) => ({
-    url: `${BASE_URL}/product/${product.slug}`,
+    url: `${BASE_URL}/p/${product.slug}`,
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,
     priority: 0.9,
@@ -70,7 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 3. Các trang Danh mục (Thay 'danh-muc' bằng đường dẫn thực tế nếu cần)
   const categoryRoutes = categories.map((category) => ({
-    url: `${BASE_URL}/danh-muc/${category.slug}`, 
+    url: `${BASE_URL}/c/${category.slug}`, 
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,

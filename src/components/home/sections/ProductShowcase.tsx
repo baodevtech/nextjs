@@ -72,7 +72,7 @@ export const ProductShowcase = ({ initialProducts, categories }: ProductShowcase
         
         {/* Nút xem thêm */}
         <div className="mt-16 text-center">
-          <Link href="/shop">
+          <Link href="/c">
             <Button variant="outline" className="px-12 py-4 h-auto text-xs font-bold uppercase tracking-widest border border-slate-200 hover:border-slate-900 hover:bg-white text-slate-900 rounded-sm transition-all">
               Vào Cửa Hàng
             </Button>

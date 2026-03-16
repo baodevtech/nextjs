@@ -34,7 +34,7 @@ const Breadcrumb: React.FC<{ categoryName?: string }> = ({ categoryName }) => (
       Trang chủ
     </Link>
     <span className="mx-1.5 text-slate-500">/</span>
-    <Link href="/shop" className="hover:text-white transition-colors">
+    <Link href="/c" className="hover:text-white transition-colors">
       Cửa hàng
     </Link>
     {categoryName && (
@@ -88,7 +88,7 @@ const ShopHeader: React.FC<{
           <nav className="flex text-[10px] md:text-xs text-slate-500 mb-3 md:mb-4 z-10 relative">
             <Link href="/" className="hover:text-brand-600 transition-colors">Trang chủ</Link>
             <span className="mx-1.5 text-slate-300">/</span>
-            <Link href="/shop" className="hover:text-brand-600 transition-colors font-semibold">Cửa hàng</Link>
+            <Link href="/c" className="hover:text-brand-600 transition-colors font-semibold">Cửa hàng</Link>
           </nav>
           
           <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mb-2 md:mb-3">
@@ -266,10 +266,10 @@ export default function ShopClient({
   // [SỬA ĐỔI]: Hàm xử lý khi người dùng click vào một danh mục trong Sidebar
   const handleCategoryChange = (slug: string) => {
     if (slug === "all") {
-      router.push('/shop'); // Chuyển về trang cửa hàng chung
+      router.push('/c'); // Chuyển về trang cửa hàng chung
     } else {
       // Chú ý: Thay '/shop/' bằng tiền tố mà bạn dùng để tạo folder route ở bước trước
-      router.push(`/shop/${slug}`); 
+      router.push(`/c/${slug}`); 
     }
   };
 

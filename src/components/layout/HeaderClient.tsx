@@ -101,7 +101,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
               </Link>
 
               <div className="group static">
-                  <Link href="/shop" className={`flex items-center gap-1 px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 group-hover:bg-slate-50 group-hover:text-slate-900 ${isActive('/shop') ? 'text-slate-900 bg-slate-50 font-semibold' : 'text-slate-900 hover:text-brand-600 hover:bg-sl'}`}>
+                  <Link href="/c" className={`flex items-center gap-1 px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300 group-hover:bg-slate-50 group-hover:text-slate-900 ${isActive('/c') ? 'text-slate-900 bg-slate-50 font-semibold' : 'text-slate-900 hover:text-brand-600 hover:bg-slate-50'}`}>
                     Sản Phẩm <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300 opacity-50" />
                   </Link>
 
@@ -117,7 +117,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                       {megaMenu.col1?.items?.map((item) => {
                                           const DynamicIcon = IconMap[item.icon] || IconMap['Box'];
                                           return (
-                                              <Link key={item.title} href={`/shop/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                              <Link key={item.title} href={`/c/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color} group-hover/item:scale-110 transition-transform`}>
                                                       <DynamicIcon size={20} />
                                                   </div>
@@ -139,7 +139,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                       {megaMenu.col2?.items?.map((item) => {
                                           const DynamicIcon = IconMap[item.icon] || IconMap['Box'];
                                           return (
-                                              <Link key={item.title} href={`/shop/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                              <Link key={item.title} href={`/c/${item.slug}`} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color} group-hover/item:scale-110 transition-transform`}>
                                                       <DynamicIcon size={20} />
                                                   </div>
@@ -186,7 +186,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ headerData }) => {
                                           <p className="text-slate-300 text-sm mb-6 max-w-sm line-clamp-2">
                                               {megaMenu.banner?.desc || "Khám phá bộ sưu tập tấm ốp than tre tráng gương."}
                                           </p>
-                                          <Link href={safeLink(megaMenu.banner?.linkUrl || "/shop")} className="inline-flex items-center gap-2 text-white font-bold text-sm hover:gap-4 transition-all">
+                                          <Link href={safeLink(megaMenu.banner?.linkUrl || "/c")} className="inline-flex items-center gap-2 text-white font-bold text-sm hover:gap-4 transition-all">
                                               {megaMenu.banner?.linkText || "Xem Ngay"} <ArrowRight size={16}/>
                                           </Link>
                                       </div>

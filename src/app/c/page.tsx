@@ -12,7 +12,7 @@ import ShopClient from "./ShopClient";
 // 1. TỐI ƯU SEO: Sinh Meta Tag động từ RankMath cho trang Cửa hàng
 export async function generateMetadata(): Promise<Metadata> {
   // Thay '/shop/' bằng URI thực tế trên WP của bạn (vd: '/cua-hang/' nếu bạn dùng tiếng Việt)
-  const seoData = await getUniversalSEO('/shop/'); 
+  const seoData = await getUniversalSEO('/c/'); 
   const seo = seoData?.seo;
 
   if (!seo) {
@@ -54,7 +54,7 @@ export default async function ShopPage() {
     getProducts(),
     getCategories(),
     getShopSettings(),
-    getUniversalSEO('/shop/') // Lấy thêm data SEO để chèn Schema JSON-LD
+    getUniversalSEO('/c/') // Lấy thêm data SEO để chèn Schema JSON-LD
   ]);
 
   const schemaRaw = seoNode?.seo?.jsonLd?.raw || null;

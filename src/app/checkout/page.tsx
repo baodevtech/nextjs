@@ -41,7 +41,7 @@ export default function CheckoutPage() {
                 </div>
                 <h1 className="text-2xl font-bold text-slate-900 mb-2">Giỏ hàng trống</h1>
                 <p className="text-slate-500 mb-8 max-w-md">Bạn chưa chọn sản phẩm nào. Hãy ghé cửa hàng để xem các mẫu tấm ốp mới nhất.</p>
-                <Link href="/shop">
+                <Link href="/c">
                     <Button>Quay lại Cửa Hàng</Button>
                 </Link>
             </div>
@@ -101,7 +101,7 @@ export default function CheckoutPage() {
                     <Link href="/">
                         <Button variant="outline">Về Trang Chủ</Button>
                     </Link>
-                    <Link href="/shop">
+                    <Link href="/c">
                         <Button>Tiếp Tục Mua Sắm</Button>
                     </Link>
                 </div>
@@ -113,7 +113,7 @@ export default function CheckoutPage() {
         <div className="min-h-screen bg-slate-50 py-12 font-sans animate-fade-in">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-2 mb-8">
-                    <Link href="/shop" className="text-slate-500 hover:text-brand-600 transition-colors flex items-center gap-1 text-sm font-bold uppercase tracking-wider">
+                    <Link href="/c" className="text-slate-500 hover:text-brand-600 transition-colors flex items-center gap-1 text-sm font-bold uppercase tracking-wider">
                         <ArrowLeft size={16} /> Tiếp tục mua sắm
                     </Link>
                 </div>

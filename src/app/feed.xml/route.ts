@@ -23,7 +23,7 @@ export async function GET() {
         <g:id>${product.sku || product.databaseId}</g:id>
         <g:title><![CDATA[${product.name}]]></g:title>
         <g:description><![CDATA[${description}]]></g:description>
-        <g:link>${BASE_URL}/product/${product.slug}</g:link>
+        <g:link>${BASE_URL}/p/${product.slug}</g:link>
         <g:image_link>${product.image?.sourceUrl}</g:image_link>
         <g:condition>new</g:condition>
         <g:availability>${availability}</g:availability>

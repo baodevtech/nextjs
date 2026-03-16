@@ -39,15 +39,7 @@ export default function NotFound() {
             </Link>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-100">
-            <p className="text-slate-400 text-sm mb-4">Có thể bạn quan tâm:</p>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-bold text-slate-900">
-                <Link href="/shop?cat=lam-song" className="hover:text-brand-600 transition-colors">Lam Sóng</Link>
-                <Link href="/shop?cat=pvc-stone" className="hover:text-brand-600 transition-colors">PVC Vân Đá</Link>
-                <Link href="/blog" className="hover:text-brand-600 transition-colors">Tin Tức</Link>
-                <Link href="/contact" className="hover:text-brand-600 transition-colors">Liên Hệ</Link>
-            </div>
-        </div>
+       
       </div>
     </div>
   );

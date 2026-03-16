@@ -20,7 +20,7 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
   return (
     <div className="group relative bg-white rounded-lg md:rounded-xl overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-brand-200 flex flex-col h-full">
       <div className="relative aspect-[4/4] overflow-hidden bg-gray-50 flex-shrink-0">
-       <Link href={`/product/${product.slug}`}>
+       <Link href={`/p/${product.slug}`}>
             <Image 
                 src={product.image.sourceUrl || '/placeholder.jpg'} 
                 alt={product.image.altText || product.name} 
@@ -47,7 +47,7 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
                 <ShoppingCart size={12} className="md:w-[14px] md:h-[14px]" /> Thêm
             </button>
             <Link 
-                href={`/product/${product.slug}`}
+                href={`/p/${product.slug}`}
                 className="w-7 h-7 md:w-10 md:h-auto bg-white text-slate-900 rounded md:rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg border border-gray-100"
                 title="Xem chi tiết"
             >
@@ -72,7 +72,7 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
            </div>
         )}
 
-        <Link href={`/product/${product.slug}`} className="block mb-1.5 md:mb-2">
+        <Link href={`/p/${product.slug}`} className="block mb-1.5 md:mb-2">
             <h3 className="text-[11px] md:text-sm font-bold text-slate-800 line-clamp-2 min-h-[32px] md:min-h-[40px] group-hover:text-brand-600 transition-colors leading-tight md:leading-normal">
             {product.name}
             </h3>
@@ -128,44 +128,69 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
 };
 
 export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: number) => void, className?: string }> = ({ product, onAdd, className = '' }) => {
+  // Nhận diện chế độ tính toán
+  const calcMode = (product.dimensions?.area && product.dimensions.area > 0) ? 'AREA' : 'LENGTH';
+  const isAreaMode = calcMode === 'AREA';
+
   const [width, setWidth] = useState<string>('');
   const [height, setHeight] = useState<string>('');
+  const [totalLinear, setTotalLength] = useState<string>(''); // Dành cho phào/nẹp
   const [wastePercent, setWastePercent] = useState<number>(10);
+  
+  // Thiết kế lại object kết quả dùng chung cho cả m2 và mét dài
   const [result, setResult] = useState<{ 
-      wallArea: number,
-      wasteArea: number,
-      totalArea: number,
-      boxes: number,
-      panelArea: number 
+      baseAmount: number,    // Tổng m2 tường HOẶC Tổng mét dài
+      wasteAmount: number,   // Phần hao hụt
+      totalAmount: number,   // Tổng cộng cần
+      quantityNeeded: number,// Số tấm HOẶC Số thanh
+      itemSize: number       // Diện tích 1 tấm HOẶC Chiều dài 1 thanh (m)
   } | null>(null);
 
   const calculate = () => {
-    const w = parseFloat(width);
-    const h = parseFloat(height);
+    let baseAmount = 0;
+    let quantityNeeded = 0;
+    let itemSize = 0;
 
-    if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0 || !product.dimensions.area) return;
+    if (isAreaMode) {
+        const w = parseFloat(width);
+        const h = parseFloat(height);
+        if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0 || !product.dimensions.area) return;
+        
+        baseAmount = w * h;
+        itemSize = product.dimensions.area;
+        const totalAreaNeeded = baseAmount * (1 + wastePercent / 100);
+        quantityNeeded = Math.ceil(totalAreaNeeded / itemSize);
+    } else {
+        const l = parseFloat(totalLinear);
+        if (isNaN(l) || l <= 0 || !product.dimensions.length) return;
+        
+        baseAmount = l;
+        // Chú ý: Chiều dài sản phẩm thường lưu bằng mm (VD: 2440mm), cần chia 1000 ra mét
+        itemSize = product.dimensions.length / 1000; 
+        const totalLengthNeeded = baseAmount * (1 + wastePercent / 100);
+        quantityNeeded = Math.ceil(totalLengthNeeded / itemSize);
+    }
 
-    const wallArea = w * h;
-    const wasteArea = wallArea * (wastePercent / 100);
-    const totalAreaNeeded = wallArea + wasteArea;
-    const panelsNeeded = Math.ceil(totalAreaNeeded / product.dimensions.area);
-    
+    const wasteAmount = baseAmount * (wastePercent / 100);
+    const totalAmount = baseAmount + wasteAmount;
+
     setResult({ 
-        wallArea: parseFloat(wallArea.toFixed(2)),
-        wasteArea: parseFloat(wasteArea.toFixed(2)),
-        totalArea: parseFloat(totalAreaNeeded.toFixed(2)),
-        boxes: panelsNeeded,
-        panelArea: product.dimensions.area
+        baseAmount: parseFloat(baseAmount.toFixed(2)),
+        wasteAmount: parseFloat(wasteAmount.toFixed(2)),
+        totalAmount: parseFloat(totalAmount.toFixed(2)),
+        quantityNeeded: quantityNeeded,
+        itemSize: parseFloat(itemSize.toFixed(2))
     });
   };
 
   useEffect(() => {
-    if (width && height) calculate();
-  }, [width, height, wastePercent]);
+    if ((isAreaMode && width && height) || (!isAreaMode && totalLinear)) calculate();
+  }, [width, height, totalLinear, wastePercent, isAreaMode]);
 
   const reset = () => {
     setWidth('');
     setHeight('');
+    setTotalLength('');
     setResult(null);
   }
 
@@ -174,6 +199,10 @@ export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: numbe
       { value: 10, label: '10%', desc: 'Tiêu chuẩn' },
       { value: 15, label: '15%', desc: 'Nhiều cắt' }
   ];
+
+  // Từ khóa thay đổi linh hoạt theo Mode
+  const unitLabel = isAreaMode ? 'm²' : 'm';
+  const itemLabel = isAreaMode ? 'Tấm' : 'Thanh';
 
   return (
     <div className={`bg-white border border-brand-200 rounded-lg md:rounded-xl overflow-hidden ${className}`}>
@@ -194,63 +223,61 @@ export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: numbe
         </div>
 
         <div className="p-3 md:p-5 space-y-3 md:space-y-5">
-            <div className="grid grid-cols-2 gap-2 md:gap-4">
+            {/* THAY ĐỔI GIAO DIỆN NHẬP LIỆU THEO CHẾ ĐỘ */}
+            {isAreaMode ? (
+                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                    <div className="space-y-1 md:space-y-1.5">
+                        <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Rộng tường (m)</label>
+                        <div className="relative">
+                            <input 
+                                type="number" value={width} onChange={(e) => setWidth(e.target.value)} 
+                                className="w-full h-8 md:h-10 pl-2.5 md:pl-3 pr-6 md:pr-8 bg-slate-50 border border-gray-200 rounded md:rounded-lg text-xs md:text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                                placeholder="VD: 4.5"
+                            />
+                            <span className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-[10px] md:text-xs text-slate-400 font-bold">m</span>
+                        </div>
+                    </div>
+                    <div className="space-y-1 md:space-y-1.5">
+                        <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Cao tường (m)</label>
+                        <div className="relative">
+                            <input 
+                                type="number" value={height} onChange={(e) => setHeight(e.target.value)} 
+                                className="w-full h-8 md:h-10 pl-2.5 md:pl-3 pr-6 md:pr-8 bg-slate-50 border border-gray-200 rounded md:rounded-lg text-xs md:text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                                placeholder="VD: 3.0"
+                            />
+                            <span className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-[10px] md:text-xs text-slate-400 font-bold">m</span>
+                        </div>
+                    </div>
+                </div>
+            ) : (
                 <div className="space-y-1 md:space-y-1.5">
-                    <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Rộng (m)</label>
+                    <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Tổng chiều dài cần thi công (m)</label>
                     <div className="relative">
                         <input 
-                            type="number" 
-                            value={width}
-                            onChange={(e) => setWidth(e.target.value)} 
+                            type="number" value={totalLinear} onChange={(e) => setTotalLength(e.target.value)} 
                             className="w-full h-8 md:h-10 pl-2.5 md:pl-3 pr-6 md:pr-8 bg-slate-50 border border-gray-200 rounded md:rounded-lg text-xs md:text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
-                            placeholder="VD: 4.5"
+                            placeholder="Ví dụ: Chu vi phòng là 15m..."
                         />
                         <span className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-[10px] md:text-xs text-slate-400 font-bold">m</span>
                     </div>
                 </div>
-                <div className="space-y-1 md:space-y-1.5">
-                    <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Cao (m)</label>
-                    <div className="relative">
-                        <input 
-                            type="number" 
-                            value={height}
-                            onChange={(e) => setHeight(e.target.value)} 
-                            className="w-full h-8 md:h-10 pl-2.5 md:pl-3 pr-6 md:pr-8 bg-slate-50 border border-gray-200 rounded md:rounded-lg text-xs md:text-sm font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
-                            placeholder="VD: 3.0"
-                        />
-                         <span className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-[10px] md:text-xs text-slate-400 font-bold">m</span>
-                    </div>
-                </div>
-            </div>
+            )}
 
             <div className="space-y-1.5 md:space-y-2">
+                {/* Giữ nguyên phần Hao Hụt của bạn */}
                 <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
                     <label className="text-[8px] md:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Độ Hao Hụt</label>
-                    <div className="group relative">
-                        <Info size={10} className="md:w-3 md:h-3 text-slate-400 cursor-help"/>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 md:w-48 bg-slate-800 text-white text-[8px] md:text-[10px] p-2 rounded hidden group-hover:block z-10">
-                            Hao hụt xảy ra khi cắt tấm ốp tại các góc tường, ổ điện hoặc cửa sổ.
-                        </div>
-                    </div>
                 </div>
                 <div className="flex gap-1.5 md:gap-2">
                     {wasteOptions.map((opt) => (
                         <button
-                            key={opt.value}
-                            onClick={() => setWastePercent(opt.value)}
+                            key={opt.value} onClick={() => setWastePercent(opt.value)}
                             className={`flex-1 py-1.5 md:py-2 px-1 rounded md:rounded-lg border transition-all relative overflow-hidden ${
-                                wastePercent === opt.value 
-                                ? 'bg-brand-600 border-brand-600 text-white shadow-md' 
-                                : 'bg-white border-gray-200 text-slate-600 hover:border-brand-300 hover:bg-brand-50'
+                                wastePercent === opt.value ? 'bg-brand-600 border-brand-600 text-white shadow-md' : 'bg-white border-gray-200 text-slate-600 hover:border-brand-300 hover:bg-brand-50'
                             }`}
                         >
                             <span className="font-bold block text-[11px] md:text-sm">{opt.label}</span>
                             <span className={`text-[7px] md:text-[9px] block ${wastePercent === opt.value ? 'text-brand-100' : 'text-slate-400'}`}>{opt.desc}</span>
-                            {wastePercent === opt.value && (
-                                <div className="absolute top-0.5 right-0.5 md:top-1 md:right-1">
-                                    <Check size={8} className="md:w-[10px] md:h-[10px]" strokeWidth={4} />
-                                </div>
-                            )}
                         </button>
                     ))}
                 </div>
@@ -264,22 +291,22 @@ export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: numbe
                     
                     <div className="space-y-1 md:space-y-2 text-[9px] md:text-xs text-slate-600 pb-2 md:pb-3 border-b border-gray-200 pt-1.5 md:pt-0">
                         <div className="flex justify-between">
-                            <span>DT tường ({width}x{height}):</span>
-                            <span className="font-medium">{result.wallArea} m²</span>
+                            <span>Khối lượng gốc:</span>
+                            <span className="font-medium">{result.baseAmount} {unitLabel}</span>
                         </div>
                         <div className="flex justify-between text-slate-500">
                             <span>Hao hụt ({wastePercent}%):</span>
-                            <span>+ {result.wasteArea} m²</span>
+                            <span>+ {result.wasteAmount} {unitLabel}</span>
                         </div>
                          <div className="flex justify-between font-semibold text-slate-900">
                             <span>Tổng vật tư:</span>
-                            <span>= {result.totalArea} m²</span>
+                            <span>= {result.totalAmount} {unitLabel}</span>
                         </div>
                     </div>
 
                     <div className="flex justify-between items-center text-[9px] md:text-xs text-slate-500">
-                         <span>DT 1 tấm:</span>
-                         <span className="font-mono">{result.panelArea} m²</span>
+                         <span>{isAreaMode ? 'Diện tích 1 tấm' : 'Chiều dài 1 thanh'}:</span>
+                         <span className="font-mono">{result.itemSize} {unitLabel}</span>
                     </div>
 
                     <div className="pt-0.5 flex items-center justify-between">
@@ -288,22 +315,22 @@ export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: numbe
                             <p className="text-[7px] md:text-[10px] text-slate-400">Làm tròn lên</p>
                         </div>
                         <div className="text-right">
-                             <span className="text-lg md:text-2xl font-bold text-brand-600 block leading-none">{result.boxes} <span className="text-[10px] md:text-sm font-medium text-slate-500">Tấm</span></span>
+                             <span className="text-lg md:text-2xl font-bold text-brand-600 block leading-none">{result.quantityNeeded} <span className="text-[10px] md:text-sm font-medium text-slate-500">{itemLabel}</span></span>
                         </div>
                     </div>
 
                     <button 
-                        onClick={() => onAdd(result.boxes)}
+                        onClick={() => onAdd(result.quantityNeeded)}
                         className="w-full mt-1 md:mt-2 py-1.5 md:py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded md:rounded-lg shadow-lg shadow-brand-500/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 md:gap-2"
                     >
-                        <ShoppingCart size={12} className="md:w-3.5 md:h-3.5"/> Thêm {result.boxes} tấm
+                        <ShoppingCart size={12} className="md:w-3.5 md:h-3.5"/> Thêm {result.quantityNeeded} {itemLabel}
                     </button>
                 </div>
             )}
             
             {!result && (
                 <div className="text-center py-4 md:py-6 text-slate-400 text-[10px] md:text-xs italic bg-slate-50/50 rounded md:rounded-lg border border-dashed border-gray-200">
-                    Nhập kích thước để xem chi tiết
+                    {isAreaMode ? 'Nhập kích thước để xem chi tiết' : 'Nhập tổng chiều dài để xem chi tiết'}
                 </div>
             )}
         </div>

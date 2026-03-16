@@ -107,7 +107,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="flex items-baseline gap-3">
                     {/* SỬ DỤNG AMOUNT + UNIT THAY VÌ FORMATTED MẶC ĐỊNH */}
                     <span className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                        {product.price.amount.toLocaleString('vi-VN')} {product.unit}
+                        {product.price.amount.toLocaleString('vi-VN')} <span className="text-lg md:text-xl"> {product.unit}</span>
                     </span>
                     {isDiscounted && (
                         <>
@@ -121,6 +121,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     )}
                 </div>
             </div>
+           {product.shortDescription && (
+                <div className="mt-6 bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 md:p-5 border border-slate-100/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                    <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                        Tóm tắt sản phẩm
+                    </h3>
+                    <div 
+                        className="prose prose-sm max-w-none text-[13px] md:text-[14px] text-slate-600 
+                                   prose-p:my-1.5 prose-p:leading-relaxed 
+                                   prose-strong:text-slate-800 prose-strong:font-semibold
+                                   prose-ul:pl-4 prose-ul:my-2 
+                                   prose-li:my-1 prose-li:marker:text-brand-500"
+                        dangerouslySetInnerHTML={{ __html: product.shortDescription }} 
+                    />
+                </div>
+            )}
 
             <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -243,11 +259,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </h2>
             <div className="prose prose-sm md:prose-base prose-slate max-w-none prose-headings:text-slate-900 prose-img:rounded-xl">
                     <div dangerouslySetInnerHTML={{ __html: product.description }} />
-                    {!product.description && (
-                        <p className="text-slate-500 italic">
-                            Đang cập nhật mô tả chi tiết cho sản phẩm này...
-                        </p>
-                    )}
+                   
             </div>
         </div>
 

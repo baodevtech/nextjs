@@ -212,7 +212,7 @@ export const ShopTheLook = ({ settings }: ShopTheLookProps) => {
                               </div>
 
                               {activeProduct ? (
-                                 <Link href={`/product/${activeProduct.slug}`} className="block">
+                                 <Link href={`/p/${activeProduct.slug}`} className="block">
                                     <Button fullWidth className="h-10 md:h-12 shadow-lg shadow-brand-500/20 text-sm md:text-base font-semibold">
                                         <span className="flex items-center gap-1.5 md:gap-2">Xem Chi Tiết <ArrowRight className="w-4 h-4 md:w-[18px] md:h-[18px]"/></span>
                                     </Button>

@@ -99,7 +99,7 @@ export const SignatureProduct: React.FC<SignatureProductProps> = ({ settings }) 
 
             {/* VIEW ALL LINK */}
             <div className="mt-8 md:mt-20 text-center">
-                <Link href="/shop" className="inline-flex items-center gap-2 text-brand-600 font-semibold text-sm md:text-lg hover:underline decoration-2 underline-offset-4 group">
+                <Link href="/c" className="inline-flex items-center gap-2 text-brand-600 font-semibold text-sm md:text-lg hover:underline decoration-2 underline-offset-4 group">
                     Xem toàn bộ bộ sưu tập <ChevronRight size={16} className="md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
             </div>

@@ -126,7 +126,7 @@ const SectionHeader = ({ settings }: SectionHeaderProps) => {
         
         {/* Mobile Link */}
         <Link 
-          href="/shop" 
+          href="/c" 
           rel={isNofollow ? "nofollow" : undefined}
           className="md:hidden text-[13px] font-medium text-[#0066CC] hover:underline flex items-center whitespace-nowrap"
         >
@@ -142,7 +142,7 @@ const SectionHeader = ({ settings }: SectionHeaderProps) => {
             <ChevronLeft size={18} strokeWidth={2} />
           </button>
 
-          <Link href="/shop" rel={isNofollow ? "nofollow" : undefined}>
+          <Link href="/c" rel={isNofollow ? "nofollow" : undefined}>
             <button 
               className="
                 w-9 h-9 rounded-full bg-[#e8e8ed] text-[#1d1d1f] 
@@ -188,7 +188,7 @@ export const CategoryShowcase = ({ categories, settings }: CategoryShowcaseProps
           {categories.map((cat) => (
             <Link 
               key={cat.id} 
-              href={`/shop?cat=${cat.slug}`}
+              href={`/c/${cat.slug}`}
               rel={isNofollow ? "nofollow" : undefined}
               className="group flex flex-col items-center gap-3 cursor-pointer w-full"
             >

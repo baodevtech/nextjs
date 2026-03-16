@@ -251,7 +251,7 @@ export default function PricingClient({ data }: PricingClientProps) {
                                     {data.calculatorProduct && (
                                         <div className="mt-4 pt-4 border-t border-slate-100">
                                             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-2">Đơn giá áp dụng theo sản phẩm:</p>
-                                            <Link href={`/product/${data.calculatorProduct.slug}`} className="flex flex-row md:flex-row gap-3 items-center p-3 md:p-4 bg-white rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-md transition-all group">
+                                            <Link href={`/p/${data.calculatorProduct.slug}`} className="flex flex-row md:flex-row gap-3 items-center p-3 md:p-4 bg-white rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-md transition-all group">
                                                 <img src={data.calculatorProduct.image?.sourceUrl} className="w-10 h-10 md:w-12 md:h-12 rounded object-cover shrink-0" alt={data.calculatorProduct.name} />
                                                 <div className="flex-1 min-w-0">
                                                     <h4 className="text-xs md:text-sm font-bold text-slate-900 truncate group-hover:text-brand-600 transition-colors">{data.calculatorProduct.name}</h4>
@@ -545,7 +545,7 @@ export default function PricingClient({ data }: PricingClientProps) {
                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900">{data.materialsHeading}</h2>
                             <p className="text-slate-500 mt-2 md:mt-4 max-w-2xl text-sm md:text-lg">{data.materialsDesc}</p>
                         </div>
-                        <Link href="/shop" className="inline-flex items-center gap-2 text-brand-600 font-bold hover:underline text-sm md:text-base">
+                        <Link href="/c" className="inline-flex items-center gap-2 text-brand-600 font-bold hover:underline text-sm md:text-base">
                             Xem tất cả sản phẩm <ArrowRight size={16}/>
                         </Link>
                     </div>

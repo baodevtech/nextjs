@@ -16,7 +16,7 @@ const DEFAULT_SLIDES: HeroSlide[] = [
         title: "Vân Gỗ \nThượng Hạng",
         description: "Tái hiện vẻ đẹp nguyên bản.",
         image: "https://via.placeholder.com/1920x1080",
-        ctaLink: "/shop",
+        ctaLink: "/c",
         ctaText: "Mua Ngay",
         hotspots: [] 
     }
@@ -205,7 +205,7 @@ export const HeroSection = ({ slides = [] }: HeroSectionProps) => {
                             </div>
 
                             <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
-                                <Link href={dataToRender[currentSlide].ctaLink || '/shop'} aria-label="Vào cửa hàng">
+                                <Link href={dataToRender[currentSlide].ctaLink || '/c'} aria-label="Vào cửa hàng">
                                     <button className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition-transform relative group">
                                         <ShoppingBag size={12} strokeWidth={2} />
                                     </button>

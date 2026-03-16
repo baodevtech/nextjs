@@ -352,7 +352,7 @@ const mapHeroSlides = (acfData: any): HeroSlide[] => {
     title: slide.title?.replace(/\\n/g, '\n') || "",
     description: slide.description || "",
     image: slide.image?.node?.sourceUrl ?? "",
-    ctaLink: slide.ctaLink || "/shop",
+    ctaLink: slide.ctaLink || "/c",
     ctaText: slide.ctaText || "Khám Phá Ngay",
     productLink: slide.productLink || [],
     hotspots: slide.hotspots
@@ -409,7 +409,7 @@ const mapAccHighlights = (items: any[]): AccessoryHighlight[] => {
     title: item.title || "",
     subtitle: item.subtitle || "",
     image: getSingleImage(item.image),
-    link: item.link || "/shop",
+    link: item.link || "/c",
   }));
 };
 
@@ -865,7 +865,7 @@ export const getHomeData = async (): Promise<HomeSettings> => {
     accViewAll: {
       text: acfData.accViewAll?.viewAllText || "Xem Tất Cả Phụ Kiện",
       sub: acfData.accViewAll?.viewAllSub || "Khám phá thêm các vật tư phụ trợ",
-      link: acfData.accViewAll?.viewAllLink || "/shop",
+      link: acfData.accViewAll?.viewAllLink || "/c",
     },
     accProdHeading: acfData.accProdHeading || "SẢN PHẨM PHỔ BIẾN",
     accProducts: mapAcfProducts(accProductsRaw || []),
@@ -965,7 +965,7 @@ const mapProductToItem = (node: any): any => {
     name: node.name || "", 
     price: formattedPrice, 
     unit: unit, // Lưu unit vào object
-    link: `/product/${node.slug}`,
+    link: `/p/${node.slug}`,
     image: node.image?.sourceUrl || "https://via.placeholder.com/300",
   };
 };
@@ -1153,7 +1153,7 @@ export const getHeaderData = async (): Promise<HeaderData> => {
       banner: {
         image: megaMenu.banner?.image?.node?.sourceUrl || "https://images.unsplash.com/photo-1620626012053-93f56b5463f0?q=80&w=800&auto=format&fit=crop",
         badge: megaMenu.banner?.badgeText || "New Collection", title: megaMenu.banner?.title || "Vẻ Đẹp Vượt Thời Gian",
-        desc: megaMenu.banner?.desc || "Khám phá bộ sưu tập mới nhất.", linkText: megaMenu.banner?.linkText || "Xem Ngay", linkUrl: megaMenu.banner?.linkUrl || "/shop"
+        desc: megaMenu.banner?.desc || "Khám phá bộ sưu tập mới nhất.", linkText: megaMenu.banner?.linkText || "Xem Ngay", linkUrl: megaMenu.banner?.linkUrl || "/c"
       }
     }
   };
@@ -1464,7 +1464,7 @@ export const getAboutPageData = async (): Promise<AboutPageData> => {
     ctaBtn1Text: acf.ctaBtn1Text || "Liên Hệ Tư Vấn",
     ctaBtn1Link: acf.ctaBtn1Link || "/contact",
     ctaBtn2Text: acf.ctaBtn2Text || "Xem Bộ Sưu Tập",
-    ctaBtn2Link: acf.ctaBtn2Link || "/shop",
+    ctaBtn2Link: acf.ctaBtn2Link || "/c",
   };
 };
 

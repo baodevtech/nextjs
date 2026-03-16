@@ -158,7 +158,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         </h3>
                         <div className="space-y-3">
                             {results.products.map(p => (
-                                <Link key={p.id} href={`/product/${p.slug}`} onClick={onClose} className="flex gap-3 group p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors">
+                                <Link key={p.id} href={`/p/${p.slug}`} onClick={onClose} className="flex gap-3 group p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors">
                                     <div className="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 shrink-0 relative bg-gray-100">
                                         <Image 
                                             src={p.image.sourceUrl || '/placeholder.jpg'} 
@@ -176,7 +176,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                     </div>
                                 </Link>
                             ))}
-                            <Link href={`/shop?search=${query}`} onClick={onClose} className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:underline mt-2">
+                            <Link href={`/c?search=${query}`} onClick={onClose} className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:underline mt-2">
                                 Xem tất cả sản phẩm <ArrowRight size={12}/>
                             </Link>
                         </div>

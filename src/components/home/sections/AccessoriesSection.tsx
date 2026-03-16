@@ -28,7 +28,7 @@ export const AccessoriesSection: React.FC<AccessoriesSectionProps> = ({ settings
   const headHighlight = settings?.headHighlight || 'Định Hình Đẳng Cấp.';
   const phuKienSub = settings?.phuKienSub || 'Hệ thống phụ kiện nẹp, phào chỉ và keo dán chuyên dụng.';
   const highlights = settings?.highlights || [];
-  const viewAll = settings?.viewAll || { text: 'Xem Tất Cả Phụ Kiện', sub: 'Hơn 50+ loại...', link: '/shop' };
+  const viewAll = settings?.viewAll || { text: 'Xem Tất Cả Phụ Kiện', sub: 'Hơn 50+ loại...', link: '/c' };
   const prodHeading = settings?.prodHeading || 'SẢN PHẨM PHỔ BIẾN';
   const products = settings?.products || [];
 
