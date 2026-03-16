@@ -106,19 +106,22 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
         )}
         
         <div className="flex items-baseline gap-1.5 md:gap-2 mt-auto pt-1.5 md:pt-2 border-t border-gray-50">
-           {product.price.amount === 0 ? (
-               <span className="text-[11px] md:text-sm font-bold text-brand-600">Liên hệ báo giá</span>
-           ) : (
-               <>
-                <span className="text-[13px] md:text-base font-bold text-slate-900">{product.price.formatted}</span>
-                {isDiscounted && (
-                    <span className="text-[8px] md:text-xs text-slate-400 line-through">
-                        {product.regularPrice?.formatted || `${originalPrice.toLocaleString('vi-VN')}₫`}
+            {product.price.amount === 0 ? (
+                <span className="text-[11px] md:text-sm font-bold text-brand-600">Liên hệ báo giá</span>
+            ) : (
+                <>
+                    {/* SỬ DỤNG AMOUNT + UNIT THAY VÌ FORMATTED MẶC ĐỊNH */}
+                    <span className="text-[13px] md:text-base font-bold text-slate-900">
+                        {product.price.amount.toLocaleString('vi-VN')} {product.unit}
                     </span>
-                )}
-               </>
-           )}
-        </div>
+                    {isDiscounted && (
+                        <span className="text-[8px] md:text-xs text-slate-400 line-through">
+                            {product.regularPrice?.amount.toLocaleString('vi-VN') || originalPrice.toLocaleString('vi-VN')} {product.unit}
+                        </span>
+                    )}
+                </>
+            )}
+            </div>
       </div>
     </div>
   );

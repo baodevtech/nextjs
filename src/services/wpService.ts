@@ -115,6 +115,7 @@ const PRODUCT_FIELDS = `
       origin
       surface
       warranty
+      unit
     }
   }
 `;
@@ -159,6 +160,7 @@ const mapProduct = (node: any): Product => {
         sourceUrl: img.sourceUrl,
         altText: img.altText || node.name,
       })) || [],
+    unit: node.productSpecifications?.unit || "đ",
     price: {
       amount: rawPrice,
       formatted: new Intl.NumberFormat("vi-VN", {
@@ -950,9 +952,20 @@ export const getApplicationsPageData = async (): Promise<ApplicationPageData> =>
 const mapProductToItem = (node: any): any => {
   if (!node) return null;
   const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, "")) : 0;
-  const formattedPrice = rawPrice > 0 ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(rawPrice) : "Liên hệ";
+  
+  // Lấy unit từ dữ liệu trả về, mặc định là "đ"
+  const unit = node.productSpecifications?.unit || "đ";
+  
+  // Format giá tiền hiển thị (bỏ ký hiệu đ mặc định của Intl để dùng unit)
+  const formattedPrice = rawPrice > 0 
+    ? `${rawPrice.toLocaleString("vi-VN")} ${unit}` 
+    : "Liên hệ";
+
   return {
-    name: node.name || "", price: formattedPrice, unit: "", link: `/product/${node.slug}`,
+    name: node.name || "", 
+    price: formattedPrice, 
+    unit: unit, // Lưu unit vào object
+    link: `/product/${node.slug}`,
     image: node.image?.sourceUrl || "https://via.placeholder.com/300",
   };
 };
@@ -985,6 +998,8 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
                 id, name, slug, image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
+                # MỚI THÊM: Gọi trường unit
+                productSpecifications { unit }
               }
             }
           }
@@ -995,6 +1010,8 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
                 id, name, slug, image { sourceUrl }
                 ... on SimpleProduct { price(format: RAW) }
                 ... on VariableProduct { price(format: RAW) }
+                # MỚI THÊM: Gọi trường unit
+                productSpecifications { unit }
               }
             }
           }
@@ -1008,7 +1025,7 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
   const acf = data?.pricingOptions?.pricingData || {};
   const mapFeatures = (list: any[]) => list?.map((item: any) => item.text || "") || [];
 
-  const mapCalcProduct = (node: any): Product | null => {
+const mapCalcProduct = (node: any): Product | null => {
     if (!node) return null;
     const rawPrice = node.price ? parseFloat(node.price.replace(/[^0-9.]/g, "")) : 0;
     return {
@@ -1017,6 +1034,8 @@ export const getPricingPageData = async (): Promise<PricingPageData> => {
       price: { amount: rawPrice, formatted: "" },
       dimensions: { length: Number(node.productSpecifications?.length) || 0, width: Number(node.productSpecifications?.width) || 0, thickness: Number(node.productSpecifications?.thickness) || 0, area: 0 },
       brand: "", origin: "", surface: "", warranty: "", description: "", shortDescription: "", galleryImages: [], stockStatus: "IN_STOCK", sku: node.sku || "", categories: [],
+      // MỚI THÊM VÀO ĐÂY:
+      unit: node.productSpecifications?.unit || "đ",
     };
   };
 
@@ -1574,8 +1593,8 @@ export const getTrackingScripts = async (): Promise<TrackingScripts | null> => {
       }
     }
   `, {}, undefined, ['global-options', 'tracking-scripts']);
-
-  const scripts = data?.options?.trackingScripts;
+  const scripts = data?.trackingScriptsOptions?.trackingScripts;
+  
   if (!scripts) return null;
 
   return {
@@ -1583,7 +1602,8 @@ export const getTrackingScripts = async (): Promise<TrackingScripts | null> => {
     bodyTopScripts: scripts.bodyTopScripts || "",
     footerScripts: scripts.footerScripts || "",
   };
-};export interface SiteMetadata {
+};
+export interface SiteMetadata {
   title: string;
   description: string;
 }

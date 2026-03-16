@@ -102,16 +102,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
             </div>
 
-            <div>
+           <div>
                 <p className="text-xs text-slate-500 font-medium mb-1">Giá bán lẻ đề xuất:</p>
                 <div className="flex items-baseline gap-3">
+                    {/* SỬ DỤNG AMOUNT + UNIT THAY VÌ FORMATTED MẶC ĐỊNH */}
                     <span className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                        {product.price.formatted}
+                        {product.price.amount.toLocaleString('vi-VN')} {product.unit}
                     </span>
                     {isDiscounted && (
                         <>
                             <span className="text-sm text-slate-400 line-through">
-                                {product.regularPrice?.formatted || `${originalPrice.toLocaleString('vi-VN')}₫`}
+                                {product.regularPrice?.amount.toLocaleString('vi-VN') || originalPrice.toLocaleString('vi-VN')} {product.unit}
                             </span>
                             <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">
                                 -{discountPercent}%

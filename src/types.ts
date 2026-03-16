@@ -39,6 +39,7 @@ export interface Product {
   galleryImages: WpImage[];
   price: WpPrice;
   regularPrice?: WpPrice;
+  unit: string;
   stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK';
   sku: string;
   categories: string[];
