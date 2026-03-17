@@ -1,8 +1,7 @@
-// src/app/shop/ShopClient.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation"; // Thêm useRouter
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Product, Category } from "@/types";
 import { type ShopSettings } from "@/services/wpService";
@@ -215,13 +214,14 @@ const FilterSection: React.FC<{
 
 // --- 5. MAIN CONTENT (SHOP CLIENT) ---
 
-// [SỬA ĐỔI]: Bổ sung thêm categorySlug vào interface
 interface ShopClientProps {
   initialProducts: Product[];
   initialCategories: Category[];
   initialShopSettings: ShopSettings | null;
   categorySlug?: string; 
 }
+
+const SORT_OPTIONS = ["Mới nhất", "Bán chạy nhất", "Giá thấp - cao", "Giá cao - thấp"];
 
 export default function ShopClient({
   initialProducts,
@@ -234,20 +234,21 @@ export default function ShopClient({
   const shopSettings = initialShopSettings;
   const inStockCount = products.filter((p) => p.stockStatus === "IN_STOCK").length;
 
-  // [SỬA ĐỔI]: Lấy categorySlug làm giá trị mặc định nếu có
   const [filter, setFilter] = useState(categorySlug || "all");
   const [brandFilter, setBrandFilter] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isPromotion, setIsPromotion] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  
+  // STATE SẮP XẾP
+  const [sortBy, setSortBy] = useState(SORT_OPTIONS[0]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const searchParams = useSearchParams();
-  const router = useRouter(); // [SỬA ĐỔI]: Khởi tạo router để điều hướng
+  const router = useRouter();
   const { addToCart } = useCart();
 
-  // [SỬA ĐỔI]: Lắng nghe sự thay đổi của categorySlug (từ Route) hoặc searchParams
+  // ĐỒNG BỘ DANH MỤC TỪ URL & RESET BỘ LỌC
   useEffect(() => {
     if (categorySlug) {
       setFilter(categorySlug);
@@ -255,38 +256,60 @@ export default function ShopClient({
       const cat = searchParams.get("cat");
       setFilter(cat || "all");
     }
-    
-    // Đặt lại các bộ lọc khác khi chuyển danh mục
     setBrandFilter("all");
     setInStockOnly(false);
     setIsPromotion(false);
     setSearchQuery("");
   }, [categorySlug, searchParams]);
 
-  // [SỬA ĐỔI]: Hàm xử lý khi người dùng click vào một danh mục trong Sidebar
   const handleCategoryChange = (slug: string) => {
     if (slug === "all") {
-      router.push('/c'); // Chuyển về trang cửa hàng chung
+      router.push('/c'); 
     } else {
-      // Chú ý: Thay '/shop/' bằng tiền tố mà bạn dùng để tạo folder route ở bước trước
       router.push(`/c/${slug}`); 
     }
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchCategory = filter === "all" || p.categories.includes(filter);
+  // 1. LỌC THEO DANH MỤC TRƯỚC
+  const productsInCategory = products.filter(
+    (p) => filter === "all" || p.categories.includes(filter)
+  );
+
+  // 2. TÍNH TOÁN THƯƠNG HIỆU (Chỉ dựa trên các sản phẩm thuộc danh mục hiện tại)
+  const brands = Array.from(new Set(productsInCategory.map((p) => p.brand).filter(Boolean)));
+  const getCategoryCount = (slug: string) => products.filter((p) => slug === "all" || p.categories.includes(slug)).length;
+  const getBrandCount = (brand: string) => productsInCategory.filter((p) => p.brand === brand).length;
+
+  // 3. ÁP DỤNG CÁC BỘ LỌC KHÁC
+  let filteredProducts = productsInCategory.filter((p) => {
     const matchBrand = brandFilter === "all" || p.brand === brandFilter;
     const matchStock = !inStockOnly || p.stockStatus === "IN_STOCK";
-    const matchPromo = !isPromotion || p.price.amount > 0;
+    // Kiểm tra giảm giá (regularPrice > price.amount)
+    const matchPromo = !isPromotion || (p.regularPrice && p.regularPrice.amount > p.price.amount);
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchBrand && matchStock && matchPromo && matchSearch;
+    return matchBrand && matchStock && matchPromo && matchSearch;
+  });
+
+  // 4. SẮP XẾP KẾT QUẢ CUỐI CÙNG
+  filteredProducts = filteredProducts.sort((a, b) => {
+    if (sortBy === "Giá thấp - cao") {
+      return a.price.amount - b.price.amount;
+    } else if (sortBy === "Giá cao - thấp") {
+      return b.price.amount - a.price.amount;
+    } else if (sortBy === "Bán chạy nhất") {
+      // Ép kiểu any nếu chưa định nghĩa trường sales trong interface Product
+      const salesA = (a as any).sales || 0; 
+      const salesB = (b as any).sales || 0;
+      return salesB - salesA;
+    } else {
+      // Mới nhất (Sắp xếp theo ngày tạo hoặc ID)
+      const dateA = new Date((a as any).createdAt || 0).getTime();
+      const dateB = new Date((b as any).createdAt || 0).getTime();
+      return dateB - dateA;
+    }
   });
 
   const currentCategory = categories.find((c) => c.slug === filter);
-  const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
-  const getCategoryCount = (slug: string) => products.filter((p) => slug === "all" || p.categories.includes(slug)).length;
-  const getBrandCount = (brand: string) => products.filter((p) => p.brand === brand).length;
-  
   const hasActiveFilters = brandFilter !== "all" || inStockOnly || isPromotion || searchQuery;
 
   const resetFilters = () => {
@@ -296,7 +319,7 @@ export default function ShopClient({
     setSearchQuery("");
   };
 
-  const currentProductCount = currentCategory ? filteredProducts.length : inStockCount;
+  const currentProductCount = currentCategory ? productsInCategory.length : inStockCount;
 
   return (
     <div className="min-h-screen bg-white">
@@ -338,7 +361,6 @@ export default function ShopClient({
 
               <FilterSection title="Danh Mục">
                  <div className="space-y-1">
-                    {/* [SỬA ĐỔI]: Dùng handleCategoryChange thay vì setFilter */}
                     <div onClick={() => handleCategoryChange("all")} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${filter === "all" ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
                         <span className={`text-sm ${filter === "all" ? "font-bold text-brand-700" : "font-medium text-slate-600"}`}>Tất cả</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${filter === "all" ? "bg-white text-brand-700 font-bold shadow-sm" : "bg-gray-100 text-gray-500"}`}>{getCategoryCount("all")}</span>
@@ -347,7 +369,6 @@ export default function ShopClient({
                        const count = getCategoryCount(cat.slug);
                        const isActive = filter === cat.slug;
                        return (
-                         // [SỬA ĐỔI]: Dùng handleCategoryChange
                          <div key={cat.id} onClick={() => handleCategoryChange(cat.slug)} className={`group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${isActive ? "bg-brand-50 border-brand-200 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-100"}`}>
                             <span className={`text-sm ${isActive ? "font-bold text-brand-700" : "font-medium text-slate-600"}`}>{cat.name}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? "bg-white text-brand-700 font-bold shadow-sm" : "bg-gray-100 text-gray-500"}`}>{count}</span>
@@ -368,9 +389,9 @@ export default function ShopClient({
                      const isActive = brandFilter === brand;
                      if (count === 0 && !isActive) return null;
                      return (
-                       <div key={brand} onClick={() => setBrandFilter(brand)} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${isActive ? "bg-brand-50/50" : "hover:bg-gray-50"}`}>
+                       <div key={brand as string} onClick={() => setBrandFilter(brand as string)} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${isActive ? "bg-brand-50/50" : "hover:bg-gray-50"}`}>
                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${isActive ? "border-brand-600 bg-brand-600" : "border-gray-300 group-hover:border-brand-400"}`}>{isActive && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}</div>
-                         <span className={`text-sm flex-1 ${isActive ? "font-bold text-brand-700" : "text-slate-600"}`}>{brand}</span>
+                         <span className={`text-sm flex-1 ${isActive ? "font-bold text-brand-700" : "text-slate-600"}`}>{brand as string}</span>
                          <span className="text-xs text-slate-400">{count}</span>
                        </div>
                      );
@@ -398,15 +419,24 @@ export default function ShopClient({
           </aside>
 
           <div className="flex-1">
-            {/* Toolbar Mobile */}
+            {/* Toolbar Mobile & Sắp xếp */}
             <div className="flex flex-wrap gap-3 justify-between items-center mb-4 md:mb-6">
               <button onClick={() => setShowMobileFilters(true)} className="lg:hidden flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95">
                 <SlidersHorizontal size={14} /> Bộ Lọc
               </button>
 
+              {/* KHỐI SẮP XẾP SẢN PHẨM */}
               <div className="hidden md:flex items-center gap-2">
-                {["Bán chạy nhất", "Giá thấp - cao", "Giá cao - thấp", "Mới nhất"].map((sort, i) => (
-                  <button key={i} className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${i === 0 ? "bg-slate-900 text-white shadow-md" : "bg-white border border-gray-200 text-slate-600 hover:border-brand-500 hover:text-brand-600"}`}>
+                {SORT_OPTIONS.map((sort, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setSortBy(sort)}
+                    className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                        sortBy === sort 
+                            ? "bg-slate-900 text-white shadow-md" 
+                            : "bg-white border border-gray-200 text-slate-600 hover:border-brand-500 hover:text-brand-600"
+                    }`}
+                  >
                     {sort}
                   </button>
                 ))}
@@ -443,6 +473,7 @@ export default function ShopClient({
           </div>
         </div>
 
+        {/* BOTTOM CONTENT */}
         {currentCategory?.bottomContent && (
           <div className="mt-12 md:mt-20">
             <div className="relative bg-slate-50 rounded-2xl md:rounded-3xl p-6 md:p-12 border border-slate-200 overflow-hidden">

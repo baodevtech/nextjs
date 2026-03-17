@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
     Minus, Plus, ShoppingCart, MessageCircle, Phone, 
-    Check, Truck, ShieldCheck, Star, Maximize2, Layers, Box, Zap 
+    Check, Truck, ShieldCheck, Star, Maximize2, Layers, Box, Zap , X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Product } from '@/types';
 import { Button } from '@/components/common/UI';
 import { MaterialCalculator, AIAssistant } from '@/components/product/ProductComponents';
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -19,14 +20,26 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const { addToCart } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+      setMounted(true);
+  }, []);
   // Gộp ảnh đại diện và gallery thành 1 mảng để hiển thị
   const allImages = [product.image, ...(product.galleryImages || [])];
 
   const handleQuantityChange = (delta: number) => {
       setQuantity(prev => Math.max(1, prev + delta));
   };
+  const handlePrevImage = (e: React.MouseEvent) => {
+      e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài làm đóng modal
+      setActiveImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+  };
 
+  const handleNextImage = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setActiveImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+  };
   // Tính toán % giảm giá
   const currentPrice = product.price.amount;
   const originalPrice = product.regularPrice?.amount || (currentPrice > 0 ? currentPrice * 1.1 : 0);
@@ -41,7 +54,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       
       <div className="order-1 lg:col-span-7 lg:col-start-1 lg:row-start-1">
         <div className="space-y-4">
-            <div className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in">
+           <div 
+                className="aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 relative group cursor-zoom-in"
+                onClick={() => setIsModalOpen(true)}
+            >
                 <Image 
                     src={allImages[activeImage]?.sourceUrl || '/placeholder.jpg'} 
                     alt={allImages[activeImage]?.altText || product.name} 
@@ -307,7 +323,68 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
              <AIAssistant product={product} />
         </div>
       </div>
+              {/* CỬA SỔ PHÓNG TO ẢNH (MODAL) V2 */}
+      {mounted && isModalOpen && createPortal(
+        <div 
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/95 backdrop-blur-md"
+      // 1. BẤM VÀO NỀN ĐEN SẼ ĐÓNG MODAL
+      onClick={() => setIsModalOpen(false)}
+  >
+            {/* Thanh công cụ phía trên */}
+            <div className="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50">
+                {/* Bộ đếm ảnh */}
+                <div className="text-white/80 font-medium bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-sm">
+                    {activeImage + 1} / {allImages.length}
+                </div>
+                
+                {/* Nút đóng */}
+                <button 
+                    onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
+                    className="text-white/80 hover:text-white bg-white/10 hover:bg-red-500/80 rounded-full p-2.5 transition-all backdrop-blur-md"
+                    title="Đóng (Esc)"
+                >
+                    <X size={24} />
+                </button>
+            </div>
 
+            {/* Nút lùi */}
+            {allImages.length > 1 && (
+                <button 
+                    onClick={handlePrevImage}
+                    className="absolute left-4 md:left-8 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition-all backdrop-blur-md z-50"
+                >
+                    <ChevronLeft size={32} />
+                </button>
+            )}
+
+            {/* Khung chứa ảnh */}
+           <div 
+          className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 md:p-16 flex items-center justify-center" 
+          // 2. CHẶN LẠI: NẾU BẤM VÀO VÙNG NÀY THÌ KHÔNG ĐÓNG
+          onClick={(e) => e.stopPropagation()} 
+      >
+          <Image 
+              src={allImages[activeImage]?.sourceUrl || '/placeholder.jpg'} 
+              alt={allImages[activeImage]?.altText || product.name} 
+              fill
+              sizes="100vw"
+              className="object-contain select-none" 
+              priority
+          />
+      </div>
+
+            {/* Nút tiến */}
+            {allImages.length > 1 && (
+                <button 
+                    onClick={handleNextImage}
+                    className="absolute right-4 md:right-8 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition-all backdrop-blur-md z-50"
+                >
+                    <ChevronRight size={32} />
+                </button>
+            )}
+        </div>,
+        document.body // Dòng này là điểm mấu chốt: Gắn trực tiếp vào thẻ body
+      )}
     </div>
   );
 }

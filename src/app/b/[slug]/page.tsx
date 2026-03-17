@@ -101,7 +101,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
       <div className="bg-slate-50 pt-24 md:pt-32 pb-8 md:pb-12 border-b border-gray-100 px-4 sm:px-6 lg:px-8">
            <div className="max-w-7xl mx-auto">
                <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-slate-500 mb-4 md:mb-6 uppercase tracking-wider font-medium">
-                  <Link href="/blog" className="hover:text-amber-600">Blog</Link>
+                  <Link href="/b" className="hover:text-amber-600">Blog</Link>
                   <ChevronRight size={12} />
                   <span className="text-amber-600">{post.category}</span>
                </nav>
@@ -177,7 +177,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
                               post.tags.map((tag, index) => (
                                 <Link 
                                     key={index} 
-                                    href={`/blog?search=${encodeURIComponent(tag)}`}
+                                    href={`/b?search=${encodeURIComponent(tag)}`}
                                     className="px-2.5 py-1 bg-gray-100 text-slate-600 text-xs md:text-sm font-medium rounded hover:bg-amber-50 hover:text-amber-600 transition-colors"
                                 >
                                     #{tag}
@@ -226,7 +226,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
                           <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500 rounded-full blur-2xl -mr-10 -mt-10 opacity-50"></div>
                           <h4 className="font-bold text-base md:text-lg mb-1.5 md:mb-2 relative z-10">Cần tư vấn ngay?</h4>
                           <p className="text-slate-300 text-xs md:text-sm mb-4 relative z-10 leading-relaxed">Nhận báo giá thi công trọn gói cho công trình của bạn.</p>
-                          <a href="https://zalo.me/YOUR_ZALO_NUMBER" target="_blank" rel="noreferrer" className="block w-full py-2.5 md:py-3 bg-amber-500 text-slate-900 text-sm text-center font-bold uppercase tracking-wider rounded-lg hover:bg-amber-400 transition-colors shadow-lg relative z-10">
+                          <a href="https://zalo.me/0938692111" target="_blank" rel="noreferrer" className="block w-full py-2.5 md:py-3 bg-amber-500 text-slate-900 text-sm text-center font-bold uppercase tracking-wider rounded-lg hover:bg-amber-400 transition-colors shadow-lg relative z-10">
                               Liên hệ Zalo
                           </a>
                       </div>
@@ -244,7 +244,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
                   <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-6 md:mb-8 border-l-4 border-amber-500 pl-3 md:pl-4">Bài viết liên quan</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                       {relatedPosts.map(p => (
-                          <Link key={p.id} href={`/blog/${p.slug}`} className="group flex flex-row gap-3 md:gap-4 bg-white md:bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all">
+                          <Link key={p.id} href={`/b/${p.slug}`} className="group flex flex-row gap-3 md:gap-4 bg-white md:bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all">
                               <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden shrink-0 bg-slate-200 relative">
                                   <img src={p.image} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                               </div>

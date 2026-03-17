@@ -44,7 +44,7 @@ export const ProductCard: React.FC<{ product: Product, onQuickAdd?: () => void }
                 onClick={(e) => { e.preventDefault(); onQuickAdd?.(); }}
                 className="flex-1 bg-slate-900 text-white py-1.5 md:py-2.5 rounded md:rounded-lg text-[9px] md:text-xs font-bold hover:bg-brand-600 transition-colors flex items-center justify-center gap-1 md:gap-2 shadow-lg"
             >
-                <ShoppingCart size={12} className="md:w-[14px] md:h-[14px]" /> Thêm
+                <ShoppingCart size={12} className="md:w-[14px] md:h-[14px]" /> Thêm Vào Giỏ
             </button>
             <Link 
                 href={`/p/${product.slug}`}
@@ -323,7 +323,7 @@ export const MaterialCalculator: React.FC<{ product: Product, onAdd: (qty: numbe
                         onClick={() => onAdd(result.quantityNeeded)}
                         className="w-full mt-1 md:mt-2 py-1.5 md:py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded md:rounded-lg shadow-lg shadow-brand-500/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 md:gap-2"
                     >
-                        <ShoppingCart size={12} className="md:w-3.5 md:h-3.5"/> Thêm {result.quantityNeeded} {itemLabel}
+                        <ShoppingCart size={12} className="md:w-3.5 md:h-3.5"/> Thêm Vào Giỏ {result.quantityNeeded} {itemLabel}
                     </button>
                 </div>
             )}

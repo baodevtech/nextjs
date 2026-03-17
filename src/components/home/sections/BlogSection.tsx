@@ -28,7 +28,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
                   
                   {/* Link PC: Chỉ hiện trên Desktop */}
                   <Link 
-                    href="/blog" 
+                    href="/b" 
                     className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-900 transition-all pb-1"
                   >
                       Đọc tất cả bài viết <ArrowRight size={16} />
@@ -39,7 +39,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   
                   {/* FEATURED POST */}
-                  <Link href={`/blog/${featuredPost.slug}`} className="lg:col-span-2 group cursor-pointer block">
+                  <Link href={`/b/${featuredPost.slug}`} className="lg:col-span-2 group cursor-pointer block">
                       <div className="relative aspect-[3/2] md:aspect-[16/9] overflow-hidden rounded-xl md:rounded-3xl mb-3 md:mb-6">
                           <Image 
                             src={featuredPost.image} 
@@ -73,7 +73,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
                  {/* SIDE LIST */}
                   <div className="flex flex-col gap-5 md:gap-10 border-t border-slate-100 pt-6 md:pt-0 md:border-0">
                       {sidePosts.map((post) => (
-                          <Link href={`/blog/${post.slug}`} key={post.id} className="group cursor-pointer flex md:block gap-3 md:gap-0 items-start">
+                          <Link href={`/b/${post.slug}`} key={post.id} className="group cursor-pointer flex md:block gap-3 md:gap-0 items-start">
                               
                               <div className="relative w-20 h-20 md:w-full md:h-auto aspect-square md:aspect-[3/2] overflow-hidden rounded-lg md:rounded-2xl md:mb-4 shrink-0 bg-slate-100">
                                   <Image 
@@ -106,7 +106,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
               {/* MOBILE VIEW ALL LINK: Chỉ hiện trên mobile (md:hidden) */}
               <div className="mt-8 text-center flex justify-center md:hidden">
                    <Link 
-                    href="/blog" 
+                    href="/b" 
                     className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 border-b border-slate-200 hover:border-slate-900 pb-1 transition-all"
                   >
                       Đọc tất cả bài viết <ArrowRight size={16} />

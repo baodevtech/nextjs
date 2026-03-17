@@ -8,7 +8,7 @@ import {
     ChevronRight, ZoomIn, Grid 
 } from 'lucide-react';
 import { Project } from '@/types';
-
+import { createPortal } from 'react-dom';
 interface ProjectDetailClientProps {
   project: Project;
 }
@@ -19,7 +19,10 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     // --- Lightbox Logic (Giữ nguyên từ code mẫu) ---
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,10 +61,17 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
         <div className="bg-slate-950 font-sans text-slate-200 animate-fade-in selection:bg-amber-500 selection:text-white">
             
             {/* LIGHTBOX (Giữ nguyên cấu trúc HTML/Tailwind của bạn) */}
-            {lightboxOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col animate-fade-in touch-none">
-                    {/* ... (Copy nguyên phần Lightbox UI từ code mẫu vào đây) ... */}
-                    <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-center z-50 text-white bg-gradient-to-b from-black/50 to-transparent">
+           {/* LIGHTBOX SỬ DỤNG PORTAL */}
+            {mounted && lightboxOpen && createPortal(
+                <div 
+                    className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex flex-col animate-fade-in touch-none"
+                    onClick={closeLightbox} // 1. Bấm vào nền đen sẽ đóng
+                >
+                    {/* Header Controls */}
+                    <div 
+                        className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-center z-50 text-white bg-gradient-to-b from-black/50 to-transparent"
+                        onClick={(e) => e.stopPropagation()} // Ngăn việc bấm vào thanh công cụ bị đóng
+                    >
                         <div className="flex items-center gap-3">
                              <Grid size={20} className="text-amber-500"/>
                              <span className="text-sm font-bold tracking-widest uppercase">{project.title}</span>
@@ -74,22 +84,40 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
                         </button>
                     </div>
 
+                    {/* Vùng chứa nội dung chính */}
                     <div className="flex-1 flex items-center justify-center relative w-full h-full p-4 md:p-12 lg:p-20 overflow-hidden">
-                        <button onClick={prevImage} className="absolute left-4 lg:left-8 p-4 rounded-full bg-white/5 hover:bg-white/20 text-white/50 hover:text-white hidden md:flex items-center justify-center backdrop-blur-sm transition-all group z-40 border border-white/5">
+                        
+                        {/* Nút lùi */}
+                        <button 
+                            onClick={prevImage} 
+                            className="absolute left-4 lg:left-8 p-4 rounded-full bg-white/5 hover:bg-white/20 text-white/50 hover:text-white hidden md:flex items-center justify-center backdrop-blur-sm transition-all group z-40 border border-white/5"
+                        >
                             <ChevronLeft size={32} />
                         </button>
-                        <div className="relative w-full h-full flex items-center justify-center">
+                        
+                        {/* Khung chứa ảnh */}
+                        <div 
+                            className="relative w-full h-full flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()} // 2. Bấm vào vùng ảnh thì KHÔNG đóng
+                        >
                              <img 
                                 key={currentImageIndex}
                                 src={project.gallery[currentImageIndex]} 
                                 className="max-w-full max-h-full object-contain shadow-2xl animate-fade-in select-none"
+                                alt={`Project image ${currentImageIndex + 1}`}
                             />
                         </div>
-                        <button onClick={nextImage} className="absolute right-4 lg:right-8 p-4 rounded-full bg-white/5 hover:bg-white/20 text-white/50 hover:text-white hidden md:flex items-center justify-center backdrop-blur-sm transition-all group z-40 border border-white/5">
+
+                        {/* Nút tiến */}
+                        <button 
+                            onClick={nextImage} 
+                            className="absolute right-4 lg:right-8 p-4 rounded-full bg-white/5 hover:bg-white/20 text-white/50 hover:text-white hidden md:flex items-center justify-center backdrop-blur-sm transition-all group z-40 border border-white/5"
+                        >
                             <ChevronRight size={32} />
                         </button>
                     </div>
-                </div>
+                </div>,
+                document.body // Đưa ra ngoài cùng thẻ body
             )}
 
             {/* HERO SECTION */}
@@ -105,7 +133,7 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
                 </div>
 
                 <div className="absolute top-8 left-8 z-20">
-                     <Link href="/projects" className="flex items-center gap-2 text-white/70 hover:text-amber-400 transition-colors uppercase text-xs font-bold tracking-widest group">
+                     <Link href="/du-an/" className="flex items-center gap-2 text-white/70 hover:text-amber-400 transition-colors uppercase text-xs font-bold tracking-widest group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Works
                      </Link>
                 </div>
@@ -253,7 +281,7 @@ export default function ProjectDetailClient({ project }: ProjectDetailClientProp
             </section>
 
             {/* NEXT PROJECT (Có thể truyền prop hoặc để tĩnh) */}
-            <section className="py-32 bg-slate-900 relative overflow-hidden group cursor-pointer" onClick={() => router.push('/projects/')}>
+            <section className="py-32 bg-slate-900 relative overflow-hidden group cursor-pointer" onClick={() => router.push('/du-an/')}>
                  <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700 scale-105 group-hover:scale-100 transform transition-transform">
 
                     <img

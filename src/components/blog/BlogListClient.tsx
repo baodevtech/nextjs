@@ -135,7 +135,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
                     <div className="space-y-10 md:space-y-12">
                         {posts.map((post, index) => (
                             <article key={post.id} className="flex flex-col group border-b border-gray-100 pb-10 md:pb-12 last:border-0 last:pb-0">
-                              <Link href={`/blog/${post.slug}`} className="block overflow-hidden rounded-2xl aspect-[16/9] mb-5 md:mb-6 shadow-sm relative">
+                              <Link href={`/b/${post.slug}`} className="block overflow-hidden rounded-2xl aspect-[16/9] mb-5 md:mb-6 shadow-sm relative">
                                     <Image 
                                         src={post.image} 
                                         alt={post.title} 
@@ -151,7 +151,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
                                     <span className="flex items-center gap-1"><Calendar size={14}/> {post.date}</span>
                                 </div>
 
-                                <Link href={`/blog/${post.slug}`} className="group-hover:text-amber-700 transition-colors">
+                                <Link href={`/b/${post.slug}`} className="group-hover:text-amber-700 transition-colors">
                                     <h2 className="text-xl md:text-3xl font-bold text-slate-900 mb-3 leading-tight">{post.title}</h2>
                                 </Link>
                                 
@@ -164,7 +164,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
                                         </div>
                                         <span className="text-xs md:text-sm font-bold text-slate-900">{post.author.name}</span>
                                     </div>
-                                    <Link href={`/blog/${post.slug}`} className="flex items-center gap-1 text-xs md:text-sm font-bold text-amber-600 hover:text-amber-800">
+                                    <Link href={`/b/${post.slug}`} className="flex items-center gap-1 text-xs md:text-sm font-bold text-amber-600 hover:text-amber-800">
                                         Đọc tiếp <ArrowRight size={16} />
                                     </Link>
                                 </div>
@@ -251,7 +251,7 @@ export const BlogListClient: React.FC<BlogListClientProps> = ({
                     <h3 className="font-bold text-slate-900 text-lg mb-5 border-b border-gray-100 pb-3">Bài viết nổi bật</h3>
                     <div className="space-y-4 md:space-y-5">
                         {featuredSidebarPosts.map(post => (
-                            <Link key={`sidebar-${post.id}`} href={`/blog/${post.slug}`} className="flex gap-4 group items-center">
+                            <Link key={`sidebar-${post.id}`} href={`/b/${post.slug}`} className="flex gap-4 group items-center">
                                 <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-200 relative">
                                     <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 </div>

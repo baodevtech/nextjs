@@ -7,7 +7,7 @@ export const dynamic = 'force-static';
 // 1. TỐI ƯU SEO: Sinh Metadata ĐỘNG từ RankMath 
 export async function generateMetadata(): Promise<Metadata> {
   // LƯU Ý: Thay '/blog/' bằng URI thực tế của trang blog trên WP của bạn (vd: '/tin-tuc/')
-  const seoData = await getUniversalSEO('/blog/'); 
+  const seoData = await getUniversalSEO('/b/'); 
   const seo = seoData?.seo;
 
   if (!seo) {
@@ -40,7 +40,7 @@ export default async function BlogPage() {
     getPaginatedPosts(5, ""), // Chỉ lấy 5 bài đầu
     getBlogCategoriesList(),
     getBlogTagsList(),
-    getUniversalSEO('/blog/') // Lấy JSON-LD Schema
+    getUniversalSEO('/b/') // Lấy JSON-LD Schema
   ]);
 
   const schemaRaw = seoNode?.seo?.jsonLd?.raw || null;

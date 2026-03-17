@@ -51,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/pricing',
     '/ung-dung',
     '/c',
-    '/blog',
+    '/b',
     '/projects',
   ].map((route) => ({
     url: `${BASE_URL}${route}`,
@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 4. Các trang Bài viết Blog (ĐÃ SỬA LỖI NGÀY THÁNG)
   const postRoutes = posts.map((post) => ({
-    url: `${BASE_URL}/blog/${post.slug}`,
+    url: `${BASE_URL}/b/${post.slug}`,
     lastModified: safeDateIso(post.date), // Sử dụng helper an toàn
     changeFrequency: 'monthly' as const,
     priority: 0.7,

@@ -417,7 +417,7 @@ export default function ApplicationsClient({ data }: ApplicationsClientProps) {
                                 {data.ctaBtnPrimary}
                             </Button>
                         </Link>
-                        <Link href="/san-pham" className="w-full sm:w-auto">
+                        <Link href="/c" className="w-full sm:w-auto">
                             <Button variant="outline" className="w-full h-14 md:h-16 px-8 md:px-12 text-xs md:text-sm font-bold uppercase tracking-widest border-slate-700 text-white hover:bg-white hover:text-slate-900 hover:border-white">
                                 {data.ctaBtnSecondary}
                             </Button>
