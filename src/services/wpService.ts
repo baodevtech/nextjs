@@ -236,7 +236,7 @@ export const getPaginatedShopProducts = async (
   if (brand !== "all") {
     taxonomyFilter = `
       taxonomyFilter: {
-        filters: [{ taxonomy: PRODUCTBRAND, terms: ["${brand}"] }]
+        filters: [{ taxonomy: PRODUCT_BRAND, terms: ["${brand}"] }]
       }
     `;
   }

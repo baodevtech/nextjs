@@ -569,14 +569,7 @@ export default function ShopClient({
             {/* PRODUCT GRID - CÓ THÊM HIỆU ỨNG LOADING OVERLAY */}
             <div id="product-grid-section" className="scroll-mt-24 relative min-h-[400px]">
                 
-                {isLoading && (
-                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-10 flex items-start justify-center pt-20 rounded-2xl">
-                    <div className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full shadow-lg font-bold text-sm">
-                      <Loader2 size={16} className="animate-spin" /> Đang cập nhật...
-                    </div>
-                  </div>
-                )}
-
+              
                 {products.length > 0 ? (
                   <>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10">
