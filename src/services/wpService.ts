@@ -260,7 +260,12 @@ export const getPaginatedShopProducts = async (
     }
   `;
 
-  const data = await fetchAPI(query, { variables: { first, after } });
+  const data = await fetchAPI(
+    query, 
+    { variables: { first, after } }, 
+    undefined, 
+    ['products'] 
+  );
 
   return {
     products: data?.products?.nodes ? data.products.nodes.map(mapProduct) : [],
@@ -410,7 +415,7 @@ export const getCategories = async (): Promise<Category[]> => {
         }
       }
     }
-  `, {}, undefined, ['categories']);
+  `, {}, undefined, ['categories', 'products'],);
 
   if (!data || !data.productCategories) {
     console.warn("⚠️ Không lấy được Categories từ API.");
