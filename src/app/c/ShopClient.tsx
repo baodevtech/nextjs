@@ -23,6 +23,7 @@ import {
   RefreshCcw,
   SlidersHorizontal,
   ArrowDown,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/common/UI";
 
@@ -98,7 +99,7 @@ const ShopHeader: React.FC<{
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-gray-200 shadow-sm text-[10px] md:text-xs font-bold text-slate-600">
             <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-500 animate-pulse"></span>
-            {productCount} Sản phẩm sẵn sàng
+            {productCount} Sản phẩm hiển thị
           </div>
         </div>
 
@@ -143,7 +144,7 @@ const ShopHeader: React.FC<{
             onClick={scrollToProducts}
             className="md:hidden absolute top-0 right-0 z-30 bg-amber-400 text-dark text-[7px] font-bold px-3 py-1.5 rounded-full shadow-lg shadow-brand-900/20 flex items-center gap-1 active:scale-95 transition-transform hover:bg-brand-500"
           >
-            Xem {productCount} SP <ArrowDown size={12} strokeWidth={3} />
+            Xem SP <ArrowDown size={12} strokeWidth={3} />
           </button>
 
           <Breadcrumb categoryName={category.name} />
@@ -157,7 +158,7 @@ const ShopHeader: React.FC<{
 
           <div className="hidden md:flex items-center gap-4">
             <Button variant="primary" className="py-2 px-4 text-xs bg-brand-500 text-white hover:bg-slate-100 border-none" onClick={scrollToProducts}>
-              Xem {productCount} Sản phẩm
+              Xem Sản phẩm
             </Button>
           </div>
         </div>
@@ -172,13 +173,6 @@ const ShopHeader: React.FC<{
             </p>
           </div>
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 md:p-4 rounded-xl text-white flex items-center justify-between gap-2 md:gap-4">
-            <div className="flex flex-col">
-              <span className="text-lg md:text-2xl font-bold">{productCount}</span>
-              <span className="text-[9px] md:text-[10px] text-slate-300 uppercase">
-                Mã màu
-              </span>
-            </div>
-            <div className="h-6 md:h-8 w-px bg-white/20"></div>
             <div className="flex flex-col">
               <span className="text-lg md:text-2xl font-bold">
                 {category.warrantyMonths || 10}
@@ -216,6 +210,7 @@ const FilterSection: React.FC<{
 
 interface ShopClientProps {
   initialProducts: Product[];
+  initialPageInfo?: { endCursor: string; hasNextPage: boolean }; 
   initialCategories: Category[];
   initialShopSettings: ShopSettings | null;
   categorySlug?: string; 
@@ -225,42 +220,197 @@ const SORT_OPTIONS = ["Mới nhất", "Bán chạy nhất", "Giá thấp - cao",
 
 export default function ShopClient({
   initialProducts,
+  initialPageInfo,
   initialCategories,
   initialShopSettings,
   categorySlug,
 }: ShopClientProps) {
-  const products = initialProducts;
-  const categories = initialCategories;
-  const shopSettings = initialShopSettings;
-  const inStockCount = products.filter((p) => p.stockStatus === "IN_STOCK").length;
-
+  
+  // 👉 1. STATE BỘ LỌC
   const [filter, setFilter] = useState(categorySlug || "all");
   const [brandFilter, setBrandFilter] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isPromotion, setIsPromotion] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // STATE SẮP XẾP
   const [sortBy, setSortBy] = useState(SORT_OPTIONS[0]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  
+
+  // 👉 2. LOGIC LƯU CACHE
+  const cacheKey = `shop_state_${categorySlug || "all"}`;
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try { return JSON.parse(cached).products; } catch (e) {}
+      }
+    }
+    return initialProducts;
+  });
+
+  const [endCursor, setEndCursor] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try { return JSON.parse(cached).endCursor; } catch (e) {}
+      }
+    }
+    return initialPageInfo?.endCursor || "";
+  });
+
+  const [hasNextPage, setHasNextPage] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try { return JSON.parse(cached).hasNextPage; } catch (e) {}
+      }
+    }
+    return initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12);
+  });
+
+  const [isLoading, setIsLoading] = useState(false); // Trạng thái Load khi Lọc
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // Trạng thái Load khi Xem thêm
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        products,
+        endCursor,
+        hasNextPage
+      }));
+    }
+  }, [products, endCursor, hasNextPage, cacheKey]);
+
+  const categories = initialCategories;
+  const shopSettings = initialShopSettings;
   const searchParams = useSearchParams();
   const router = useRouter();
   const { addToCart } = useCart();
 
-  // ĐỒNG BỘ DANH MỤC TỪ URL & RESET BỘ LỌC
-  useEffect(() => {
-    if (categorySlug) {
-      setFilter(categorySlug);
-    } else {
-      const cat = searchParams.get("cat");
-      setFilter(cat || "all");
+  // Danh sách thương hiệu hiện có (Tạm thời lấy từ list sản phẩm tải lần đầu)
+  const brands = Array.from(new Set(initialProducts.map((p) => p.brand).filter(Boolean)));
+
+  // 👉 3. HÀM FETCH DỮ LIỆU TỪ SERVER DÀNH CHO CẢ "LỌC MỚI" VÀ "XEM THÊM"
+  const fetchProductsFromServer = async (isLoadMore = false) => {
+    if (isLoadMore) setIsLoadingMore(true);
+    else setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first: 12,
+          after: isLoadMore ? endCursor : "", // Nếu lọc mới thì lấy từ đầu, nếu xem thêm thì nối tiếp
+          category: filter,
+          search: searchQuery,
+          brand: brandFilter,
+          inStockOnly,
+          isPromotion,
+          sortBy
+        })
+      });
+
+      const json = await res.json();
+      
+      if (json.success) {
+        const newData = json.data;
+        
+        if (isLoadMore) {
+          // Gắn thêm vào danh sách (Lọc ID trùng)
+          setProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const uniqueNewProducts = newData.products.filter(
+              (p: Product) => !existingIds.has(p.id)
+            );
+            return [...prev, ...uniqueNewProducts];
+          });
+        } else {
+          // Ghi đè danh sách (Khi đổi bộ lọc)
+          setProducts(newData.products);
+        }
+
+        setEndCursor(newData.pageInfo.endCursor);
+        setHasNextPage(newData.pageInfo.hasNextPage);
+      }
+    } catch (error) {
+      console.error("Lỗi khi fetch sản phẩm:", error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
     }
-    setBrandFilter("all");
-    setInStockOnly(false);
-    setIsPromotion(false);
-    setSearchQuery("");
-  }, [categorySlug, searchParams]);
+  };
+
+  // 👉 4. ĐỒNG BỘ URL & LẮNG NGHE LỌC (DEBOUNCE)
+  useEffect(() => {
+    const currentCat = categorySlug || searchParams.get("cat") || "all";
+    
+    // Nếu đổi danh mục trên URL
+    if (currentCat !== filter) {
+      setFilter(currentCat);
+
+      const newCacheKey = `shop_state_${currentCat}`;
+      let cachedData = null;
+      if (typeof window !== 'undefined') {
+        const cachedStr = sessionStorage.getItem(newCacheKey);
+        if (cachedStr) {
+          try { cachedData = JSON.parse(cachedStr); } catch (e) {}
+        }
+      }
+
+      if (cachedData) {
+        setProducts(cachedData.products);
+        setEndCursor(cachedData.endCursor);
+        setHasNextPage(cachedData.hasNextPage);
+      } else {
+        setProducts(initialProducts);
+        setEndCursor(initialPageInfo?.endCursor || "");
+        setHasNextPage(initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12));
+      }
+
+      setBrandFilter("all");
+      setInStockOnly(false);
+      setIsPromotion(false);
+      setSearchQuery("");
+      setSortBy(SORT_OPTIONS[0]);
+      return; 
+    }
+  }, [categorySlug, searchParams, initialProducts, initialPageInfo, filter]);
+
+  // 👉 THÊM DÒNG NÀY NGAY TRÊN useEffect: Tạo cờ đánh dấu lần render đầu tiên
+  const isInitialRender = React.useRef(true);
+
+  // DEBOUNCE EFFECT: Gọi API khi có bất kỳ bộ lọc nào bị thay đổi
+  useEffect(() => {
+    // 1. Bỏ qua lần chạy đầu tiên khi mới vào trang để KHÔNG làm mất dữ liệu Cache (khi bấm Back)
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return; 
+    }
+
+    // 2. Nếu tất cả bộ lọc đều bị xóa trắng/về mặc định (Ví dụ: Xóa hết chữ tìm kiếm)
+    if (
+      filter === (categorySlug || "all") &&
+      brandFilter === "all" &&
+      !inStockOnly &&
+      !isPromotion &&
+      searchQuery === "" &&
+      sortBy === SORT_OPTIONS[0]
+    ) {
+      // TRẢ LẠI 12 SẢN PHẨM MẶC ĐỊNH MÀ KHÔNG CẦN GỌI API
+      setProducts(initialProducts);
+      setEndCursor(initialPageInfo?.endCursor || "");
+      setHasNextPage(initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12));
+      return;
+    }
+
+    // 3. Nếu có gõ tìm kiếm hoặc đổi bộ lọc -> Delay 500ms rồi gọi API
+    const delayDebounceFn = setTimeout(() => {
+      fetchProductsFromServer(false); 
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [filter, brandFilter, inStockOnly, isPromotion, searchQuery, sortBy, categorySlug, initialProducts, initialPageInfo]);
 
   const handleCategoryChange = (slug: string) => {
     if (slug === "all") {
@@ -270,63 +420,32 @@ export default function ShopClient({
     }
   };
 
-  // 1. LỌC THEO DANH MỤC TRƯỚC
-  const productsInCategory = products.filter(
-    (p) => filter === "all" || p.categories.includes(filter)
-  );
-
-  // 2. TÍNH TOÁN THƯƠNG HIỆU (Chỉ dựa trên các sản phẩm thuộc danh mục hiện tại)
-  const brands = Array.from(new Set(productsInCategory.map((p) => p.brand).filter(Boolean)));
-  const getCategoryCount = (slug: string) => products.filter((p) => slug === "all" || p.categories.includes(slug)).length;
-  const getBrandCount = (brand: string) => productsInCategory.filter((p) => p.brand === brand).length;
-
-  // 3. ÁP DỤNG CÁC BỘ LỌC KHÁC
-  let filteredProducts = productsInCategory.filter((p) => {
-    const matchBrand = brandFilter === "all" || p.brand === brandFilter;
-    const matchStock = !inStockOnly || p.stockStatus === "IN_STOCK";
-    // Kiểm tra giảm giá (regularPrice > price.amount)
-    const matchPromo = !isPromotion || (p.regularPrice && p.regularPrice.amount > p.price.amount);
-    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchBrand && matchStock && matchPromo && matchSearch;
-  });
-
-  // 4. SẮP XẾP KẾT QUẢ CUỐI CÙNG
-  filteredProducts = filteredProducts.sort((a, b) => {
-    if (sortBy === "Giá thấp - cao") {
-      return a.price.amount - b.price.amount;
-    } else if (sortBy === "Giá cao - thấp") {
-      return b.price.amount - a.price.amount;
-    } else if (sortBy === "Bán chạy nhất") {
-      // Ép kiểu any nếu chưa định nghĩa trường sales trong interface Product
-      const salesA = (a as any).sales || 0; 
-      const salesB = (b as any).sales || 0;
-      return salesB - salesA;
-    } else {
-      // Mới nhất (Sắp xếp theo ngày tạo hoặc ID)
-      const dateA = new Date((a as any).createdAt || 0).getTime();
-      const dateB = new Date((b as any).createdAt || 0).getTime();
-      return dateB - dateA;
+  // Đếm đúng số lượng danh mục từ Server
+  const getCategoryCount = (slug: string) => {
+    if (slug === "all") {
+      return categories.reduce((total, cat) => total + (cat.count || 0), 0);
     }
-  });
+    const category = categories.find(c => c.slug === slug);
+    return category?.count || 0;
+  };
 
   const currentCategory = categories.find((c) => c.slug === filter);
-  const hasActiveFilters = brandFilter !== "all" || inStockOnly || isPromotion || searchQuery;
+  const hasActiveFilters = brandFilter !== "all" || inStockOnly || isPromotion || searchQuery || sortBy !== SORT_OPTIONS[0];
 
   const resetFilters = () => {
     setBrandFilter("all");
     setInStockOnly(false);
     setIsPromotion(false);
     setSearchQuery("");
+    setSortBy(SORT_OPTIONS[0]);
   };
 
-  const currentProductCount = currentCategory ? productsInCategory.length : inStockCount;
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         <ShopHeader
           category={currentCategory}
-          productCount={currentProductCount}
+          productCount={products.length}
           shopSettings={shopSettings}
         />
 
@@ -385,14 +504,11 @@ export default function ShopClient({
                     <span className={`text-sm flex-1 ${brandFilter === "all" ? "font-bold text-brand-700" : "text-slate-600"}`}>Tất cả</span>
                   </div>
                   {brands.map((brand) => {
-                     const count = getBrandCount(brand);
                      const isActive = brandFilter === brand;
-                     if (count === 0 && !isActive) return null;
                      return (
                        <div key={brand as string} onClick={() => setBrandFilter(brand as string)} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${isActive ? "bg-brand-50/50" : "hover:bg-gray-50"}`}>
                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${isActive ? "border-brand-600 bg-brand-600" : "border-gray-300 group-hover:border-brand-400"}`}>{isActive && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}</div>
                          <span className={`text-sm flex-1 ${isActive ? "font-bold text-brand-700" : "text-slate-600"}`}>{brand as string}</span>
-                         <span className="text-xs text-slate-400">{count}</span>
                        </div>
                      );
                   })}
@@ -413,7 +529,7 @@ export default function ShopClient({
               </FilterSection>
 
               <div className="lg:hidden mt-auto pt-4 border-t sticky bottom-0 bg-white p-4">
-                <Button fullWidth onClick={() => setShowMobileFilters(false)}>Xem {filteredProducts.length} Kết Quả</Button>
+                <Button fullWidth onClick={() => setShowMobileFilters(false)}>Xem Kết Quả</Button>
               </div>
             </div>
           </aside>
@@ -425,7 +541,6 @@ export default function ShopClient({
                 <SlidersHorizontal size={14} /> Bộ Lọc
               </button>
 
-              {/* KHỐI SẮP XẾP SẢN PHẨM */}
               <div className="hidden md:flex items-center gap-2">
                 {SORT_OPTIONS.map((sort, i) => (
                   <button 
@@ -443,20 +558,52 @@ export default function ShopClient({
               </div>
 
               <div className="flex items-center gap-2 ml-auto">
-                <span className="text-xs text-slate-500 mr-2 hidden sm:inline">Hiển thị:</span>
+               <span className="text-xs font-medium text-slate-500 mr-2 hidden sm:inline">
+                  Hiển thị: <span className="text-brand-600 font-bold">{products.length}</span> / {getCategoryCount(filter)}
+                </span>
                 <button className="p-1.5 md:p-2 bg-slate-100 text-slate-900 rounded-md hover:bg-slate-200 transition-colors"><LayoutGrid size={16} /></button>
                 <button className="p-1.5 md:p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-50 rounded-md transition-colors"><List size={16} /></button>
               </div>
             </div>
 
-            {/* PRODUCT GRID */}
-            <div id="product-grid-section" className="scroll-mt-24">
-                {filteredProducts.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10">
-                    {filteredProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} onQuickAdd={() => addToCart(product)} />
-                    ))}
+            {/* PRODUCT GRID - CÓ THÊM HIỆU ỨNG LOADING OVERLAY */}
+            <div id="product-grid-section" className="scroll-mt-24 relative min-h-[400px]">
+                
+                {isLoading && (
+                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-10 flex items-start justify-center pt-20 rounded-2xl">
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full shadow-lg font-bold text-sm">
+                      <Loader2 size={16} className="animate-spin" /> Đang cập nhật...
+                    </div>
                   </div>
+                )}
+
+                {products.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 md:gap-x-6 md:gap-y-10">
+                      {products.map((product) => (
+                        <ProductCard key={product.id} product={product} onQuickAdd={() => addToCart(product)} />
+                      ))}
+                    </div>
+                    
+                    {/* --- NÚT TẢI THÊM SẢN PHẨM --- */}
+                   {hasNextPage && (
+    <div className="mt-10 md:mt-14 flex justify-center animate-fade-in">
+      <button 
+        onClick={() => fetchProductsFromServer(true)}
+        disabled={isLoadingMore || isLoading}
+        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-slate-700 text-sm font-medium rounded-lg hover:border-brand-500 hover:text-brand-600 hover:shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoadingMore ? (
+          <><Loader2 size={16} className="animate-spin text-brand-500" /> Đang tải...</>
+        ) : (
+          <>
+            Xem thêm <ArrowDown size={14} />
+          </>
+        )}
+      </button>
+    </div>
+)}
+                  </>
                 ) : (
                   <div className="text-center py-20 md:py-32 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                     <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-slate-300">

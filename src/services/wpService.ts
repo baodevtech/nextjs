@@ -187,12 +187,91 @@ const mapProduct = (node: any): Product => {
     },
   };
 };
+export const getPaginatedShopProducts = async (
+  first: number = 12,
+  after: string = "",
+  categoryIn: string = "all",
+  search: string = "",
+  brand: string = "all",
+  inStockOnly: boolean = false,
+  isPromotion: boolean = false,
+  sortBy: string = "Mới nhất"
+) => {
+  // Xây dựng các điều kiện lọc GraphQL
+  let whereFilters = [];
+  
+  // 1. Sắp xếp (Sort)
+  if (sortBy === "Giá thấp - cao") {
+    whereFilters.push(`orderby: { field: PRICE, order: ASC }`);
+  } else if (sortBy === "Giá cao - thấp") {
+    whereFilters.push(`orderby: { field: PRICE, order: DESC }`);
+  } else if (sortBy === "Bán chạy nhất") {
+    whereFilters.push(`orderby: { field: TOTAL_SALES, order: DESC }`);
+  } else {
+    whereFilters.push(`orderby: { field: DATE, order: DESC }`);
+  }
 
+  // 2. Danh mục
+  if (categoryIn && categoryIn !== "all") {
+    whereFilters.push(`categoryIn: "${categoryIn}"`);
+  }
+
+  // 3. Tìm kiếm
+  if (search) {
+    whereFilters.push(`search: "${search}"`);
+  }
+
+  // 4. Còn hàng (Tuỳ thuộc plugin WPGraphQL WooCommerce của bạn hỗ trợ tham số này)
+  if (inStockOnly) {
+    whereFilters.push(`stockStatus: IN_STOCK`);
+  }
+
+  // 5. Khuyến mãi
+  if (isPromotion) {
+    whereFilters.push(`onSale: true`);
+  }
+
+  // 6. Thương hiệu (Nếu bạn dùng Taxonomy product_brand)
+  let taxonomyFilter = "";
+  if (brand !== "all") {
+    taxonomyFilter = `
+      taxonomyFilter: {
+        filters: [{ taxonomy: PRODUCTBRAND, terms: ["${brand}"] }]
+      }
+    `;
+  }
+
+  const query = `
+    ${PRODUCT_FIELDS}
+    query GetPaginatedProducts($first: Int!, $after: String) {
+      products(
+        first: $first, 
+        after: $after, 
+        where: { ${whereFilters.join(", ")}, ${taxonomyFilter} }
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          ...ProductFields
+        }
+      }
+    }
+  `;
+
+  const data = await fetchAPI(query, { variables: { first, after } });
+
+  return {
+    products: data?.products?.nodes ? data.products.nodes.map(mapProduct) : [],
+    pageInfo: data?.products?.pageInfo || { hasNextPage: false, endCursor: "" }
+  };
+};
 export const getProducts = async (): Promise<Product[]> => {
   const data = await fetchAPI(`
     ${PRODUCT_FIELDS}
     query GetProducts {
-      products(first: 20, where: { orderby: { field: DATE, order: DESC } }) {
+      products(first: 12, where: { orderby: { field: DATE, order: DESC } }) {
         nodes {
           ...ProductFields
         }

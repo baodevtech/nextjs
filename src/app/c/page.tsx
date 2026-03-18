@@ -2,7 +2,7 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
 import {
-  getProducts,
+  getPaginatedShopProducts,
   getCategories,
   getShopSettings,
   getUniversalSEO,
@@ -49,34 +49,28 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ShopPage() {
-  // Lấy dữ liệu trên Server (Fetch song song kể cả data SEO)
-  const [products, categories, shopSettings, seoNode] = await Promise.all([
-    getProducts(),
-    getCategories(),
-    getShopSettings(),
-    getUniversalSEO('/c/') // Lấy thêm data SEO để chèn Schema JSON-LD
-  ]);
+  // Lấy dữ liệu trên Server: 12 sản phẩm đầu tiên VÀ thông tin phân trang
+  const paginatedData = await getPaginatedShopProducts(12, "", "all", "");
+  const categories = await getCategories();
+  const shopSettings = await getShopSettings();
+  const seoNode = await getUniversalSEO('/c/'); 
 
   const schemaRaw = seoNode?.seo?.jsonLd?.raw || null;
 
   return (
     <>
-      {/* 2. TỐI ƯU SEO: Chèn Schema JSON-LD trực tiếp từ RankMath */}
       {schemaRaw && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: schemaRaw }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaRaw }} />
       )}
-
-      {/* 3. TỐI ƯU SEO: Thẻ H1 duy nhất dành cho Bot Google đọc (ẩn với người dùng) */}
       <h1 className="sr-only">
-        {seoNode?.title || 'Danh mục sản phẩm Kho Panel'}
+        {seoNode?.title || 'Danh mục sản phẩm'}
       </h1>
 
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-500">Đang tải cửa hàng...</div>}>
         <ShopClient 
-          initialProducts={products}
+          initialProducts={paginatedData.products}
+          // 👉 DÒNG NÀY LÀ QUAN TRỌNG NHẤT ĐỂ FIX LỖI CLICK 2 LẦN
+          initialPageInfo={paginatedData.pageInfo} 
           initialCategories={categories}
           initialShopSettings={shopSettings}
         />

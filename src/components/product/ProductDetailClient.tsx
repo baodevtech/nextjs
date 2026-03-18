@@ -195,7 +195,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         </div>
                         <div>
                             <p className="text-[10px] text-slate-500">Bảo hành</p>
-                            <p className="text-sm font-bold text-green-700">15 Năm</p>
+                            <p className="text-sm font-bold text-green-700">{product.warranty} Tháng</p>
                         </div>
                      </div>
                 </div>

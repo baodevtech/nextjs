@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  getProducts,
+  getPaginatedShopProducts,
   getCategories,
   getShopSettings,
   getUniversalSEO,
@@ -44,20 +44,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 // 2. SERVER COMPONENT
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function CategoryShopPage({ 
+  params 
+}: { 
+  // 1. Định nghĩa lại kiểu dữ liệu là Promise
+  params: Promise<{ slug: string }> 
+}) {
+   // 2. Thêm chữ await ở đây để mở gói params
+   const { slug } = await params; 
 
-  // Lấy dữ liệu song song
-  const [products, categories, shopSettings, seoNode] = await Promise.all([
-    getProducts(),
-    getCategories(),
-    getShopSettings(),
-    getUniversalSEO(`/c/${slug}/`) // Lấy schema của danh mục
-  ]);
+   // Lấy dữ liệu cho danh mục cụ thể (truyền slug vào)
+   const paginatedData = await getPaginatedShopProducts(12, "", slug, "");
+  const categories = await getCategories();
+  const shopSettings = await getShopSettings();
+  const seoNode = await getUniversalSEO(`/c/${slug}/`);
 
-  // Kiểm tra xem slug danh mục có tồn tại không, nếu không -> 404
-  const currentCat = categories.find(c => c.slug === slug);
-  if (!currentCat) {
+  const currentCategory = categories.find(c => c.slug === slug);
+  if (!currentCategory) {
     notFound();
   }
 
@@ -65,23 +68,18 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      {/* Chèn Schema JSON-LD từ RankMath */}
       {schemaRaw && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaRaw }} />
       )}
-
-      {/* Thẻ H1 chuẩn SEO cho danh mục */}
-      <h1 className="sr-only">
-        {seoNode?.title || `Danh mục: ${currentCat.name}`}
-      </h1>
-
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải danh mục...</div>}>
-        {/* Truyền thêm prop categorySlug để ShopClient biết cần active/filter danh mục nào ngay từ đầu */}
+      
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-500">Đang tải cửa hàng...</div>}>
         <ShopClient 
-          initialProducts={products}
+          initialProducts={paginatedData.products}
+          // 👉 TRUYỀN BIẾN NÀY ĐỂ FIX LỖI 
+          initialPageInfo={paginatedData.pageInfo} 
           initialCategories={categories}
           initialShopSettings={shopSettings}
-          categorySlug={slug} 
+          categorySlug={slug}
         />
       </Suspense>
     </>
