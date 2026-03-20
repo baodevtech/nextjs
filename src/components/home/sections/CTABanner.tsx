@@ -28,7 +28,7 @@ export const CTABanner = () => {
               <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-5 w-full sm:w-auto px-6 sm:px-0">
                   
                   {/* Primary Button */}
-                  <Link href="/contact" className="w-full sm:w-auto">
+                  <Link href="/lien-he" className="w-full sm:w-auto">
                       {/* Height h-12 (48px), Text text-xs */}
                       <button className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 rounded-full bg-white text-slate-950 text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-brand-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                           Nhận Báo Giá

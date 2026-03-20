@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Product, Category } from "@/types";
@@ -235,41 +235,39 @@ export default function ShopClient({
   const [sortBy, setSortBy] = useState(SORT_OPTIONS[0]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // 👉 2. LOGIC LƯU CACHE
+  // 👉 2. LOGIC LƯU CACHE THÔNG MINH (TỰ ĐỘNG XÓA KHI SERVER CÓ DATA MỚI)
   const cacheKey = `shop_state_${categorySlug || "all"}`;
 
-  const [products, setProducts] = useState<Product[]>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try { return JSON.parse(cached).products; } catch (e) {}
-      }
-    }
-    return initialProducts;
-  });
+  const validateAndGetCache = (key: string, serverData: Product[]) => {
+    if (typeof window === 'undefined') return null;
+    const cachedStr = sessionStorage.getItem(key);
+    if (!cachedStr) return null;
+    
+    try {
+      const parsed = JSON.parse(cachedStr);
+      const cachedFirstPage = parsed.products.slice(0, serverData.length);
+      
+      const cacheCheckStr = JSON.stringify(cachedFirstPage.map((p: Product) => ({ id: p.id, name: p.name, price: p.price.amount })));
+      const serverCheckStr = JSON.stringify(serverData.map((p: Product) => ({ id: p.id, name: p.name, price: p.price.amount })));
 
-  const [endCursor, setEndCursor] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try { return JSON.parse(cached).endCursor; } catch (e) {}
+      if (cacheCheckStr === serverCheckStr) {
+        return parsed; 
+      } else {
+        sessionStorage.removeItem(key); 
+        return null;
       }
+    } catch (e) {
+      return null;
     }
-    return initialPageInfo?.endCursor || "";
-  });
+  };
 
-  const [hasNextPage, setHasNextPage] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try { return JSON.parse(cached).hasNextPage; } catch (e) {}
-      }
-    }
-    return initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12);
-  });
+  const validCache = validateAndGetCache(cacheKey, initialProducts);
+  const [products, setProducts] = useState<Product[]>(validCache ? validCache.products : initialProducts);
+  const [endCursor, setEndCursor] = useState<string>(validCache ? validCache.endCursor : (initialPageInfo?.endCursor || ""));
+  const [hasNextPage, setHasNextPage] = useState<boolean>(validCache ? validCache.hasNextPage : (initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12)));
 
-  const [isLoading, setIsLoading] = useState(false); // Trạng thái Load khi Lọc
-  const [isLoadingMore, setIsLoadingMore] = useState(false); // Trạng thái Load khi Xem thêm
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoadingMore, setIsLoadingMore] = useState(false); 
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -286,8 +284,6 @@ export default function ShopClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { addToCart } = useCart();
-
-  // Danh sách thương hiệu hiện có (Tạm thời lấy từ list sản phẩm tải lần đầu)
   const brands = Array.from(new Set(initialProducts.map((p) => p.brand).filter(Boolean)));
 
   // 👉 3. HÀM FETCH DỮ LIỆU TỪ SERVER DÀNH CHO CẢ "LỌC MỚI" VÀ "XEM THÊM"
@@ -301,7 +297,7 @@ export default function ShopClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first: 12,
-          after: isLoadMore ? endCursor : "", // Nếu lọc mới thì lấy từ đầu, nếu xem thêm thì nối tiếp
+          after: isLoadMore ? endCursor : "", 
           category: filter,
           search: searchQuery,
           brand: brandFilter,
@@ -317,7 +313,6 @@ export default function ShopClient({
         const newData = json.data;
         
         if (isLoadMore) {
-          // Gắn thêm vào danh sách (Lọc ID trùng)
           setProducts(prev => {
             const existingIds = new Set(prev.map(p => p.id));
             const uniqueNewProducts = newData.products.filter(
@@ -326,7 +321,6 @@ export default function ShopClient({
             return [...prev, ...uniqueNewProducts];
           });
         } else {
-          // Ghi đè danh sách (Khi đổi bộ lọc)
           setProducts(newData.products);
         }
 
@@ -341,27 +335,20 @@ export default function ShopClient({
     }
   };
 
-  // 👉 4. ĐỒNG BỘ URL & LẮNG NGHE LỌC (DEBOUNCE)
+  // 👉 4. ĐỒNG BỘ DANH MỤC TRÊN URL & KIỂM TRA CACHE KHI CHUYỂN DANH MỤC
   useEffect(() => {
     const currentCat = categorySlug || searchParams.get("cat") || "all";
     
-    // Nếu đổi danh mục trên URL
     if (currentCat !== filter) {
       setFilter(currentCat);
 
       const newCacheKey = `shop_state_${currentCat}`;
-      let cachedData = null;
-      if (typeof window !== 'undefined') {
-        const cachedStr = sessionStorage.getItem(newCacheKey);
-        if (cachedStr) {
-          try { cachedData = JSON.parse(cachedStr); } catch (e) {}
-        }
-      }
+      const validCachedData = validateAndGetCache(newCacheKey, initialProducts);
 
-      if (cachedData) {
-        setProducts(cachedData.products);
-        setEndCursor(cachedData.endCursor);
-        setHasNextPage(cachedData.hasNextPage);
+      if (validCachedData) {
+        setProducts(validCachedData.products);
+        setEndCursor(validCachedData.endCursor);
+        setHasNextPage(validCachedData.hasNextPage);
       } else {
         setProducts(initialProducts);
         setEndCursor(initialPageInfo?.endCursor || "");
@@ -373,22 +360,18 @@ export default function ShopClient({
       setIsPromotion(false);
       setSearchQuery("");
       setSortBy(SORT_OPTIONS[0]);
-      return; 
     }
   }, [categorySlug, searchParams, initialProducts, initialPageInfo, filter]);
 
-  // 👉 THÊM DÒNG NÀY NGAY TRÊN useEffect: Tạo cờ đánh dấu lần render đầu tiên
-  const isInitialRender = React.useRef(true);
+  const isInitialRender = useRef(true);
 
-  // DEBOUNCE EFFECT: Gọi API khi có bất kỳ bộ lọc nào bị thay đổi
+  // 👉 5. DEBOUNCE EFFECT: Gọi API khi có bất kỳ bộ lọc nào bị thay đổi
   useEffect(() => {
-    // 1. Bỏ qua lần chạy đầu tiên khi mới vào trang để KHÔNG làm mất dữ liệu Cache (khi bấm Back)
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return; 
     }
 
-    // 2. Nếu tất cả bộ lọc đều bị xóa trắng/về mặc định (Ví dụ: Xóa hết chữ tìm kiếm)
     if (
       filter === (categorySlug || "all") &&
       brandFilter === "all" &&
@@ -397,14 +380,12 @@ export default function ShopClient({
       searchQuery === "" &&
       sortBy === SORT_OPTIONS[0]
     ) {
-      // TRẢ LẠI 12 SẢN PHẨM MẶC ĐỊNH MÀ KHÔNG CẦN GỌI API
       setProducts(initialProducts);
       setEndCursor(initialPageInfo?.endCursor || "");
       setHasNextPage(initialPageInfo?.hasNextPage ?? (initialProducts.length >= 12));
       return;
     }
 
-    // 3. Nếu có gõ tìm kiếm hoặc đổi bộ lọc -> Delay 500ms rồi gọi API
     const delayDebounceFn = setTimeout(() => {
       fetchProductsFromServer(false); 
     }, 500);
@@ -558,11 +539,16 @@ export default function ShopClient({
               </div>
 
               <div className="flex items-center gap-2 ml-auto">
-               <span className="text-xs font-medium text-slate-500 mr-2 hidden sm:inline">
+                <span className="text-xs font-medium text-slate-500 mr-2 hidden sm:inline">
                   Hiển thị: <span className="text-brand-600 font-bold">{products.length}</span> / {getCategoryCount(filter)}
                 </span>
-                <button className="p-1.5 md:p-2 bg-slate-100 text-slate-900 rounded-md hover:bg-slate-200 transition-colors"><LayoutGrid size={16} /></button>
-                <button className="p-1.5 md:p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-50 rounded-md transition-colors"><List size={16} /></button>
+                
+                <button className="p-1.5 md:p-2 bg-slate-100 text-slate-900 rounded-md hover:bg-slate-200 transition-colors">
+                  <LayoutGrid size={16} />
+                </button>
+                <button className="p-1.5 md:p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-50 rounded-md transition-colors">
+                  <List size={16} />
+                </button>
               </div>
             </div>
 
@@ -578,24 +564,24 @@ export default function ShopClient({
                       ))}
                     </div>
                     
-                    {/* --- NÚT TẢI THÊM SẢN PHẨM --- */}
-                   {hasNextPage && (
-    <div className="mt-10 md:mt-14 flex justify-center animate-fade-in">
-      <button 
-        onClick={() => fetchProductsFromServer(true)}
-        disabled={isLoadingMore || isLoading}
-        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-slate-700 text-sm font-medium rounded-lg hover:border-brand-500 hover:text-brand-600 hover:shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoadingMore ? (
-          <><Loader2 size={16} className="animate-spin text-brand-500" /> Đang tải...</>
-        ) : (
-          <>
-            Xem thêm <ArrowDown size={14} />
-          </>
-        )}
-      </button>
-    </div>
-)}
+                    {/* --- NÚT TẢI THÊM SẢN PHẨM (NHỎ GỌN) --- */}
+                    {hasNextPage && (
+                        <div className="mt-10 md:mt-14 flex justify-center animate-fade-in">
+                          <button 
+                            onClick={() => fetchProductsFromServer(true)}
+                            disabled={isLoadingMore || isLoading}
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-slate-700 text-sm font-medium rounded-lg hover:border-brand-500 hover:text-brand-600 hover:shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isLoadingMore ? (
+                              <><Loader2 size={16} className="animate-spin text-brand-500" /> Đang tải...</>
+                            ) : (
+                              <>
+                                Xem thêm <ArrowDown size={14} />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-20 md:py-32 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
